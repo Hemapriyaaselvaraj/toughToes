@@ -155,7 +155,7 @@
         </form>
 
         <p class="mt-3 text-center">
-          Sign in <a href="#">Already have an account?</a>
+          Sign in <a href="./login">Already have an account?</a>
         </p>
       </section>
     </div>
@@ -210,7 +210,6 @@
 
   <script>
     function formValidate(e) {
-      console.log("Validate form");
       e.preventDefault();
       var email = document.getElementById("email").value;
       var password = document.getElementById("password").value;
@@ -223,7 +222,6 @@
         return false;
       }
       if (password.length < 8) {
-        console.log("Validate form inside password length check");
 
         swal("Password should contain atleast 8 characters");
         return false;

@@ -39,12 +39,16 @@
           <h5>Forgot Password</h5>
           <p class="text-muted">Enter your email address and we'll send you an OTP to reset your password</p>
         </div>
-        <form>
+
+         <% if (error) { %>
+        <div class="alert alert-danger text-center"><%= error %></div>
+        <% } %>
+        <form method="post" action="/user/login/sendOtp">
           <div class="input-group mb-3">
             <span class="input-group-text bg-white border-end-0"><i class="fas fa-envelope"></i></span>
-            <input type="email" class="form-control border-start-0" placeholder="Enter your email address" required />
+            <input type="email" class="form-control border-start-0" name="email" placeholder="Enter your email address" required />
           </div>
-          <button class="btn btn-dark w-100">Send OTP</button>
+          <button class="btn btn-dark w-100" type="submit">Send OTP</button>
           <p class="text-center mt-2">Remember your password? <a href="/user/signup">Sign in</a></p>
         </form>
         <div class="alert alert-light mt-3 small d-flex align-items-center gap-2">

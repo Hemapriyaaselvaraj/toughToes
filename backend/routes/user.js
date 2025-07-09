@@ -9,12 +9,11 @@ router.get('/signup',userController.viewSignUp)
 router.post('/signup', userController.signup)
 
 router.get('/login/forgotPassword',userController.forgotPassword)
-router.get('/login/sendOtp',(req,res) => {
-    res.render('user/otp')
-})
-router.get('/changePassword',(req,res) => {
-    res.render('user/changePassword')
-})
+router.post('/login/sendOtp',userController.sendOtp)
+router.post('/login/verifyOtp',userController.verifyOtp)
+
+
+router.get('/changePassword',userController.changePassword);
 
 
 module.exports = router
