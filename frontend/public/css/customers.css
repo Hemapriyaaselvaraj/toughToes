@@ -1,0 +1,13 @@
+.table td, .table th {
+  vertical-align: middle;
+}
+
+.status-active {
+  color: green;
+  font-weight: 500;
+}
+
+.status-blocked {
+  color: red;
+  font-weight: 500;
+}

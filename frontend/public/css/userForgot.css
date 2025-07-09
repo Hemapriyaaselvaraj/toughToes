@@ -1,0 +1,17 @@
+/* userForgot.css */
+.forgot-container {
+  background-color: #fff;
+}
+
+.input-group-text {
+  background-color: #fff;
+  border-right: none;
+}
+
+.input-group .form-control {
+  border-left: none;
+}
+
+input::placeholder {
+  font-size: 0.9rem;
+}

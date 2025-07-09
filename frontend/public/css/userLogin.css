@@ -1,0 +1,17 @@
+input::placeholder {
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.card input {
+  font-size: 0.95rem;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+footer ul li a:hover {
+  color: #fff;
+}
+
