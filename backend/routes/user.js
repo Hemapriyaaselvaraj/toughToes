@@ -13,7 +13,7 @@ router.post('/login/sendOtp',userController.sendOtp)
 router.post('/login/verifyOtp',userController.verifyOtp)
 
 
-router.get('/changePassword',userController.changePassword);
+router.post('/changePassword',userController.changePassword);
 
 
 module.exports = router
