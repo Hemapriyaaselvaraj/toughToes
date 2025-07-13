@@ -11,12 +11,9 @@
 <body>
   <div class="container-fluid">
     <div class="row">
-      <!-- ✅ Sidebar -->
       <%- include('../partials/sidebar') %>
 
-      <!-- ✅ Main Section -->
       <div class="col-md-10 p-0">
-        <!-- ✅ Header -->
         <div class="bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
           <h5 class="mb-0">Edit Categories</h5>
           <div class="d-flex align-items-center gap-2">
@@ -25,7 +22,6 @@
           </div>
         </div>
 
-        <!-- ✅ Main Content -->
         <div class="p-4">
           <p class="text-muted">Manage your product categories</p>
 
@@ -72,7 +68,6 @@
     </div>
   </div>
 
-  <!-- ✅ Script block for inline operations -->
   <script>
     function addItem(field) {
       const list = document.getElementById(`${field}-list`);
@@ -99,7 +94,9 @@
         body: JSON.stringify({ value })
       });
 
-      if (!res.ok) return alert('Failed to save');
+      const data = await res.json();
+
+      if (!res.ok) return alert(data.message || 'Failed to save');
 
       window.location.reload();
     }
@@ -118,10 +115,10 @@
 
       btnGroup.innerHTML = `
 
-        <button class="btn btn-success" onclick="finalizeEdit('${field}', document.getElementById('${field}-input-${index}'), ${id})">
+        <button class="btn btn-success" onclick="finalizeEdit('${field}', '${id}', '${index}')">
           ✓
         </button>
-        <button class="btn btn-danger" onclick="cancelEdit('${field}', ${index}, '${current}', ${id})">
+        <button class="btn btn-danger" onclick="cancelEdit('${field}', ${index}, '${current}', '${id}')">
           ×
         </button>
       `;
@@ -144,7 +141,9 @@
       `;
     }
 
-    async function finalizeEdit(field, input, id) {
+    async function finalizeEdit(field, id, index) {
+      const input = document.getElementById(`${field}-input-${index}`);
+
       const updated = input.value.trim();
       if (!updated) return alert('Cannot be empty');
 
@@ -154,7 +153,10 @@
         body: JSON.stringify({ value: updated })
       });
 
-      if (!res.ok) return alert('Failed to update');
+       const data = await res.json();
+
+      if (!res.ok) return alert(data.message || 'Failed to update');
+
       window.location.reload();
     }
 
@@ -165,7 +167,7 @@
         method: 'DELETE'
       });
 
-      if (!res.ok) return alert('Failed to delete');
+      if (!res.ok) return alert(res.message || 'Failed to delete');
       window.location.reload();
     }
 
