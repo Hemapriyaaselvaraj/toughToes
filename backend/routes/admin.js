@@ -5,4 +5,7 @@ const adminController = require('../controllers/admin.controller'); // optional 
 
 router.get('/dashboard', adminController.getDashboard)
 
+
+
 module.exports = router;
+
