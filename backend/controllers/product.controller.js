@@ -409,14 +409,15 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({})
-      .populate({
-        path: 'variations',
-        model: 'ProductVariation'
-      });
 
-      console.log("Products fetched:", products);
-    res.status(200).json(products);
+    const user = await userModel.findOne({ _id: req.session.userId });
+    const products = await Product.find({});
+
+    res.render("admin/products", {
+      name: user.firstName || "Admin",
+      products
+    });
+
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to fetch products" });
   }

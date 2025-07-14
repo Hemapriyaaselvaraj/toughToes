@@ -8,7 +8,7 @@ router.get('/configuration', productController.getProductConfiguration)
 
 router.get('/add-product', productController.getAddProduct)
 router.post('/add', upload.any(), productController.createProduct);
-router.post('/', productController.getProducts);
+router.get('/', productController.getProducts);
 
 
 

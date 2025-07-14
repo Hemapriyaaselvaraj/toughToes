@@ -1,35 +1,50 @@
-<div class="col-md-2 bg-dark text-white sidebar p-3" style="min-height: 100vh;">
+<div class="col-md-2 bg-dark text-white sidebar p-3" style="min-height: 100vh">
   <h4 class="text-center mb-4">ToughToes</h4>
   <ul class="nav flex-column gap-2">
-    <li><a href="#" class="nav-link text-white active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a></li>
-    <li><a href="#" class="nav-link text-white"><i class="fa fa-box me-2"></i>Orders</a></li>
-    <li><a href="#" class="nav-link text-white" id="products-link"><i class="fa fa-tags me-2"></i>Products</a></li>
-    <li><a href="#" class="nav-link text-white"><i class="fa fa-users me-2"></i>Customers</a></li>
-    <li><a href="#" class="nav-link text-white"><i class="fa fa-ticket me-2"></i>Coupons</a></li>
-    <li><a href="/products/configuration" class="nav-link text-white"><i class="fa fa-layer-group me-2"></i>Categories</a></li>
-    <li><a href="#" class="nav-link text-white"><i class="fa fa-undo me-2"></i>Refund/Return</a></li>
-    <li><a href="#" class="nav-link text-white"><i class="fa fa-star me-2"></i>Review</a></li>
-    <li class="mt-4"><a href="#" class="nav-link text-white"><i class="fa fa-sign-out-alt me-2"></i>Sign Out</a></li>
+    <li>
+      <a href="#" class="nav-link text-white active"
+        ><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a
+      >
+    </li>
+    <li>
+      <a href="#" class="nav-link text-white"
+        ><i class="fa fa-box me-2"></i>Orders</a
+      >
+    </li>
+    <li>
+      <a href="/products?limit=5&skip=0" class="nav-link text-white" id="products-link"
+        ><i class="fa fa-tags me-2"></i>Products</a
+      >
+    </li>
+    <li>
+      <a href="#" class="nav-link text-white"
+        ><i class="fa fa-users me-2"></i>Customers</a
+      >
+    </li>
+    <li>
+      <a href="#" class="nav-link text-white"
+        ><i class="fa fa-ticket me-2"></i>Coupons</a
+      >
+    </li>
+    <li>
+      <a href="/products/configuration" class="nav-link text-white"
+        ><i class="fa fa-layer-group me-2"></i>Categories</a
+      >
+    </li>
+    <li>
+      <a href="#" class="nav-link text-white"
+        ><i class="fa fa-undo me-2"></i>Refund/Return</a
+      >
+    </li>
+    <li>
+      <a href="#" class="nav-link text-white"
+        ><i class="fa fa-star me-2"></i>Review</a
+      >
+    </li>
+    <li class="mt-4">
+      <a href="#" class="nav-link text-white"
+        ><i class="fa fa-sign-out-alt me-2"></i>Sign Out</a
+      >
+    </li>
   </ul>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const productsLink = document.getElementById('products-link');
-  if (productsLink) {
-    productsLink.addEventListener('click', function(e) {
-      e.preventDefault();
-      fetch('/products', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          // You can handle the response here, e.g., redirect or show data
-          console.log('Products API response:', data);
-          // Example: redirect to products page if needed
-          // window.location = '/products';
-        })
-        .catch(err => {
-          alert('Failed to fetch products');
-        });
-    });
-  }
-});
-</script>

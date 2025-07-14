@@ -26,7 +26,7 @@
       <div class="p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <input type="text" id="searchInput" class="form-control w-50" placeholder="Search products...">
-          <a href="/admin/products/add" class="btn btn-dark"><i class="fa fa-plus"></i> Add Product</a>
+          <a href="/products/add-product" class="btn btn-dark"><i class="fa fa-plus"></i> Add Product</a>
         </div>
 
         <table class="table table-hover">
@@ -34,7 +34,7 @@
             <tr>
               <th><input type="checkbox" /></th>
               <th>Product</th>
-              <th>Product ID</th>
+              <th>Product SKU</th>
               <th>Price</th>
               <th>Category</th>
               <th>Stock</th>
@@ -50,11 +50,11 @@
                   <div><strong><%= product.name %></strong></div>
                   <div class="text-muted"><%= product.brand %></div>
                 </td>
-                <td>#<%= product.productId %></td>
+                <td>#<%= product.product_sku %></td>
                 <td>$<%= product.price.toFixed(2) %></td>
-                <td><span class="badge bg-secondary"><%= product.category %></span></td>
+                <td><span class="badge bg-secondary"><%= product.product_category %></span></td>
                 <td><%= product.stock %></td>
-                <td><%= product.addedOn.toDateString() %></td>
+                <td><%= product.created_at.toDateString() %></td>
                 <td>
                   <i class="fa fa-edit text-primary mx-1 cursor-pointer"></i>
                   <i class="fa fa-trash text-danger mx-1 cursor-pointer"></i>
