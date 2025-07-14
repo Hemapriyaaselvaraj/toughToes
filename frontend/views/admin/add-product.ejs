@@ -55,7 +55,7 @@
           </div>
           <div class="col-md-6">
             <label>Product ID</label>
-            <input type="text" name="productId" class="form-control" placeholder="SKU-001" required />
+            <input type="text" name="sku" class="form-control" placeholder="SKU-001" required />
           </div>
         </div>
 
@@ -81,7 +81,7 @@
             <select name="category" class="form-select" required>
               <option value="">Select Category</option>
               <% categories.forEach(category => { %>
-                <option value="<%= category._id %>"><%= category.category %></option>
+                <option value="<%= category.category %>"><%= category.category %></option>
               <% }) %>
             </select>
           </div>
@@ -90,7 +90,7 @@
             <select name="type" class="form-select" required>
               <option value="">Select Type</option>
               <% types.forEach(type => { %>
-                <option value="<%= type._id %>"><%= type.type %></option>
+                <option value="<%= type.type %>"><%= type.type %></option>
               <% }) %>
             </select>
           </div>
@@ -128,7 +128,7 @@
           <select name="variations[${variationIndex}][size]" class="form-select" required>
             <option value="">Select</option>
             <% sizes.forEach(size => { %>
-              <option value="<%= size._id %>"><%= size.size %></option>
+              <option value="<%= size.size %>"><%= size.size %></option>
             <% }) %>
           </select>
         </div>
@@ -137,7 +137,7 @@
           <select name="variations[${variationIndex}][color]" class="form-select" required>
             <option value="">Select</option>
             <% colors.forEach(color => { %>
-              <option value="<%= color._id %>"><%= color.color %></option>
+              <option value="<%= color.color %>"><%= color.color %></option>
             <% }) %>
           </select>
         </div>
@@ -184,7 +184,7 @@
     input.click();
   }
 
-  document.getElementById('productForm').addEventListener('submit', function (e) {
+  document.getElementById('productForm').addEventListener('submit', async function (e) {
     const formData = new FormData(this);
 
     Object.entries(variationFiles).forEach(([index, files]) => {
@@ -196,7 +196,12 @@
     fetch(this.action, {
       method: this.method,
       body: formData
-    }).then(res => {
+    }).then(async res => {
+
+      const body = await res.json();
+      console.log(body);
+
+      console.log("res ----", res);
       if (res.redirected) window.location = res.url;
       else alert("Product submission failed");
     });

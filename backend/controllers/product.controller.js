@@ -8,7 +8,6 @@ const ProductVariation = require("../models/productVariationModel");
 const cloudinary = require("../config/cloudinary");
 const productVariationModel = require("../models/productVariationModel");
 
-
 const getProductConfiguration = async (req, res) => {
   const user = await userModel.findOne({ _id: req.session.userId });
 
@@ -17,26 +16,26 @@ const getProductConfiguration = async (req, res) => {
   const sizes = await productSizeModel.find({});
   const colors = await productColorModel.find({});
 
-  res.render("admin/product-configuration", { name: user.firstName , 
-    data : {
-        category : categories,
-        type: types,
-        size: sizes,
-        color: colors
-    }
+  res.render("admin/product-configuration", {
+    name: user.firstName,
+    data: {
+      category: categories,
+      type: types,
+      size: sizes,
+      color: colors,
+    },
   });
 };
 
-
 const createCategory = async (req, res) => {
-   try {
+  try {
     const { value } = req.body;
 
     const isCategoryAlreadyAvailable = await productCategoryModel.findOne({
-      category: value
-    })
+      category: value,
+    });
 
-    if(isCategoryAlreadyAvailable) {
+    if (isCategoryAlreadyAvailable) {
       throw new Error("Category already exists");
     }
 
@@ -46,29 +45,29 @@ const createCategory = async (req, res) => {
     res.status(201).json({
       message: "Category created",
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message || "Failed to create category" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to create category" });
   }
-}
+};
 
 const updateCategory = async (req, res) => {
-   try {
+  try {
     const { value } = req.body;
     const { id } = req.params;
 
     const existingCategory = await productCategoryModel.findById(id);
 
     if (!existingCategory) {
-        throw new Error("Category not found");
+      throw new Error("Category not found");
     }
 
-    
     const isCategoryAlreadyAvailable = await productCategoryModel.findOne({
-      category: value
-    })
+      category: value,
+    });
 
-    if(isCategoryAlreadyAvailable) {
+    if (isCategoryAlreadyAvailable) {
       throw new Error("Category already exists");
     }
 
@@ -79,18 +78,18 @@ const updateCategory = async (req, res) => {
 
     await productCategoryModel.updateOne(myquery, newvalues);
 
-
     res.status(200).json({
       message: "Category updated",
-     });
-
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message || "Failed to update category" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to update category" });
   }
-}
+};
 
 const deleteCategory = async (req, res) => {
-   try {
+  try {
     const { id } = req.params;
 
     await productCategoryModel.findByIdAndDelete(id);
@@ -98,11 +97,12 @@ const deleteCategory = async (req, res) => {
     res.status(200).json({
       message: "Category deleted",
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message || "Failed to delete category" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to delete category" });
   }
-}
+};
 
 // CREATE Product Type
 const createType = async (req, res) => {
@@ -110,7 +110,7 @@ const createType = async (req, res) => {
     const { value } = req.body;
 
     const isTypeAlreadyAvailable = await productTypeModel.findOne({
-      type: value
+      type: value,
     });
 
     if (isTypeAlreadyAvailable) {
@@ -123,7 +123,6 @@ const createType = async (req, res) => {
     res.status(201).json({
       message: "Type created",
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to create type" });
   }
@@ -142,7 +141,7 @@ const updateType = async (req, res) => {
     }
 
     const isTypeAlreadyAvailable = await productTypeModel.findOne({
-      type: value
+      type: value,
     });
 
     if (isTypeAlreadyAvailable) {
@@ -159,7 +158,6 @@ const updateType = async (req, res) => {
     res.status(200).json({
       message: "Type updated",
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to update type" });
   }
@@ -175,12 +173,10 @@ const deleteType = async (req, res) => {
     res.status(200).json({
       message: "Type deleted",
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to delete type" });
   }
 };
- 
 
 // CREATE Product Size
 const createSize = async (req, res) => {
@@ -188,7 +184,7 @@ const createSize = async (req, res) => {
     const { value } = req.body;
 
     const isSizeAlreadyAvailable = await productSizeModel.findOne({
-      size: value
+      size: value,
     });
 
     if (isSizeAlreadyAvailable) {
@@ -201,7 +197,6 @@ const createSize = async (req, res) => {
     res.status(201).json({
       message: "Size created",
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to create size" });
   }
@@ -220,7 +215,7 @@ const updateSize = async (req, res) => {
     }
 
     const isSizeAlreadyAvailable = await productSizeModel.findOne({
-      size: value
+      size: value,
     });
 
     if (isSizeAlreadyAvailable) {
@@ -237,7 +232,6 @@ const updateSize = async (req, res) => {
     res.status(200).json({
       message: "Size updated",
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to update size" });
   }
@@ -253,12 +247,10 @@ const deleteSize = async (req, res) => {
     res.status(200).json({
       message: "Size deleted",
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to delete size" });
   }
 };
-
 
 // CREATE Product Color
 const createColor = async (req, res) => {
@@ -266,7 +258,7 @@ const createColor = async (req, res) => {
     const { value } = req.body;
 
     const isColorAlreadyAvailable = await productColorModel.findOne({
-      color: value
+      color: value,
     });
 
     if (isColorAlreadyAvailable) {
@@ -279,9 +271,10 @@ const createColor = async (req, res) => {
     res.status(201).json({
       message: "Color created",
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message || "Failed to create color" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to create color" });
   }
 };
 
@@ -298,7 +291,7 @@ const updateColor = async (req, res) => {
     }
 
     const isColorAlreadyAvailable = await productColorModel.findOne({
-      color: value
+      color: value,
     });
 
     if (isColorAlreadyAvailable) {
@@ -315,9 +308,10 @@ const updateColor = async (req, res) => {
     res.status(200).json({
       message: "Color updated",
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message || "Failed to update color" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to update color" });
   }
 };
 
@@ -331,32 +325,33 @@ const deleteColor = async (req, res) => {
     res.status(200).json({
       message: "Color deleted",
     });
-
   } catch (error) {
-    res.status(500).json({ message: error.message || "Failed to delete color" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to delete color" });
   }
 };
 
-
 const getAddProduct = async (req, res) => {
-    const user = await userModel.findOne({ _id: req.session.userId });
+  const user = await userModel.findOne({ _id: req.session.userId });
 
- const categories = await productCategoryModel.find({});
+  const categories = await productCategoryModel.find({});
   const types = await productTypeModel.find({});
   const sizes = await productSizeModel.find({});
   const colors = await productColorModel.find({});
 
-  res.render("admin/add-product", { name: user.firstName , 
-        categories,
-        types,
-        sizes,
-        colors
+  res.render("admin/add-product", {
+    name: user.firstName,
+    categories,
+    types,
+    sizes,
+    colors,
   });
-}
-
-
+};
 
 const createProduct = async (req, res) => {
+  console.log("Body ---", req.body);
+
   try {
     const {
       name,
@@ -366,69 +361,95 @@ const createProduct = async (req, res) => {
       discount,
       category,
       type,
-      variations
+      variations,
     } = req.body;
 
-    const parsedVariations = JSON.parse(variations); // from frontend (JSON.stringify)
+    console.log("Parsed Body");
 
+    // Create the main product
     const newProduct = new Product({
       name,
-      sku,
+      product_sku: sku,
       description,
       price,
       discount_percentage: discount,
-      product_category_id: category,
-      product_type_id: type,
+      product_category: category,
+      product_type: type,
       is_active: true,
       created_at: new Date(),
-      updated_at: new Date()
+      updated_at: new Date(),
     });
 
     const savedProduct = await newProduct.save();
 
+    console.log("Saved product", savedProduct);
+
+    // Helper for cloudinary stream upload
+    const streamUpload = (buffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "products" },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        stream.end(buffer);
+      });
+    };
+
+    // Handle variations and images
     const variationFiles = req.files;
     const variationEntries = [];
 
-    for (let i = 0; i < parsedVariations.length; i++) {
-      const variation = parsedVariations[i];
-      const fileFieldName = `images_${i}`;
+    // If variations is a string (single variation), convert to array
+    let variationsArr = variations;
+    if (!Array.isArray(variationsArr)) {
+      try {
+        variationsArr = JSON.parse(variationsArr);
+      } catch {
+        variationsArr = [variationsArr];
+      }
+    }
+
+    for (let i = 0; i < variationsArr.length; i++) {
+      const variation = variationsArr[i];
+      const fileFieldName = `variationImages_${i}[]`;
       const files = variationFiles[fileFieldName] || [];
 
       const uploadedImageUrls = [];
 
+      console.log("Files for variation", files.length);
       for (const file of files) {
-        const result = await cloudinary.uploader.upload_stream({
-          folder: "products"
-        }, (error, result) => {
-          if (error) throw error;
-          uploadedImageUrls.push(result.secure_url);
-        });
-
-        result.end(file.buffer);
+        console.log("Uploading image:", file.originalname);
+        const result = await streamUpload(file.buffer);
+        console.log("Uploaded image URL:", result);
+        uploadedImageUrls.push(result.secure_url);
       }
 
       const newVariation = new ProductVariation({
         product_id: savedProduct._id,
-        product_size_id: variation.size,
-        product_color_id: variation.color,
+        product_size: variation.size,
+        product_color: variation.color,
         stock_quantity: variation.stock,
         images: uploadedImageUrls,
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(),
       });
 
       variationEntries.push(newVariation.save());
     }
 
+    console.log("Variations --", variationEntries);
+
     await Promise.all(variationEntries);
 
     res.status(201).json({ message: "Product created successfully!" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create product" });
+    console.log(err);
+    res.status(500).json({ error: err.message });
   }
 };
-
 
 
 module.exports = {
@@ -436,8 +457,15 @@ module.exports = {
   createCategory,
   updateCategory,
   deleteCategory,
-  createType, createColor, createSize,
-  updateType, updateColor, updateSize,
-  deleteType, deleteColor, deleteSize,
-  getAddProduct, createProduct
+  createType,
+  createColor,
+  createSize,
+  updateType,
+  updateColor,
+  updateSize,
+  deleteType,
+  deleteColor,
+  deleteSize,
+  getAddProduct,
+  createProduct,
 };
