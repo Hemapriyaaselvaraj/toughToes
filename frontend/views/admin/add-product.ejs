@@ -1,126 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add New Product</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="/css/adminDashboard.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-  <style>
-    .image-preview img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      margin-right: 5px;
-      border-radius: 4px;
-    }
-    .variation-box {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      position: relative;
-    }
-    .remove-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: transparent;
-      border: none;
-      color: red;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-<div class="container-fluid">
-  <div class="row">
-    <%- include('../partials/sidebar') %>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add New Product</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/adminDashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+    <style>
+      .image-preview img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        margin-right: 5px;
+        border-radius: 4px;
+      }
+      .variation-box {
+        border: 1px solid #ccc;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        position: relative;
+      }
+      .remove-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: transparent;
+        border: none;
+        color: red;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <%- include('../partials/sidebar') %>
 
-    <div class="col-md-10 p-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4>Add New Product</h4>
-        <div><%= name %> <i class="fa-solid fa-user ms-2"></i></div>
+        <div class="col-md-10 p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4>Add New Product</h4>
+            <div><%= name %> <i class="fa-solid fa-user ms-2"></i></div>
+          </div>
+
+          <form
+            id="productForm"
+            action="/products/add"
+            method="POST"
+            enctype="multipart/form-data"
+          >
+            <p class="text-muted">
+              Fill in the product details to add a new shoe to your inventory
+            </p>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Product Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  class="form-control"
+                  placeholder="Enter product name"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Product ID</label>
+                <input
+                  type="text"
+                  name="sku"
+                  class="form-control"
+                  placeholder="SKU-001"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Price ($)</label>
+                <input
+                  type="number"
+                  name="price"
+                  step="0.01"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Discount (%)</label>
+                <input
+                  type="number"
+                  name="discount"
+                  step="0.01"
+                  class="form-control"
+                />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label>Product Description</label>
+              <textarea
+                name="description"
+                class="form-control"
+                rows="3"
+                placeholder="Enter detailed product description..."
+                required
+              ></textarea>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Category</label>
+                <select name="category" class="form-select" required>
+                  <option value="">Select Category</option>
+                  <% categories.forEach(category => { %>
+                  <option value="<%= category.category %>">
+                    <%= category.category %>
+                  </option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label>Shoe Type</label>
+                <select name="type" class="form-select" required>
+                  <option value="">Select Type</option>
+                  <% types.forEach(type => { %>
+                  <option value="<%= type.type %>"><%= type.type %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label>Product Variations</label>
+              <div id="variationsContainer"></div>
+              <button
+                type="button"
+                class="btn btn-outline-primary mt-2"
+                onclick="addVariation()"
+              >
+                + Add Variation
+              </button>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <a href="/admin/products" class="btn btn-outline-secondary"
+                >Cancel</a
+              >
+              <button type="submit" class="btn btn-dark">Add Product</button>
+            </div>
+          </form>
+        </div>
       </div>
-
-      <form id="productForm" action="/products/add" method="POST" enctype="multipart/form-data">
-        <p class="text-muted">Fill in the product details to add a new shoe to your inventory</p>
-
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label>Product Name</label>
-            <input type="text" name="name" class="form-control" placeholder="Enter product name" required />
-          </div>
-          <div class="col-md-6">
-            <label>Product ID</label>
-            <input type="text" name="sku" class="form-control" placeholder="SKU-001" required />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label>Price ($)</label>
-            <input type="number" name="price" step="0.01" class="form-control" required />
-          </div>
-          <div class="col-md-6">
-            <label>Discount (%)</label>
-            <input type="number" name="discount" step="0.01" class="form-control" />
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label>Product Description</label>
-          <textarea name="description" class="form-control" rows="3" placeholder="Enter detailed product description..." required></textarea>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label>Category</label>
-            <select name="category" class="form-select" required>
-              <option value="">Select Category</option>
-              <% categories.forEach(category => { %>
-                <option value="<%= category.category %>"><%= category.category %></option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label>Shoe Type</label>
-            <select name="type" class="form-select" required>
-              <option value="">Select Type</option>
-              <% types.forEach(type => { %>
-                <option value="<%= type.type %>"><%= type.type %></option>
-              <% }) %>
-            </select>
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <label>Product Variations</label>
-          <div id="variationsContainer"></div>
-          <button type="button" class="btn btn-outline-primary mt-2" onclick="addVariation()">+ Add Variation</button>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2">
-          <a href="/admin/products" class="btn btn-outline-secondary">Cancel</a>
-          <button type="submit" class="btn btn-dark">Add Product</button>
-        </div>
-      </form>
     </div>
-  </div>
-</div>
 
-<script>
-  let variationIndex = 0;
-  const variationFiles = {}; // Track files by variation
+    <script>
+      let variationIndex = 0;
+      const variationFiles = {}; // Track files by variation
 
-  function addVariation() {
-    const container = document.createElement('div');
-    container.className = 'variation-box';
-    container.dataset.index = variationIndex;
+      function addVariation() {
+        const container = document.createElement("div");
+        container.className = "variation-box";
+        container.dataset.index = variationIndex;
 
-    container.innerHTML = `
+        container.innerHTML = `
       <span class="remove-btn" onclick="this.parentElement.remove()">&times;</span>
       <div class="row g-3 align-items-end">
         <div class="col-md-3">
@@ -154,60 +206,60 @@
       </div>
     `;
 
-    const fileInput = container.querySelector('input[type="file"]');
-    const previewBox = container.querySelector('.image-preview');
-    const currentIndex = variationIndex;
-    variationFiles[currentIndex] = [];
+        const fileInput = container.querySelector('input[type="file"]');
+        const previewBox = container.querySelector(".image-preview");
+        const currentIndex = variationIndex;
+        variationFiles[currentIndex] = [];
 
-    fileInput.addEventListener('change', function () {
-      const files = Array.from(this.files);
-      variationFiles[currentIndex].push(...files);
+        fileInput.addEventListener("change", function () {
+          const files = Array.from(this.files);
+          variationFiles[currentIndex].push(...files);
 
-      previewBox.innerHTML = '';
-      variationFiles[currentIndex].forEach(file => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          previewBox.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      });
-    });
+          previewBox.innerHTML = "";
+          variationFiles[currentIndex].forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const img = document.createElement("img");
+              img.src = e.target.result;
+              previewBox.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+          });
+        });
 
-    document.getElementById('variationsContainer').appendChild(container);
-    variationIndex++;
-  }
+        document.getElementById("variationsContainer").appendChild(container);
+        variationIndex++;
+      }
 
-  function triggerImageUpload(button) {
-    const input = button.nextElementSibling;
-    input.click();
-  }
+      function triggerImageUpload(button) {
+        const input = button.nextElementSibling;
+        input.click();
+      }
 
-  document.getElementById('productForm').addEventListener('submit', async function (e) {
-    const formData = new FormData(this);
+      document
+        .getElementById("productForm")
+        .addEventListener("submit", function (e) {
+          const formData = new FormData(this);
 
-    Object.entries(variationFiles).forEach(([index, files]) => {
-      files.forEach(file => {
-        formData.append(`variationImages_${index}[]`, file);
-      });
-    });
+          Object.entries(variationFiles).forEach(([index, files]) => {
+            files.forEach((file) => {
+              formData.append(`variationImages_${index}`, file);
+            });
+          });
 
-    fetch(this.action, {
-      method: this.method,
-      body: formData
-    }).then(async res => {
+          fetch(this.action, {
+            method: this.method,
+            body: formData,
+          }).then((res) => {
+            if (res.ok) {
+              window.location = "/products";
+            } else {
+              alert("Product submission failed");
+            }
+          });
 
-      const body = await res.json();
-      console.log(body);
-
-      console.log("res ----", res);
-      if (res.redirected) window.location = res.url;
-      else alert("Product submission failed");
-    });
-
-    e.preventDefault();
-  });
-</script>
-</body>
+          e.preventDefault();
+        });
+    </script>
+  </body>
 </html>

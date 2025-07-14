@@ -350,8 +350,6 @@ const getAddProduct = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  console.log("Body ---", req.body);
-
   try {
     const {
       name,
@@ -364,9 +362,6 @@ const createProduct = async (req, res) => {
       variations,
     } = req.body;
 
-    console.log("Parsed Body");
-
-    // Create the main product
     const newProduct = new Product({
       name,
       product_sku: sku,
@@ -382,57 +377,20 @@ const createProduct = async (req, res) => {
 
     const savedProduct = await newProduct.save();
 
-    console.log("Saved product", savedProduct);
-
-    // Helper for cloudinary stream upload
-    const streamUpload = (buffer) => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "products" },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          }
-        );
-        stream.end(buffer);
-      });
-    };
-
-    // Handle variations and images
-    const variationFiles = req.files;
     const variationEntries = [];
+    const files = req.files || [];
 
-    // If variations is a string (single variation), convert to array
-    let variationsArr = variations;
-    if (!Array.isArray(variationsArr)) {
-      try {
-        variationsArr = JSON.parse(variationsArr);
-      } catch {
-        variationsArr = [variationsArr];
-      }
-    }
-
-    for (let i = 0; i < variationsArr.length; i++) {
-      const variation = variationsArr[i];
-      const fileFieldName = `variationImages_${i}[]`;
-      const files = variationFiles[fileFieldName] || [];
-
-      const uploadedImageUrls = [];
-
-      console.log("Files for variation", files.length);
-      for (const file of files) {
-        console.log("Uploading image:", file.originalname);
-        const result = await streamUpload(file.buffer);
-        console.log("Uploaded image URL:", result);
-        uploadedImageUrls.push(result.secure_url);
-      }
+    for (let i = 0; i < variations.length; i++) {
+      const variation = variations[i];
+      const images = files.filter(file => file.fieldname === `variationImages_${i}`) || [];
+      const imageUrls = images.map((file) => file.path);
 
       const newVariation = new ProductVariation({
         product_id: savedProduct._id,
         product_size: variation.size,
         product_color: variation.color,
         stock_quantity: variation.stock,
-        images: uploadedImageUrls,
+        images: imageUrls,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -440,14 +398,27 @@ const createProduct = async (req, res) => {
       variationEntries.push(newVariation.save());
     }
 
-    console.log("Variations --", variationEntries);
-
     await Promise.all(variationEntries);
 
     res.status(201).json({ message: "Product created successfully!" });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: err.message });
+  }
+};
+
+
+const getProducts = async (req, res) => {
+  try {
+    const products = await Product.find({})
+      .populate({
+        path: 'variations',
+        model: 'ProductVariation'
+      });
+
+      console.log("Products fetched:", products);
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Failed to fetch products" });
   }
 };
 
@@ -468,4 +439,5 @@ module.exports = {
   deleteSize,
   getAddProduct,
   createProduct,
+  getProducts
 };
