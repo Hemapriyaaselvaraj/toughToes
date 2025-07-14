@@ -1,0 +1,122 @@
+<!-- customer-detail.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Detail</title>
+  <link rel="stylesheet" href="/frontend/public/css/adminCustomerDetails.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="topbar">
+        <h1>ToughToes</h1>
+        <div class="user-info">
+          <span>John Doe</span>
+          <img src="/profile.png" alt="Profile Picture">
+        </div>
+      </div>
+    </header>
+    
+    <main>
+      <nav class="sidebar">
+        <ul>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/orders">Orders</a></li>
+          <li><a href="/products">Products</a></li>
+          <li><a href="/customers" class="active">Customers</a></li>
+          <li><a href="/coupons">Coupons</a></li>
+          <li><a href="/categories">Categories</a></li>
+          <li><a href="/refund-return">Refund/Return</a></li>
+          <li><a href="/review">Review</a></li>
+          <li><a href="/signout">Sign Out</a></li>
+        </ul>
+      </nav>
+      
+      <section class="main-content">
+        <div class="content-header">
+          <h2>Customer Details</h2>
+          <p>Manage customer account data</p>
+        </div>
+
+        <!-- Customer Info Section -->
+        <div class="customer-info">
+          <div class="customer-avatar">
+            <img src="/profile.png" alt="Customer Avatar">
+          </div>
+          <div class="customer-details">
+            <h3><%= customer.name %></h3>
+            <span class="status <%= customer.status %>"><%= customer.status.charAt(0).toUpperCase() + customer.status.slice(1) %></span>
+            <p>Email: <%= customer.email %></p>
+            <p>Phone: <%= customer.phone %></p>
+            <p>Customer Since: <%= customer.customerSince %></p>
+            <p>Total Orders: <%= customer.totalOrders %></p>
+            <p>Total Spent: $<%= customer.totalSpent.toFixed(2) %></p>
+            <p>Average Order: $<%= customer.avgOrder.toFixed(2) %></p>
+            <button class="block">Block Customer</button>
+          </div>
+        </div>
+
+        <!-- Order History Section -->
+        <div class="order-history">
+          <h3>Order History</h3>
+          <select>
+            <option value="all">All Orders</option>
+            <option value="delivered">Delivered</option>
+            <option value="processing">Processing</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Products</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% customer.orders.forEach(order => { %>
+                <tr>
+                  <td><%= order.id %></td>
+                  <td><%= order.products.join(', ') %></td>
+                  <td><%= order.date %></td>
+                  <td><span class="status <%= order.status %>"><%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %></span></td>
+                  <td>$<%= order.total.toFixed(2) %></td>
+                  <td><button class="view-details">View Details</button></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <button>Previous</button>
+            <span>1</span>
+            <button>Next</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+
+    // app.js
+document.addEventListener('DOMContentLoaded', function () {
+  // Example functionality for buttons (View Details, Block)
+  document.querySelectorAll('.view-details').forEach(button => {
+    button.addEventListener('click', () => {
+      alert("Viewing order details");
+    });
+  });
+
+  document.querySelector('.block').addEventListener('click', () => {
+    alert("Blocking customer");
+  });
+});
+
+</script>
+</body>
+</html>

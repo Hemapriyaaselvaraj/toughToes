@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product.controller'); // optional if using controller
+const upload = require('../utils/imageUploader');
 
 
 router.get('/configuration', productController.getProductConfiguration)
 
 router.get('/add-product', productController.getAddProduct)
+router.post(
+  '/add',
+  upload.any(), 
+  productController.createProduct
+);
+
 
 // Category routes
 router.post('/category', productController.createCategory)

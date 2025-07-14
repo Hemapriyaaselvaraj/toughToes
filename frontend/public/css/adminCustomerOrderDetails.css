@@ -1,0 +1,145 @@
+/* styles.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7fa;
+}
+
+.container {
+  display: flex;
+}
+
+header {
+  background-color: #fff;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  flex: 0 0 100%;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.topbar .user-info {
+  display: flex;
+  align-items: center;
+}
+
+.topbar img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-left: 10px;
+}
+
+.sidebar {
+  background-color: #fff;
+  width: 250px;
+  padding-top: 20px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sidebar ul li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+}
+
+.sidebar ul li a.active {
+  background-color: #f1f1f1;
+  font-weight: bold;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.order-header h2 {
+  font-size: 28px;
+  color: #333;
+}
+
+.print-invoice {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.order-status, .order-items, .order-summary {
+  margin-bottom: 30px;
+}
+
+.order-status select, .order-status button {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.timeline-item {
+  margin-bottom: 10px;
+}
+
+.timeline-item p {
+  margin: 5px 0;
+}
+
+.order-items table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.order-items th, .order-items td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.order-items th {
+  background-color: #f1f1f1;
+}
+
+.order-summary-details {
+  margin-top: 20px;
+}
+
+.order-summary-details p {
+  font-size: 16px;
+}
+
+.customer-info, .shipping-info, .payment-info {
+  margin-bottom: 20px;
+}
+
+.customer-info h4, .shipping-info h4, .payment-info h4 {
+  font-size: 18px;
+  color: #333;
+}

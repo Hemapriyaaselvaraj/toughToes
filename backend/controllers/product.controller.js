@@ -3,6 +3,10 @@ const productCategoryModel = require("../models/productCategoryModel");
 const productColorModel = require("../models/productColorModel");
 const productSizeModel = require("../models/productSizeModel");
 const productTypeModel = require("../models/productTypeModel");
+const Product = require("../models/productModel");
+const ProductVariation = require("../models/productVariationModel");
+const cloudinary = require("../config/cloudinary");
+const productVariationModel = require("../models/productVariationModel");
 
 
 const getProductConfiguration = async (req, res) => {
@@ -350,6 +354,83 @@ const getAddProduct = async (req, res) => {
   });
 }
 
+
+
+const createProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      sku,
+      description,
+      price,
+      discount,
+      category,
+      type,
+      variations
+    } = req.body;
+
+    const parsedVariations = JSON.parse(variations); // from frontend (JSON.stringify)
+
+    const newProduct = new Product({
+      name,
+      sku,
+      description,
+      price,
+      discount_percentage: discount,
+      product_category_id: category,
+      product_type_id: type,
+      is_active: true,
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+
+    const savedProduct = await newProduct.save();
+
+    const variationFiles = req.files;
+    const variationEntries = [];
+
+    for (let i = 0; i < parsedVariations.length; i++) {
+      const variation = parsedVariations[i];
+      const fileFieldName = `images_${i}`;
+      const files = variationFiles[fileFieldName] || [];
+
+      const uploadedImageUrls = [];
+
+      for (const file of files) {
+        const result = await cloudinary.uploader.upload_stream({
+          folder: "products"
+        }, (error, result) => {
+          if (error) throw error;
+          uploadedImageUrls.push(result.secure_url);
+        });
+
+        result.end(file.buffer);
+      }
+
+      const newVariation = new ProductVariation({
+        product_id: savedProduct._id,
+        product_size_id: variation.size,
+        product_color_id: variation.color,
+        stock_quantity: variation.stock,
+        images: uploadedImageUrls,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+
+      variationEntries.push(newVariation.save());
+    }
+
+    await Promise.all(variationEntries);
+
+    res.status(201).json({ message: "Product created successfully!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create product" });
+  }
+};
+
+
+
 module.exports = {
   getProductConfiguration,
   createCategory,
@@ -358,5 +439,5 @@ module.exports = {
   createType, createColor, createSize,
   updateType, updateColor, updateSize,
   deleteType, deleteColor, deleteSize,
-  getAddProduct
+  getAddProduct, createProduct
 };
