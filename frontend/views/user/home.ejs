@@ -73,34 +73,23 @@
       <a href="#">View All →</a>
     </div>
     <div class="product-grid">
-      <div class="product-card">
-        <img src="https://via.placeholder.com/200x150?text=Ultra+Run+Pro">
-        <h3>Ultra Run Pro</h3>
-        <p>Men's Running</p>
-        <span>$129.99</span>
-        <i class="fas fa-cart-plus"></i>
-      </div>
-      <div class="product-card">
-        <img src="https://via.placeholder.com/200x150?text=Classic+Oxford">
-        <h3>Classic Oxford</h3>
-        <p>Women's Formal</p>
-        <span>$89.99</span>
-        <i class="fas fa-cart-plus"></i>
-      </div>
-      <div class="product-card">
-        <img src="https://via.placeholder.com/200x150?text=Street+Style+Max">
-        <h3>Street Style Max</h3>
-        <p>Kids' Sneakers</p>
-        <span>$59.99</span>
-        <i class="fas fa-cart-plus"></i>
-      </div>
-      <div class="product-card">
-        <img src="https://via.placeholder.com/200x150?text=Pro+Strike+Elite">
-        <h3>Pro Strike Elite</h3>
-        <p>Men's Football</p>
-        <span>$199.99</span>
-        <i class="fas fa-cart-plus"></i>
-      </div>
+      <% if (featuredProducts && featuredProducts.length) { %>
+        <% featuredProducts.forEach(product => { %>
+          <div class="product-card">
+            <% if (product.image) { %>
+              <img src="<%= product.image %>" alt="<%= product.name %>">
+            <% } else { %>
+              <img src="https://via.placeholder.com/200x150?text=<%= encodeURIComponent(product.name) %>" alt="<%= product.name %>">
+            <% } %>
+            <h3><%= product.name %></h3>
+            <p><%= product.product_category %></p>
+            <span>$<%= product.price.toFixed(2) %></span>
+            <i class="fas fa-cart-plus"></i>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div>No featured products available.</div>
+      <% } %>
     </div>
   </section>
 
