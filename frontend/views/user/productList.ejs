@@ -16,10 +16,9 @@
   <header class="navbar">
     <div class="logo">ToughToes</div>
     <nav class="nav-links">
-      <a href="#">Men</a>
-      <a href="#">Women</a>
-      <a href="#">Kids</a>
-      <a href="#">Sale</a>
+      <a href="#" onclick="selectCategory('Men'); return false;">Men</a>
+      <a href="#" onclick="selectCategory('Women'); return false;">Women</a>
+      <a href="#" onclick="selectCategory('Kids'); return false;">Kids</a>
     </nav>
     <div class="nav-right">
       <input type="text" placeholder="Search shoes..." class="search-input">
@@ -93,6 +92,12 @@
         <script>
           function clearAllFilters() {
             window.location = window.location.pathname;
+          }
+          function selectCategory(category) {
+            const params = new URLSearchParams(window.location.search);
+            params.set('category', category);
+            params.delete('page'); // reset to first page
+            window.location.search = params.toString();
           }
         </script>
       </aside>

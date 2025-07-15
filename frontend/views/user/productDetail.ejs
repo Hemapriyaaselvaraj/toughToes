@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nike Air Max 270 | ToughToes</title>
+  <link rel="stylesheet" href="/css/productDetail.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+  <!-- Header (replaced with exact home.ejs navbar) -->
+  <header class="navbar">
+    <div class="logo">ToughToes</div>
+    <nav class="nav-links">
+      <a href="#" onclick="selectCategory('Men'); return false;">Men</a>
+      <a href="#" onclick="selectCategory('Women'); return false;">Women</a>
+      <a href="#" onclick="selectCategory('Kids'); return false;">Kids</a>
+      <a href="#" onclick="selectCategory('Sale'); return false;">Sale</a>
+    </nav>
+    <div class="nav-right">
+      <input type="text" placeholder="Search shoes..." class="search-input">
+      <i class="fas fa-search"></i>
+      <i class="fas fa-shopping-cart"></i>
+      <i class="fas fa-user"></i>
+      <span><%= name %></span>
+    </div>
+  </header>
+  <script>
+    function selectCategory(category) {
+      window.location.href = '/products?category=' + encodeURIComponent(category);
+    }
+  </script>
+
+  <!-- Main Product Section -->
+  <main class="product-page">
+    <div class="product-container">
+      <div class="product-images">
+        <% if (images && images.length) { %>
+          <img src="<%= images[0] %>" alt="<%= product.name %>" class="main-img" />
+          <div class="thumbnails">
+            <% images.forEach(function(img, idx) { if(idx > 0) { %>
+              <img src="<%= img %>" />
+            <% } }) %>
+          </div>
+        <% } else { %>
+          <img src="/images/shoe_main.png" alt="<%= product.name %>" class="main-img" />
+        <% } %>
+      </div>
+
+      <div class="product-info">
+        <h1><%= product.name %></h1>
+        <p class="category"><%= product.product_category %> | <%= product.product_type %></p>
+        <p class="price">Rs. <%= (product.price * (1 - (product.discount_percentage || 0) / 100)).toLocaleString() %></p>
+        <% if (product.discount_percentage && product.discount_percentage > 0) { %>
+          <span class="product-original-price">Rs. <%= product.price.toLocaleString() %></span>
+          <span class="product-discount">(<%= Math.round(product.discount_percentage) %>% OFF)</span>
+        <% } %>
+
+        <div class="size">
+          <p>Size</p>
+          <div class="sizes">
+            <% sizes.forEach(function(size, idx) { %>
+              <button type="button" class="size-btn" data-size="<%= size %>" <%= idx === 0 ? 'aria-pressed="true"' : '' %>><%= size %></button>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="color">
+          <p>Color</p>
+          <div class="colors">
+            <% if (colors && colors.length) { %>
+              <% colors.forEach(function(color, idx) { %>
+                <button type="button" class="color-btn" style="background-color: <%= color.hex || color %>; border: 1px solid #ccc; width: 32px; height: 32px; border-radius: 50%; margin-right: 8px; opacity: 1;" title="<%= color.name || color %>" data-color="<%= color.name || color %>" <%= idx === 0 ? 'aria-pressed="true"' : '' %>></button>
+              <% }) %>
+            <% } else { %>
+              <span>No color options</span>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="quantity">
+          <p>Quantity</p>
+          <div class="quantity-controls">
+            <button type="button" id="qty-minus">-</button>
+            <input type="text" id="qty-input" value="1" min="1" readonly style="width: 32px; text-align: center;" />
+            <button type="button" id="qty-plus">+</button>
+          </div>
+        </div>
+
+        <button class="add-to-cart" id="addToCartBtn">🛒 Add to Cart</button>
+        <button class="add-to-wishlist">♡ Add to Wishlist</button>
+
+        <div class="features">
+          <p>🚚 Free shipping on orders over Rs. 1000</p>
+          <p>↩️ 30-day return policy</p>
+          <p>🛡️ 1-year warranty</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description (moved below warranty/features, now dynamic from DB) -->
+    <div class="description">
+      <p><%= product.description %></p>
+    </div>
+
+    <!-- Reviews -->
+    <div class="reviews">
+      <h2>Recent Reviews</h2>
+      <div class="review">
+        <p><strong>John Doe</strong> ⭐⭐⭐⭐⭐ - 3 days ago</p>
+        <p>Excellent sound quality! This shoe is so good.</p>
+      </div>
+    </div>
+
+    <!-- Write a Review -->
+    <div class="write-review">
+      <h2>Write a Review</h2>
+      <p><strong>Nike Air Max 270</strong> — Men's Sports Shoes</p>
+      <div class="rating">Rating: ⭐⭐⭐⭐☆ (4/5)</div>
+      <textarea placeholder="Tell us about your experience with this product..."></textarea>
+      <button>Submit Review</button>
+    </div>
+
+    <!-- Related Products -->
+    <div class="related-products">
+      <h2>Related Products</h2>
+      <div class="product-list-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 24px;">
+        <% if (relatedProducts && relatedProducts.length) { %>
+          <% relatedProducts.forEach(function(product) { %>
+            <a href="/products/detail/<%= product._id %>" style="text-decoration:none;color:inherit;">
+              <div class="product-card enhanced-card">
+                <div class="product-image-wrapper">
+                  <% if (product.image) { %>
+                    <img src="<%= product.image %>" alt="<%= product.name %>" class="product-img-enhanced">
+                  <% } else { %>
+                    <img src="https://via.placeholder.com/200x150?text=<%= encodeURIComponent(product.name) %>" alt="<%= product.name %>" class="product-img-enhanced">
+                  <% } %>
+                </div>
+                <div class="product-info-enhanced">
+                  <div class="product-title"><%= product.name %></div>
+                  <div class="product-meta"><%= product.product_type %></div>
+                  <div class="product-price-row" style="align-items:center; gap:6px; flex-wrap:wrap;">
+                    <% if (product.discount_percentage && product.discount_percentage > 0) { %>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= (product.price * (1 - product.discount_percentage / 100)).toLocaleString() %></span>
+                      <span class="product-original-price" style="font-size:0.93rem;">Rs. <%= product.price.toLocaleString() %></span>
+                      <span class="product-discount" style="font-size:0.93rem;">(<%= Math.round(product.discount_percentage) %>% OFF)</span>
+                    <% } else { %>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= product.price.toLocaleString() %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        <% } else { %>
+          <p>No related products found.</p>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-columns">
+      <div>
+        <h4>ToughToes</h4>
+        <p>Premium shoes for every step of your journey.</p>
+      </div>
+      <div>
+        <h5>Quick Links</h5>
+        <p>About Us</p>
+        <p>Contact</p>
+        <p>Size Guide</p>
+        <p>Returns</p>
+      </div>
+      <div>
+        <h5>Categories</h5>
+        <p>Men's Shoes</p>
+        <p>Women's Shoes</p>
+        <p>Kids' Shoes</p>
+        <p>Sale</p>
+      </div>
+      <div>
+        <h5>Follow Us</h5>
+        <i class="fab fa-facebook"></i>
+        <i class="fab fa-instagram"></i>
+        <i class="fab fa-twitter"></i>
+      </div>
+    </div>
+    <p class="copyright">© 2025 ToughToes. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Always define sizeColorMap to avoid ReferenceError
+    const sizeColorMap = JSON.parse('<%- JSON.stringify(typeof sizeColorMap !== "undefined" ? sizeColorMap : {}) %>');
+
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    const colorBtns = document.querySelectorAll('.color-btn');
+
+    function updateColorAvailability(selectedSize) {
+      const availableColors = sizeColorMap[selectedSize] || [];
+      colorBtns.forEach(cb => {
+        const colorVal = cb.dataset.color;
+        if (availableColors.includes(colorVal)) {
+          cb.classList.remove('unavailable');
+          cb.style.opacity = '1';
+          cb.style.cursor = 'pointer';
+        } else {
+          cb.classList.add('unavailable');
+          cb.classList.remove('selected');
+          cb.style.opacity = '0.4';
+          cb.style.cursor = 'not-allowed';
+        }
+      });
+      // Deselect color if not available
+      if(document.querySelector('.color-btn.selected') && document.querySelector('.color-btn.selected').classList.contains('unavailable')) {
+        document.querySelector('.color-btn.selected').classList.remove('selected');
+      }
+    }
+
+    // On page load, set color availability for the initially selected size
+    let initialSelectedSizeBtn = document.querySelector('.size-btn.selected') || document.querySelector('.size-btn[aria-pressed="true"]') || sizeBtns[0];
+    if (initialSelectedSizeBtn) {
+      initialSelectedSizeBtn.classList.add('selected');
+      updateColorAvailability(initialSelectedSizeBtn.dataset.size);
+    }
+
+    // Highlight selected size and update color availability
+    sizeBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        sizeBtns.forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        updateColorAvailability(this.dataset.size);
+      });
+    });
+    // Highlight selected color (only if not unavailable)
+    colorBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (btn.classList.contains('unavailable')) return;
+        colorBtns.forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+    // Quantity controls
+    const qtyInput = document.getElementById('qty-input');
+    document.getElementById('qty-minus').onclick = function() {
+      let val = parseInt(qtyInput.value, 10);
+      if(val > 1) qtyInput.value = val - 1;
+    };
+    document.getElementById('qty-plus').onclick = function() {
+      let val = parseInt(qtyInput.value, 10);
+      qtyInput.value = val + 1;
+    };
+    // Add to Cart button (collects selected options)
+    document.getElementById('addToCartBtn').onclick = function() {
+      const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
+      const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
+      const quantity = qtyInput.value;
+      // You can send these values to your backend via AJAX or a form
+      alert(`Added to cart:\nSize: ${selectedSize}\nColor: ${selectedColor}\nQuantity: ${quantity}`);
+    };
+  </script>
+</body>
+</html>

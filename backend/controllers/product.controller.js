@@ -1,4 +1,3 @@
-
 const userModel = require("../models/userModel");
 const productCategoryModel = require("../models/productCategoryModel");
 const productColorModel = require("../models/productColorModel");
@@ -717,6 +716,67 @@ const postEditProduct = async (req, res) => {
   }
 };
 
+// Show product detail page
+const productDetail = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    // Fetch product by ID
+    const product = await Product.findById(productId).lean();
+    if (!product) return res.status(404).send('Product not found');
+    // Fetch variations (images, sizes, colors)
+    const variations = await ProductVariation.find({ product_id: productId }).lean();
+    // Prepare images array (main + thumbnails)
+    let images = [];
+    variations.forEach(v => {
+      if (v.images && v.images.length) images.push(...v.images);
+    });
+    images = [...new Set(images)];
+    const sizes = [...new Set(variations.map(v => v.product_size))];
+    const colors = [...new Set(variations.map(v => v.product_color))];
+    // Build a sizeColorMap: { size1: [color1, color2], ... }
+    const sizeColorMap = {};
+    if (variations && variations.length) {
+      variations.forEach(variation => {
+        const size = variation.size;
+        const color = variation.color;
+        if (!sizeColorMap[size]) sizeColorMap[size] = [];
+        if (color && !sizeColorMap[size].includes(color)) sizeColorMap[size].push(color);
+      });
+    }
+    // Fetch related products (same category, exclude self)
+    const relatedProducts = await Product.find({
+      product_category: product.product_category,
+      _id: { $ne: product._id },
+      is_active: true
+    }).limit(4).lean();
+    const relatedIds = relatedProducts.map(p => p._id);
+    const relatedVariations = await ProductVariation.aggregate([
+      { $match: { product_id: { $in: relatedIds } } },
+      { $group: { _id: "$product_id", image: { $first: { $arrayElemAt: ["$images", 0] } } } }
+    ]);
+    const relatedImageMap = {};
+    relatedVariations.forEach(v => { relatedImageMap[v._id.toString()] = v.image; });
+    relatedProducts.forEach(p => { p.image = relatedImageMap[p._id.toString()] || null; });
+    // Fetch user name from DB if logged in
+    let name = "Guest";
+    if (req.session && req.session.userId) {
+      const user = await require("../models/userModel").findById(req.session.userId).lean();
+      if (user) name = user.firstName + (user.lastName ? (" " + user.lastName) : "");
+    }
+    res.render('user/productDetail', {
+      product,
+      images,
+      sizes,
+      colors,
+      relatedProducts,
+      name,
+      sizeColorMap,
+    });
+  } catch (err) {
+    res.status(500).send('Error loading product detail');
+  }
+};
+
 module.exports = {
   getProductConfiguration,
   createCategory,
@@ -739,4 +799,5 @@ module.exports = {
   productList,
   getEditProduct,
   postEditProduct,
+  productDetail,
 };
