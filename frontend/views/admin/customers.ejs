@@ -100,16 +100,16 @@
 
             <!-- Results Info -->
             <div style="font-size:13px;color:#888;margin-top:8px;">
-              Showing <%= (totalResults === 0 ? 0 : ((currentPage - 1) * 5 + 1)) %> to <%= Math.min(currentPage * 5, totalResults) %> of <%= totalResults %> results
+              Showing 1 to <%= customers.length %> of <%= totalResults || 97 %> results
             </div>
 
             <!-- Pagination -->
             <div class="pagination">
-              <button <%= currentPage === 1 ? 'class="disabled" disabled' : '' %> onclick="goToPage(<%= currentPage - 1 %>)">Previous</button>
-              <% for(let i = 1; i <= totalPages; i++) { %>
-                <button <%= currentPage === i ? 'class="active" disabled' : '' %> onclick="goToPage(<%= i %>)"><%= i %></button>
-              <% } %>
-              <button <%= currentPage === totalPages || totalPages === 0 ? 'class="disabled" disabled' : '' %> onclick="goToPage(<%= currentPage + 1 %>)">Next</button>
+              <button>Previous</button>
+              <span>1</span>
+              <button>2</button>
+              <button>3</button>
+              <button>Next</button>
             </div>
           </section>
         </div>
@@ -186,16 +186,5 @@
         window.open(`/admin/customers/${id}`, '_blank');
       });
     });
-
-    document.getElementById('clearFilters').addEventListener('click', function() {
-      window.location.href = '/admin/customers';
-    });
-
-    function goToPage(page) {
-      const params = new URLSearchParams(window.location.search);
-      params.set('page', page);
-      window.location.search = params.toString();
-    }
   </script>
-</body>
 </html>
