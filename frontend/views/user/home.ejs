@@ -37,7 +37,13 @@
       </div>
     </div>
     <div class="hero-image">
-      <img src="https://via.placeholder.com/400x250/CCFF00/000000?text=Hero+Shoe" alt="Hero Shoe">
+      <% if (heroImage) { %>
+        <div class="hero-img-fancy">
+          <img src="<%= heroImage %>" alt="Hero Shoe" class="fancy-hero-img">
+        </div>
+      <% } else { %>
+        <img src="https://via.placeholder.com/400x250/CCFF00/000000?text=Hero+Shoe" alt="Hero Shoe">
+      <% } %>
     </div>
   </section>
 
@@ -46,19 +52,19 @@
     <h2>Shop by Category</h2>
     <div class="category-cards">
       <div class="card">
-        <img src="https://via.placeholder.com/300x200?text=Men's+Shoes">
+        <img src="<%= menImage ? menImage : 'https://via.placeholder.com/300x200?text=Men\'s+Shoes' %>" alt="Men's Collection">
         <h3>Men's Collection</h3>
         <p>Sneakers, Formal, Running & Football</p>
         <button class="btn-black">Shop Men's</button>
       </div>
       <div class="card">
-        <img src="https://via.placeholder.com/300x200?text=Women's+Shoes">
+        <img src="<%= womenImage ? womenImage : 'https://via.placeholder.com/300x200?text=Women\'s+Shoes' %>" alt="Women's Collection">
         <h3>Women's Collection</h3>
         <p>Sneakers, Formal, Running & Football</p>
         <button class="btn-black">Shop Women's</button>
       </div>
       <div class="card">
-        <img src="https://via.placeholder.com/300x200?text=Kids+Shoes">
+        <img src="<%= kidsImage ? kidsImage : 'https://via.placeholder.com/300x200?text=Kids+Shoes' %>" alt="Kids' Collection">
         <h3>Kids' Collection</h3>
         <p>Sneakers, School, Running & Football</p>
         <button class="btn-black">Shop Kids'</button>

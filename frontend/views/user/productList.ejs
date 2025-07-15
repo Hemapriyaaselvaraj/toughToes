@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Collection | ToughToes</title>
+  <link rel="stylesheet" href="/css/home.css" />
+  <link rel="stylesheet" href="/css/productList.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <div class="logo">ToughToes</div>
+    <nav class="nav-links">
+      <a href="#">Men</a>
+      <a href="#">Women</a>
+      <a href="#">Kids</a>
+      <a href="#">Sale</a>
+    </nav>
+    <div class="nav-right">
+      <input type="text" placeholder="Search shoes..." class="search-input">
+      <i class="fas fa-search"></i>
+      <i class="fas fa-shopping-cart"></i>
+      <i class="fas fa-user"></i>
+      <span><%= name %></span>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="collection-container">
+    <div class="breadcrumb">Home / All Collection</div>
+    <h1>All Collection</h1>
+    <p>Discover our premium collection of All footwear</p>
+    <div class="collection-main">
+      <!-- Filters Sidebar -->
+      <aside class="filters">
+        <div class="filter-header">
+          <h3>Filters</h3>
+          <button class="clear-btn">Clear All</button>
+        </div>
+        <div class="filter-group">
+          <p>Category</p>
+          <% categories.forEach(category => { %>
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+              <input type="radio" name="category" value="<%= category.category %>" <%= selectedCategory === category.category ? 'checked' : '' %> onclick="window.location='?category=' + encodeURIComponent('<%= category.category %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
+              <span><%= category.category %></span>
+            </label>
+          <% }) %>
+        </div>
+        <div class="filter-group">
+          <p>Shoe Type</p>
+          <% types.forEach(type => { %>
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+              <input type="radio" name="type" value="<%= type.type %>" <%= selectedType === type.type ? 'checked' : '' %> onclick="window.location=updateQueryParam('type', '<%= type.type %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
+              <span><%= type.type %></span>
+            </label>
+          <% }) %>
+        </div>
+        <div class="filter-group">
+          <p>Size</p>
+          <% sizes.forEach(size => { %>
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+              <input type="radio" name="size" value="<%= size.size %>" <%= selectedSize === size.size ? 'checked' : '' %> onclick="window.location=updateQueryParam('size', '<%= size.size %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
+              <span><%= size.size %></span>
+            </label>
+          <% }) %>
+        </div>
+        <div class="filter-group">
+          <p>Color</p>
+          <% colors.forEach(color => { %>
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+              <input type="radio" name="color" value="<%= color.color %>" <%= selectedColor === color.color ? 'checked' : '' %> onclick="window.location=updateQueryParam('color', '<%= color.color %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
+              <span><%= color.color %></span>
+            </label>
+          <% }) %>
+        </div>
+        <div class="filter-group">
+          <p>Price Range</p>
+          <% priceRanges.forEach(range => { %>
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+              <input type="radio" name="price" value="<%= range.min %>-<%= range.max %>" <%= selectedPrice === (range.min + '-' + range.max) ? 'checked' : '' %> onclick="window.location=updateQueryParam('price', '<%= range.min %>-<%= range.max %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
+              <span><%= range.label %></span>
+            </label>
+          <% }) %>
+        </div>
+        <script>
+          function updateQueryParam(key, value) {
+            const params = new URLSearchParams(window.location.search);
+            params.set(key, value);
+            params.set('page', 1); // Reset to first page on filter change
+            return '?' + params.toString();
+          }
+        </script>
+      </aside>
+      <!-- Product Grid -->
+      <section class="products-section">
+        <div class="products-header">
+          <p>Showing <%= (totalResults === 0 ? 0 : ((currentPage - 1) * pageSize + 1)) %> to <%= Math.min(currentPage * pageSize, totalResults) %> of <%= totalResults %> products</p>
+          <select>
+            <option>Featured</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+            <option>Newest</option>
+          </select>
+        </div>
+        <div class="product-list-container">
+          <% if (products && products.length) { %>
+            <% products.forEach(product => { %>
+              <div class="product-card">
+                <% if (product.image) { %>
+                  <img src="<%= product.image %>" alt="<%= product.name %>">
+                <% } else { %>
+                  <img src="https://via.placeholder.com/200x150?text=<%= encodeURIComponent(product.name) %>" alt="<%= product.name %>">
+                <% } %>
+                <h4><%= product.name %></h4>
+                <p><%= product.product_type %></p>
+                <strong>$<%= product.price.toFixed(2) %></strong>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div>No products available.</div>
+          <% } %>
+        </div>
+        <!-- Pagination -->
+        <div class="pagination">
+          <button class="page-btn" <%= currentPage === 1 ? 'disabled' : '' %> onclick="goToPage(<%= currentPage - 1 %>)">Previous</button>
+          <% for(let i = 1; i <= totalPages; i++) { %>
+            <button class="page-btn <%= currentPage === i ? 'active' : '' %>" <%= currentPage === i ? 'disabled' : '' %> onclick="goToPage(<%= i %>)"><%= i %></button>
+          <% } %>
+          <button class="page-btn" <%= currentPage === totalPages || totalPages === 0 ? 'disabled' : '' %> onclick="goToPage(<%= currentPage + 1 %>)">Next</button>
+        </div>
+        <script>
+          function goToPage(page) {
+            const params = new URLSearchParams(window.location.search);
+            params.set('page', page);
+            window.location.search = params.toString();
+          }
+        </script>
+      </section>
+    </div>
+  </div>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-column">
+      <h3>ToughToes</h3>
+      <p>Premium shoes for every step of your journey.</p>
+    </div>
+    <div class="footer-column">
+      <h4>Quick Links</h4>
+      <ul>
+        <li>About Us</li>
+        <li>Contact</li>
+        <li>Size Guide</li>
+        <li>Returns</li>
+      </ul>
+    </div>
+    <div class="footer-column">
+      <h4>Categories</h4>
+      <ul>
+        <li>Men's Shoes</li>
+        <li>Women's Shoes</li>
+        <li>Kids' Shoes</li>
+        <li>Sale</li>
+      </ul>
+    </div>
+    <div class="footer-column">
+      <h4>Follow Us</h4>
+      <p><i class="fab fa-facebook"></i> <i class="fab fa-instagram"></i> <i class="fab fa-twitter"></i></p>
+    </div>
+  </footer>
+  <div class="footer-bottom">
+    <p>© 2025 ToughToes. All rights reserved.</p>
+  </div>
+</body>
+</html>

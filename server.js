@@ -3,7 +3,7 @@ const path = require('path');
 const userRoutes = require('./backend/routes/user')
 const adminRoutes = require('./backend/routes/admin')
 const homeRoutes = require('./backend/routes/home')
-const productRoutes = require('./backend/routes/product')
+const productRoutes = require('./backend/routes/product');
 
 const connectDB = require('./backend/config/db');
 const session = require('express-session');
@@ -34,8 +34,8 @@ app.set('view engine', 'ejs');
 
 app.use('/user',userRoutes)
 app.use('/admin',adminRoutes)
+app.use('/products', productRoutes);
 app.use('/', homeRoutes)
-app.use('/products', productRoutes)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

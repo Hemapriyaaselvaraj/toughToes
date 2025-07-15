@@ -481,6 +481,95 @@ const toggleActive = async (req, res) => {
   }
 };
 
+const productList = async (req, res) => {
+  let name = "Guest";
+  if (req.session && req.session.userId) {
+    const user = await userModel.findById(req.session.userId);
+    if (user) name = user.firstName + ' ' + user.lastName;
+  }
+  // Get selected filters from query
+  const selectedCategory = req.query.category || null;
+  const selectedType = req.query.type || null;
+  const selectedSize = req.query.size || null;
+  const selectedColor = req.query.color || null;
+  const selectedPrice = req.query.price || null;
+  // Pagination
+  const pageSize = 9;
+  const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
+  let productFilter = { is_active: true };
+  // Only filter by type, size, color if all three are selected and not null
+  if (selectedType && selectedSize && selectedColor) {
+    productFilter.product_type = selectedType;
+    productFilter.product_size = selectedSize;
+    productFilter.product_color = selectedColor;
+  } else {
+    // If none of type/size/color are selected, allow all
+    if (!selectedType && !selectedSize && !selectedColor) {
+      // Do nothing, allow all
+    } else {
+      // If only some are selected, ignore type/size/color filters
+      // Do not set _id=null, just skip filtering by these fields
+    }
+  }
+  if (selectedCategory) productFilter.product_category = selectedCategory;
+  if (selectedPrice) {
+    const [min, max] = selectedPrice.split('-');
+    if (min) productFilter.price = { ...productFilter.price, $gte: Number(min) };
+    if (max) productFilter.price = { ...productFilter.price, $lte: Number(max) };
+  }
+  // Remove undefined/null filters to avoid querying for deleted products
+  Object.keys(productFilter).forEach(key => {
+    if (productFilter[key] === null || productFilter[key] === undefined || productFilter[key] === "") {
+      delete productFilter[key];
+    }
+  });
+  const totalResults = await Product.countDocuments(productFilter);
+  const products = await Product.find(productFilter)
+    .skip((currentPage - 1) * pageSize)
+    .limit(pageSize)
+    .lean();
+  // Fetch one image for each product from its variations
+  const productIds = products.map(p => p._id);
+  const variations = await ProductVariation.aggregate([
+    { $match: { product_id: { $in: productIds } } },
+    { $group: { _id: "$product_id", image: { $first: { $arrayElemAt: ["$images", 0] } } } }
+  ]);
+  const imageMap = {};
+  variations.forEach(v => { imageMap[v._id.toString()] = v.image; });
+  products.forEach(p => { p.image = imageMap[p._id.toString()] || null; });
+  // Fetch filter data from DB
+  const categories = await productCategoryModel.find({}).lean();
+  const types = await productTypeModel.find({}).lean();
+  const sizes = await productSizeModel.find({}).lean();
+  const colors = await productColorModel.find({}).lean();
+  // Price ranges (static for now)
+  const priceRanges = [
+    { label: '$0 - $50', min: 0, max: 50 },
+    { label: '$50 - $100', min: 50, max: 100 },
+    { label: '$100 - $150', min: 100, max: 150 },
+    { label: '$150+', min: 150, max: null }
+  ];
+  const totalPages = Math.ceil(totalResults / pageSize);
+  res.render('user/productList', {
+    products,
+    name,
+    categories,
+    types,
+    sizes,
+    colors,
+    priceRanges,
+    selectedCategory,
+    selectedType,
+    selectedSize,
+    selectedColor,
+    selectedPrice,
+    currentPage,
+    totalPages,
+    totalResults,
+    pageSize
+  });
+};
+
 module.exports = {
   getProductConfiguration,
   createCategory,
@@ -500,4 +589,5 @@ module.exports = {
   getProducts,
   getProducts,
   toggleActive,
+  productList,
 };

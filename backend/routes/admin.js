@@ -9,8 +9,5 @@ router.get('/customers', customerController.getCustomers);
 router.post('/customers/:id/block-unblock', customerController.blockUnblockCustomer);
 router.get('/customers/:id', customerController.getCustomerDetails);
 
-
-
-
 module.exports = router;
 
