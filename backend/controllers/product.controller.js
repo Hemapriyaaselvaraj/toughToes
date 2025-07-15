@@ -490,45 +490,95 @@ const productList = async (req, res) => {
   }
   // Get selected filters from query
   const selectedCategory = req.query.category || null;
-  const selectedType = req.query.type || null;
-  const selectedSize = req.query.size || null;
-  const selectedColor = req.query.color || null;
-  const selectedPrice = req.query.price || null;
+  const typeArr = req.query.type ? (Array.isArray(req.query.type) ? req.query.type : [req.query.type]) : (req.query['type[]'] ? (Array.isArray(req.query['type[]']) ? req.query['type[]'] : [req.query['type[]']]) : []);
+  const sizeArr = req.query.size ? (Array.isArray(req.query.size) ? req.query.size : [req.query.size]) : (req.query['size[]'] ? (Array.isArray(req.query['size[]']) ? req.query['size[]'] : [req.query['size[]']]) : []);
+  const colorArr = req.query.color ? (Array.isArray(req.query.color) ? req.query.color : [req.query.color]) : (req.query['color[]'] ? (Array.isArray(req.query['color[]']) ? req.query['color[]'] : [req.query['color[]']]) : []);
+  const priceArr = req.query.price ? (Array.isArray(req.query.price) ? req.query.price : [req.query.price]) : (req.query['price[]'] ? (Array.isArray(req.query['price[]']) ? req.query['price[]'] : [req.query['price[]']]) : []);
+  // Always reset to empty array if nothing is selected
+  const selectedType = typeArr.length ? typeArr : [];
+  const selectedSize = sizeArr.length ? sizeArr : [];
+  const selectedColor = colorArr.length ? colorArr : [];
+  const selectedPrice = priceArr.length ? priceArr : [];
+
   // Pagination
-  const pageSize = 9;
+  const pageSize = 20; // changed from 9 to 20
   const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
-  let productFilter = { is_active: true };
-  // Only filter by type, size, color if all three are selected and not null
-  if (selectedType && selectedSize && selectedColor) {
-    productFilter.product_type = selectedType;
-    productFilter.product_size = selectedSize;
-    productFilter.product_color = selectedColor;
-  } else {
-    // If none of type/size/color are selected, allow all
-    if (!selectedType && !selectedSize && !selectedColor) {
-      // Do nothing, allow all
-    } else {
-      // If only some are selected, ignore type/size/color filters
-      // Do not set _id=null, just skip filtering by these fields
+
+  // Build filter
+  let andFilters = [{ is_active: true }];
+  if (selectedCategory) andFilters.push({ product_category: selectedCategory });
+  if (selectedType.length) andFilters.push({ product_type: { $in: selectedType } });
+
+  // Variation-based filtering
+  let variationProductIds = null;
+
+  if (selectedSize.length || selectedColor.length) {
+    let variationFilter = {};
+    if (selectedSize.length) variationFilter.product_size = { $in: selectedSize };
+    if (selectedColor.length) variationFilter.product_color = { $in: selectedColor };
+    const matchingVariations = await ProductVariation.find(variationFilter, 'product_id').lean();
+    variationProductIds = [...new Set(matchingVariations.map(v => v.product_id.toString()))];
+    if (variationProductIds.length === 0) {
+      // No products match, so return empty result
+      return res.render('user/productList', {
+        products: [],
+        name,
+        categories,
+        types,
+        sizes,
+        colors,
+        priceRanges,
+        selectedCategory,
+        selectedType,
+        selectedSize,
+        selectedColor,
+        selectedPrice,
+        currentPage,
+        totalPages: 0,
+        totalResults: 0,
+        pageSize
+      });
+    }
+    andFilters.push({ _id: { $in: variationProductIds } });
+  }
+  // Price: support multiple ranges
+  if (selectedPrice.length) {
+    let priceFilters = [];
+    selectedPrice.forEach(range => {
+      const [min, max] = range.split('-');
+      let pf = {};
+      if (min) pf.$gte = Number(min);
+      if (max && max !== 'null') pf.$lte = Number(max);
+      priceFilters.push(pf);
+    });
+    if (priceFilters.length === 1) {
+      andFilters.push({ price: priceFilters[0] });
+    } else if (priceFilters.length > 1) {
+      andFilters.push({ $or: priceFilters.map(pf => ({ price: pf })) });
     }
   }
-  if (selectedCategory) productFilter.product_category = selectedCategory;
-  if (selectedPrice) {
-    const [min, max] = selectedPrice.split('-');
-    if (min) productFilter.price = { ...productFilter.price, $gte: Number(min) };
-    if (max) productFilter.price = { ...productFilter.price, $lte: Number(max) };
-  }
-  // Remove undefined/null filters to avoid querying for deleted products
-  Object.keys(productFilter).forEach(key => {
-    if (productFilter[key] === null || productFilter[key] === undefined || productFilter[key] === "") {
-      delete productFilter[key];
-    }
-  });
-  const totalResults = await Product.countDocuments(productFilter);
-  const products = await Product.find(productFilter)
-    .skip((currentPage - 1) * pageSize)
-    .limit(pageSize)
+  // Remove empty filters
+  andFilters = andFilters.filter(f => Object.keys(f).length > 0);
+  let productFilter = andFilters.length > 1 ? { $and: andFilters } : andFilters[0];
+
+  // --- SORTING LOGIC ---
+  let sortOrder = req.query.sort || 'asc';
+  // Calculate after-discount price for sorting
+  let products = await Product.find(productFilter)
     .lean();
+  products.forEach(p => {
+    p.afterDiscountPrice = p.price * (1 - (p.discount_percentage || 0) / 100);
+  });
+  // Sort by after-discount price
+  if (sortOrder === 'asc') {
+    products.sort((a, b) => a.afterDiscountPrice - b.afterDiscountPrice);
+  } else if (sortOrder === 'desc') {
+    products.sort((a, b) => b.afterDiscountPrice - a.afterDiscountPrice);
+  }
+  // Pagination after sorting
+  const totalResults = products.length;
+  const totalPages = Math.ceil(totalResults / pageSize);
+  products = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   // Fetch one image for each product from its variations
   const productIds = products.map(p => p._id);
   const variations = await ProductVariation.aggregate([
@@ -545,12 +595,12 @@ const productList = async (req, res) => {
   const colors = await productColorModel.find({}).lean();
   // Price ranges (static for now)
   const priceRanges = [
-    { label: '$0 - $50', min: 0, max: 50 },
-    { label: '$50 - $100', min: 50, max: 100 },
-    { label: '$100 - $150', min: 100, max: 150 },
-    { label: '$150+', min: 150, max: null }
+    { label: '$0 - $500', min: 0, max: 50 },
+    { label: '$500 - $1000', min: 500, max: 1000 },
+    { label: '$1000 - $2000', min: 1000, max: 2000 },
+    { label: '$2000 - $5000', min: 2000, max: 5000 },
+    { label: '$5000 - $10000', min: 5000, max: 10000 }
   ];
-  const totalPages = Math.ceil(totalResults / pageSize);
   res.render('user/productList', {
     products,
     name,
@@ -567,7 +617,9 @@ const productList = async (req, res) => {
     currentPage,
     totalPages,
     totalResults,
-    pageSize
+    pageSize,
+    sort: sortOrder, // Pass sort to EJS
+    query: req.query // Pass query for filter persistence
   });
 };
 

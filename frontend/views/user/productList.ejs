@@ -38,94 +38,115 @@
     <div class="collection-main">
       <!-- Filters Sidebar -->
       <aside class="filters">
-        <div class="filter-header">
-          <h3>Filters</h3>
-          <button class="clear-btn">Clear All</button>
-        </div>
-        <div class="filter-group">
-          <p>Category</p>
-          <% categories.forEach(category => { %>
-            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
-              <input type="radio" name="category" value="<%= category.category %>" <%= selectedCategory === category.category ? 'checked' : '' %> onclick="window.location='?category=' + encodeURIComponent('<%= category.category %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
-              <span><%= category.category %></span>
-            </label>
-          <% }) %>
-        </div>
-        <div class="filter-group">
-          <p>Shoe Type</p>
-          <% types.forEach(type => { %>
-            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
-              <input type="radio" name="type" value="<%= type.type %>" <%= selectedType === type.type ? 'checked' : '' %> onclick="window.location=updateQueryParam('type', '<%= type.type %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
-              <span><%= type.type %></span>
-            </label>
-          <% }) %>
-        </div>
-        <div class="filter-group">
-          <p>Size</p>
-          <% sizes.forEach(size => { %>
-            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
-              <input type="radio" name="size" value="<%= size.size %>" <%= selectedSize === size.size ? 'checked' : '' %> onclick="window.location=updateQueryParam('size', '<%= size.size %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
-              <span><%= size.size %></span>
-            </label>
-          <% }) %>
-        </div>
-        <div class="filter-group">
-          <p>Color</p>
-          <% colors.forEach(color => { %>
-            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
-              <input type="radio" name="color" value="<%= color.color %>" <%= selectedColor === color.color ? 'checked' : '' %> onclick="window.location=updateQueryParam('color', '<%= color.color %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
-              <span><%= color.color %></span>
-            </label>
-          <% }) %>
-        </div>
-        <div class="filter-group">
-          <p>Price Range</p>
-          <% priceRanges.forEach(range => { %>
-            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
-              <input type="radio" name="price" value="<%= range.min %>-<%= range.max %>" <%= selectedPrice === (range.min + '-' + range.max) ? 'checked' : '' %> onclick="window.location=updateQueryParam('price', '<%= range.min %>-<%= range.max %>')" style="width: 20px; height: 20px; border-radius: 50%; accent-color: #2d7cf7;" />
-              <span><%= range.label %></span>
-            </label>
-          <% }) %>
-        </div>
+        <form id="filterForm" method="get" action="" autocomplete="off">
+          <div class="filter-header">
+            <h3>Filters</h3>
+            <button type="button" class="clear-btn" onclick="clearAllFilters()">Clear All</button>
+          </div>
+          <div class="filter-group">
+            <p>Category</p>
+            <% categories.forEach(category => { %>
+              <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                <input type="radio" name="category" value="<%= category.category %>" <%= selectedCategory === category.category ? 'checked' : '' %> />
+                <span><%= category.category %></span>
+              </label>
+            <% }) %>
+          </div>
+          <div class="filter-group">
+            <p>Shoe Type</p>
+            <% types.forEach(type => { %>
+              <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                <input type="checkbox" name="type" value="<%= type.type %>" <%= selectedType && selectedType.includes(type.type) ? 'checked' : '' %> />
+                <span><%= type.type %></span>
+              </label>
+            <% }) %>
+          </div>
+          <div class="filter-group">
+            <p>Size</p>
+            <% sizes.forEach(size => { %>
+              <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                <input type="checkbox" name="size" value="<%= String(size.size) %>" <%= selectedSize && selectedSize.includes(String(size.size)) ? 'checked' : '' %> />
+                <span><%= size.size %></span>
+              </label>
+            <% }) %>
+          </div>
+          <div class="filter-group">
+            <p>Color</p>
+            <% colors.forEach(color => { %>
+              <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                <input type="checkbox" name="color" value="<%= color.color %>" <%= selectedColor && selectedColor.includes(color.color) ? 'checked' : '' %> />
+                <span><%= color.color %></span>
+              </label>
+            <% }) %>
+          </div>
+          <div class="filter-group">
+            <p>Price Range</p>
+            <% priceRanges.forEach(range => { %>
+              <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                <input type="checkbox" name="price" value="<%= range.min %>-<%= range.max %>" <%= selectedPrice && selectedPrice.includes(String(range.min) + '-' + String(range.max)) ? 'checked' : '' %> />
+                <span><%= range.label %></span>
+              </label>
+            <% }) %>
+          </div>
+          <button type="submit" class="apply-btn" style="margin-top: 16px; width: 100%; background: #2d7cf7; color: #fff; border: none; padding: 10px 0; border-radius: 6px; font-weight: 600; cursor: pointer;">Apply</button>
+        </form>
         <script>
-          function updateQueryParam(key, value) {
-            const params = new URLSearchParams(window.location.search);
-            params.set(key, value);
-            params.set('page', 1); // Reset to first page on filter change
-            return '?' + params.toString();
+          function clearAllFilters() {
+            window.location = window.location.pathname;
           }
         </script>
       </aside>
       <!-- Product Grid -->
       <section class="products-section">
+        <!-- --- Product List Pagination & Grid --- -->
         <div class="products-header">
-          <p>Showing <%= (totalResults === 0 ? 0 : ((currentPage - 1) * pageSize + 1)) %> to <%= Math.min(currentPage * pageSize, totalResults) %> of <%= totalResults %> products</p>
-          <select>
-            <option>Featured</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-            <option>Newest</option>
-          </select>
+          <p>Showing <%= (totalResults === 0 ? 0 : ((currentPage - 1) * 20 + 1)) %> to <%= Math.min(currentPage * 20, totalResults) %> of <%= totalResults %> products</p>
+          <form id="sortForm" method="get" style="margin:0;">
+            <select name="sort" onchange="this.form.submit()">
+              <option value="asc" <%= sort === 'asc' ? 'selected' : '' %>>Price: Low to High</option>
+              <option value="desc" <%= sort === 'desc' ? 'selected' : '' %>>Price: High to Low</option>
+            </select>
+            <% /* preserve other filters in query params */ %>
+            <% Object.keys(query || {}).forEach(function(key) { if(key !== 'sort' && key !== 'page') { %>
+              <% if(Array.isArray(query[key])) { query[key].forEach(function(val){ %>
+                <input type="hidden" name="<%= key %>[]" value="<%= val %>">
+              <% }) } else { %>
+                <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
+              <% } %>
+            <% } }) %>
+          </form>
         </div>
-        <div class="product-list-container">
+        <div class="product-list-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 24px;">
           <% if (products && products.length) { %>
             <% products.forEach(product => { %>
-              <div class="product-card">
-                <% if (product.image) { %>
-                  <img src="<%= product.image %>" alt="<%= product.name %>">
-                <% } else { %>
-                  <img src="https://via.placeholder.com/200x150?text=<%= encodeURIComponent(product.name) %>" alt="<%= product.name %>">
-                <% } %>
-                <h4><%= product.name %></h4>
-                <p><%= product.product_type %></p>
-                <strong>$<%= product.price.toFixed(2) %></strong>
+              <div class="product-card enhanced-card">
+                <div class="product-image-wrapper">
+                  <% if (product.image) { %>
+                    <img src="<%= product.image %>" alt="<%= product.name %>" class="product-img-enhanced">
+                  <% } else { %>
+                    <img src="https://via.placeholder.com/200x150?text=<%= encodeURIComponent(product.name) %>" alt="<%= product.name %>" class="product-img-enhanced">
+                  <% } %>
+                </div>
+                <div class="product-info-enhanced">
+                  <div class="product-title"><%= product.name %></div>
+                  <div class="product-meta"><%= product.product_type %></div>
+                  <div class="product-price-row" style="align-items:center; gap:6px; flex-wrap:wrap;">
+                    <% if (product.discount_percentage && product.discount_percentage > 0) { %>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= (product.price * (1 - product.discount_percentage / 100)).toLocaleString() %></span>
+                      <span class="product-original-price" style="font-size:0.93rem;">Rs. <%= product.price.toLocaleString() %></span>
+                      <span class="product-discount" style="font-size:0.93rem;">(<%= Math.round(product.discount_percentage) %>% OFF)</span>
+                    <% } else { %>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= product.price.toLocaleString() %></span>
+                    <% } %>
+                  </div>
+                </div>
               </div>
             <% }) %>
           <% } else { %>
             <div>No products available.</div>
           <% } %>
         </div>
-        <!-- Pagination -->
+        <!-- --- Pagination --- -->
         <div class="pagination">
           <button class="page-btn" <%= currentPage === 1 ? 'disabled' : '' %> onclick="goToPage(<%= currentPage - 1 %>)">Previous</button>
           <% for(let i = 1; i <= totalPages; i++) { %>
