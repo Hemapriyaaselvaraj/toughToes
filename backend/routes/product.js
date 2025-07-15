@@ -9,6 +9,7 @@ router.get('/configuration', productController.getProductConfiguration)
 router.get('/add-product', productController.getAddProduct)
 router.post('/add', upload.any(), productController.createProduct);
 router.get('/', productController.getProducts);
+router.post('/:id/toggle-active', productController.toggleActive);
 
 
 

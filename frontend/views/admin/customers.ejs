@@ -48,6 +48,7 @@
                   <option value="nameAsc" <%= currentSort === 'nameAsc' ? 'selected' : '' %>>A to Z (Ascending)</option>
                   <option value="nameDesc" <%= currentSort === 'nameDesc' ? 'selected' : '' %>>Z to A (Descending)</option>
                 </select>
+                <button type="button" class="btn btn-outline-secondary ms-2" id="clearFilters">Clear All Filters</button>
               </div>
             
               <div style="flex:1; text-align:right;">
@@ -184,6 +185,10 @@
         const id = row.getAttribute('data-id') || button.dataset.id;
         window.open(`/admin/customers/${id}`, '_blank');
       });
+    });
+
+    document.getElementById('clearFilters').addEventListener('click', function() {
+      window.location.href = '/admin/customers';
     });
 
     function goToPage(page) {

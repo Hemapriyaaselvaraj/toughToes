@@ -409,13 +409,58 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-
     const user = await userModel.findOne({ _id: req.session.userId });
-    const products = await Product.find({});
+    const categories = await productCategoryModel.find({});
+    const types = await productTypeModel.find({});
+
+    // Filters
+    const {
+      category = 'all',
+      type = 'all',
+      sort = 'nameAsc',
+      search = '',
+      page = 1
+    } = req.query;
+
+    const pageSize = 5;
+    const currentPage = parseInt(page) || 1;
+    const filter = {};
+
+    if (category !== 'all') filter.product_category = category;
+    if (type !== 'all') filter.product_type = type;
+    if (search) filter.name = { $regex: search, $options: 'i' };
+
+    let sortObj = {};
+    if (sort === 'nameAsc') sortObj = { name: 1 };
+    else if (sort === 'nameDesc') sortObj = { name: -1 };
+
+    const totalResults = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
+      .sort(sortObj)
+      .skip((currentPage - 1) * pageSize)
+      .limit(pageSize)
+      .lean();
+
+    for (let product of products) {
+      product.stock = product.stock || 0;
+    }
+
+    const totalPages = Math.ceil(totalResults / pageSize);
 
     res.render("admin/products", {
       name: user.firstName || "Admin",
-      products
+      products,
+      categories,
+      types,
+      currentCategory: category,
+      currentType: type,
+      currentSort: sort,
+      currentSearch: search,
+      currentPage,
+      totalPages,
+      totalResults,
+      pageSize
     });
 
   } catch (error) {
@@ -423,6 +468,18 @@ const getProducts = async (req, res) => {
   }
 };
 
+const toggleActive = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+    product.is_active = !product.is_active;
+    await product.save();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || "Failed to update status" });
+  }
+};
 
 module.exports = {
   getProductConfiguration,
@@ -440,5 +497,7 @@ module.exports = {
   deleteSize,
   getAddProduct,
   createProduct,
-  getProducts
+  getProducts,
+  getProducts,
+  toggleActive,
 };

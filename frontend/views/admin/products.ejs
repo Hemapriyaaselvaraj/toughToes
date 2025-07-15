@@ -5,15 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin - Products</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="/css/adminDashboard.css"/>
+  <link rel="stylesheet" href="/css/adminProducts.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
-
 <body>
 <div class="container-fluid">
   <div class="row">
     <%- include('../partials/sidebar') %>
-
     <div class="col-md-10 p-0">
       <div class="bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
         <h5 class="mb-0">Products</h5>
@@ -22,13 +20,37 @@
           <i class="fa-solid fa-user"></i>
         </div>
       </div>
-
       <div class="p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <input type="text" id="searchInput" class="form-control w-50" placeholder="Search products...">
-          <a href="/products/add-product" class="btn btn-dark"><i class="fa fa-plus"></i> Add Product</a>
+        <!-- Filter and Search -->
+        <div class="search-container mb-3 d-flex justify-content-between align-items-center">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label for="category">Category:</label>
+            <select id="category">
+              <option value="all" <%= currentCategory === 'all' ? 'selected' : '' %>>All</option>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat.category %>" <%= currentCategory === cat.category ? 'selected' : '' %>><%= cat.category %></option>
+              <% }) %>
+            </select>
+            <label for="type">Type:</label>
+            <select id="type">
+              <option value="all" <%= currentType === 'all' ? 'selected' : '' %>>All</option>
+              <% types.forEach(t => { %>
+                <option value="<%= t.type %>" <%= currentType === t.type ? 'selected' : '' %>><%= t.type %></option>
+              <% }) %>
+            </select>
+            <label for="sort">Sort by:</label>
+            <select id="sort">
+              <option value="nameAsc" <%= currentSort === 'nameAsc' ? 'selected' : '' %>>A to Z (Ascending)</option>
+              <option value="nameDesc" <%= currentSort === 'nameDesc' ? 'selected' : '' %>>Z to A (Descending)</option>
+            </select>
+            <button type="button" class="btn btn-outline-secondary ms-2" id="clearFilters">Clear All Filters</button>
+          </div>
+          <div style="flex:1; text-align:right;">
+            <input type="text" id="searchInput" placeholder="Search products..." style="width: 250px;" value="<%= currentSearch || '' %>">
+            <a href="/products/add-product" class="btn btn-dark ms-2"><i class="fa fa-plus"></i> Add Product</a>
+          </div>
         </div>
-
+        <!-- Products Table -->
         <table class="table table-hover">
           <thead>
             <tr>
@@ -37,14 +59,16 @@
               <th>Product SKU</th>
               <th>Price</th>
               <th>Category</th>
+              <th>Type</th>
               <th>Stock</th>
               <th>Added On</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <% products.forEach(product => { %>
-              <tr>
+              <tr data-id="<%= product._id %>">
                 <td><input type="checkbox" /></td>
                 <td>
                   <div><strong><%= product.name %></strong></div>
@@ -53,23 +77,99 @@
                 <td>#<%= product.product_sku %></td>
                 <td>$<%= product.price.toFixed(2) %></td>
                 <td><span class="badge bg-secondary"><%= product.product_category %></span></td>
+                <td><span class="badge bg-info"><%= product.product_type %></span></td>
                 <td><%= product.stock %></td>
                 <td><%= product.created_at.toDateString() %></td>
                 <td>
-                  <i class="fa fa-edit text-primary mx-1 cursor-pointer"></i>
-                  <i class="fa fa-trash text-danger mx-1 cursor-pointer"></i>
+                  <span class="status <%= product.is_active ? 'active' : 'inactive' %>">
+                    <%= product.is_active ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td>
+                  <button class="edit btn btn-sm btn-link p-0" title="Edit"><i class="fa fa-edit text-primary"></i></button>
+                  <% if (product.is_active) { %>
+                    <button class="toggle-active btn btn-sm btn-link p-0" title="Make Inactive"><i class="fa fa-lock text-warning"></i></button>
+                  <% } else { %>
+                    <button class="toggle-active btn btn-sm btn-link p-0" title="Make Active"><i class="fa fa-unlock text-success"></i></button>
+                  <% } %>
                 </td>
               </tr>
             <% }) %>
           </tbody>
         </table>
-
-        <div>
-          <small>Showing <%= products.length %> products</small>
+        <!-- Results Info -->
+        <div style="font-size:13px;color:#888;margin-top:8px;">
+          Showing <%= (totalResults === 0 ? 0 : ((currentPage - 1) * pageSize + 1)) %> to <%= Math.min(currentPage * pageSize, totalResults) %> of <%= totalResults %> results
+        </div>
+        <!-- Pagination -->
+        <div class="pagination">
+          <button <%= currentPage === 1 ? 'class="disabled" disabled' : '' %> onclick="goToPage(<%= currentPage - 1 %>)">Previous</button>
+          <% for(let i = 1; i <= totalPages; i++) { %>
+            <button <%= currentPage === i ? 'class="active" disabled' : '' %> onclick="goToPage(<%= i %>)"><%= i %></button>
+          <% } %>
+          <button <%= currentPage === totalPages || totalPages === 0 ? 'class="disabled" disabled' : '' %> onclick="goToPage(<%= currentPage + 1 %>)">Next</button>
         </div>
       </div>
     </div>
   </div>
 </div>
+<script>
+  // Filtering, searching, sorting
+  document.getElementById('category').addEventListener('change', updateQuery);
+  document.getElementById('type').addEventListener('change', updateQuery);
+  document.getElementById('sort').addEventListener('change', updateQuery);
+  document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') updateQuery();
+  });
+  document.getElementById('clearFilters').addEventListener('click', function() {
+    window.location.href = '/products';
+  });
+  function updateQuery() {
+    const category = document.getElementById('category').value;
+    const type = document.getElementById('type').value;
+    const sort = document.getElementById('sort').value;
+    const search = document.getElementById('searchInput').value;
+    const params = new URLSearchParams();
+    if (category !== 'all') params.append('category', category);
+    if (type !== 'all') params.append('type', type);
+    if (sort) params.append('sort', sort);
+    if (search) params.append('search', search);
+    window.location.search = params.toString();
+  }
+  // Pagination
+  function goToPage(page) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', page);
+    window.location.search = params.toString();
+  }
+  // Edit button
+  document.querySelectorAll('.edit').forEach(button => {
+    button.addEventListener('click', function() {
+      const row = button.closest('tr');
+      const id = row.getAttribute('data-id');
+      window.location.href = `/products/edit/${id}`;
+    });
+  });
+  // Toggle active/inactive
+  document.querySelectorAll('.toggle-active').forEach(button => {
+    button.addEventListener('click', function() {
+      const row = button.closest('tr');
+      const id = row.getAttribute('data-id');
+      const isActive = row.querySelector('.status').classList.contains('active');
+      const action = isActive ? 'inactivate' : 'activate';
+      if (confirm(`Are you sure you want to ${action} this product?`)) {
+        fetch(`/products/${id}/toggle-active`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) window.location.reload();
+          else alert('Failed to update status');
+        });
+      }
+    });
+  });
+</script>
 </body>
 </html>

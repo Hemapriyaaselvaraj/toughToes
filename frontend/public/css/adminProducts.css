@@ -1,0 +1,116 @@
+/* adminProducts.css - Styles for Products Page (similar to customers page) */
+
+.table-hover {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 0;
+}
+.table-hover thead tr {
+  background: #f8fafc;
+  color: #222;
+  font-size: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.table-hover th, .table-hover td {
+  vertical-align: middle;
+  padding: 12px 16px;
+  border: none;
+}
+.table-hover tbody tr {
+  transition: background 0.2s;
+}
+.table-hover tbody tr:hover {
+  background: #f1f5f9;
+}
+.table-hover td .badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+.table-hover td .status.active {
+  color: #22c55e;
+  font-weight: 600;
+}
+.table-hover td .status.inactive {
+  color: #f59e42;
+  font-weight: 600;
+}
+.table-hover td .fa-edit {
+  font-size: 16px;
+  cursor: pointer;
+}
+.table-hover td .fa-lock, 
+.table-hover td .fa-unlock {
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+.table-hover td .fa-lock {
+  color: #f59e42;
+}
+.table-hover td .fa-unlock {
+  color: #22c55e;
+}
+
+.search-container {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.search-container label {
+  font-size: 14px;
+  color: #555;
+  margin-right: 4px;
+}
+.search-container select,
+.search-container input[type="text"] {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  background: #fff;
+  margin-right: 8px;
+}
+.search-container .btn-dark {
+  border-radius: 6px;
+  font-size: 14px;
+  padding: 6px 16px;
+}
+
+.pagination {
+  display: flex;
+  gap: 6px;
+  margin-top: 18px;
+  justify-content: flex-end;
+}
+.pagination button {
+  border: none;
+  background: #f1f5f9;
+  color: #222;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pagination button.active,
+.pagination button:disabled {
+  background: #222;
+  color: #fff;
+  cursor: default;
+}
+.pagination button.disabled {
+  background: #e5e7eb;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.text-muted {
+  color: #888 !important;
+  font-size: 12px;
+}
