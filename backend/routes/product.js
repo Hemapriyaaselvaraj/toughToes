@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product.controller'); // optional if using controller
@@ -11,7 +12,8 @@ router.post('/add', upload.any(), productController.createProduct);
 router.get('/', productController.getProducts);
 router.post('/:id/toggle-active', productController.toggleActive);
 
-
+router.get('/edit/:id', productController.getEditProduct);
+router.post('/edit/:id', upload.any(), productController.postEditProduct);
 
 // Category routes
 router.post('/category', productController.createCategory)

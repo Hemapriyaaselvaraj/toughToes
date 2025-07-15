@@ -1,3 +1,4 @@
+
 const userModel = require("../models/userModel");
 const productCategoryModel = require("../models/productCategoryModel");
 const productColorModel = require("../models/productColorModel");
@@ -570,6 +571,100 @@ const productList = async (req, res) => {
   });
 };
 
+// GET: Render edit product page
+const getEditProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findById(productId).lean();
+    if (!product) return res.status(404).send('Product not found');
+
+    // Fetch variations for this product
+    const variations = await ProductVariation.find({ product_id: productId }).lean();
+    product.variations = variations.map(v => ({
+      size: v.product_size,
+      color: v.product_color,
+      stock: v.stock_quantity,
+      images: v.images,
+    }));
+
+    const categories = await productCategoryModel.find({}).lean();
+    const types = await productTypeModel.find({}).lean();
+    const sizes = await productSizeModel.find({}).lean();
+    const colors = await productColorModel.find({}).lean();
+
+    res.render('admin/add-product', {
+      name: req.user?.firstName || '',
+      product,
+      categories,
+      types,
+      sizes,
+      colors,
+      mode: 'edit'
+    });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+};
+
+// POST: Update product
+const postEditProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).send('Product not found');
+
+    // Update main fields
+    product.name = req.body.name;
+    product.price = req.body.price;
+    product.discount_percentage = req.body.discount;
+    product.description = req.body.description;
+    product.product_category = req.body.category;
+    product.product_type = req.body.type;
+    await product.save();
+
+    // Update or add variations
+    const variations = req.body.variations || {};
+    const files = req.files || {};
+    const variationOps = [];
+
+    // Get all existing variations for this product
+    const existingVariations = await ProductVariation.find({ product_id: productId });
+
+    // Helper to find a matching variation (by size and color)
+    function findExistingVar(size, color) {
+      return existingVariations.find(v => v.product_size === size && v.product_color === color);
+    }
+
+    const variationEntries = [];
+
+     for (let i = 0; i < variations.length; i++) {
+      const variation = variations[i];
+      const images = files.filter(file => file.fieldname === `variationImages_${i}`) || [];
+      const imageUrls = images.map((file) => file.path);
+
+       let existing = findExistingVar(variation.size, variation.color);
+
+      const newVariation = new ProductVariation({
+        product_id: savedProduct._id,
+        product_size: variation.size,
+        product_color: variation.color,
+        stock_quantity: variation.stock,
+        images: imageUrls.length > 0 && existing?.images ? [...imageUrls, ...existing.images] : imageUrls.length > 0 ? imageUrls : existing?.images || [],
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      variationEntries.push(newVariation.save());
+    }
+
+  
+    await Promise.all(variationOps);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 module.exports = {
   getProductConfiguration,
   createCategory,
@@ -590,4 +685,6 @@ module.exports = {
   getProducts,
   toggleActive,
   productList,
+  getEditProduct,
+  postEditProduct,
 };
