@@ -10,6 +10,11 @@
 
   <!-- Header -->
   <%- include('../partials/user-navbar', { name: name }) %>
+  <script>
+    function selectCategory(category) {
+      window.location.href = '/products?category=' + encodeURIComponent(category);
+    }
+  </script>
 
   <!-- Hero Section -->
   <section class="hero">

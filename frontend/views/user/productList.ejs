@@ -110,7 +110,7 @@
         <div class="product-list-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 24px;">
           <% if (products && products.length) { %>
             <% products.forEach(product => { %>
-              <div class="product-card enhanced-card">
+              <div class="product-card enhanced-card" style="cursor:pointer;" onclick="window.location.href='/products/<%= product._id %>'">
                 <div class="product-image-wrapper">
                   <% if (product.image) { %>
                     <img src="<%= product.image %>" alt="<%= product.name %>" class="product-img-enhanced">
