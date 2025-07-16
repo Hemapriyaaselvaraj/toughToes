@@ -40,6 +40,7 @@
             </select>
             <label for="sort">Sort by:</label>
             <select id="sort">
+              <option value="latest" <%= currentSort === 'latest' ? 'selected' : '' %>>Latest Created</option>
               <option value="nameAsc" <%= currentSort === 'nameAsc' ? 'selected' : '' %>>A to Z (Ascending)</option>
               <option value="nameDesc" <%= currentSort === 'nameDesc' ? 'selected' : '' %>>Z to A (Descending)</option>
             </select>
@@ -60,7 +61,6 @@
               <th>Price</th>
               <th>Category</th>
               <th>Type</th>
-              <th>Stock</th>
               <th>Added On</th>
               <th>Status</th>
               <th>Actions</th>
@@ -78,7 +78,6 @@
                 <td>$<%= product.price.toFixed(2) %></td>
                 <td><span class="badge bg-secondary"><%= product.product_category %></span></td>
                 <td><span class="badge bg-info"><%= product.product_type %></span></td>
-                <td><%= product.stock %></td>
                 <td><%= product.created_at.toDateString() %></td>
                 <td>
                   <span class="status <%= product.is_active ? 'active' : 'inactive' %>">
@@ -132,7 +131,7 @@
     const params = new URLSearchParams();
     if (category !== 'all') params.append('category', category);
     if (type !== 'all') params.append('type', type);
-    if (sort) params.append('sort', sort);
+    if (sort && sort !== 'latest') params.append('sort', sort);
     if (search) params.append('search', search);
     window.location.search = params.toString();
   }

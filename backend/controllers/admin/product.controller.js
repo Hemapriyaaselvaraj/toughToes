@@ -419,7 +419,7 @@ const getProducts = async (req, res) => {
     const {
       category = 'all',
       type = 'all',
-      sort = 'nameAsc',
+      sort = 'latest',
       search = '',
       page = 1
     } = req.query;
@@ -432,17 +432,22 @@ const getProducts = async (req, res) => {
     if (type !== 'all') filter.product_type = type;
     if (search) filter.name = { $regex: search, $options: 'i' };
 
-    let sortObj = { createdAt: -1 };
-    if (sort === 'nameAsc') sortObj = { name: 1, createdAt: -1 };
-    else if (sort === 'nameDesc') sortObj = { name: -1, createdAt: -1 };
+    // Use created_at for sorting, fallback to _id if missing
+    let sortObj = { created_at: -1, _id: -1 };
+    if (sort === 'nameAsc') sortObj = { name: 1, created_at: -1, _id: -1 };
+    else if (sort === 'nameDesc') sortObj = { name: -1, created_at: -1, _id: -1 };
 
     const totalResults = await Product.countDocuments(filter);
 
+
+    const skipCount = (currentPage - 1) * pageSize;
     const products = await Product.find(filter)
       .sort(sortObj)
-      .skip((currentPage - 1) * pageSize)
+      .skip(skipCount)
       .limit(pageSize)
       .lean();
+    // Debug: Log skip/limit and product count
+    console.log(`Pagination: skip=${skipCount}, limit=${pageSize}, returned=${products.length}`);
 
     for (let product of products) {
       product.stock = product.stock || 0;
