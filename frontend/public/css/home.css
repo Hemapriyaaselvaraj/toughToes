@@ -1,3 +1,6 @@
+.category-cards .btn-black {
+  cursor: pointer;
+}
 .btn-login {
   background: #007bff;
   color: #fff;

@@ -32,23 +32,23 @@
   <section class="categories">
     <h2>Shop by Category</h2>
     <div class="category-cards">
-      <div class="card">
+      <div class="card" style="pointer-events:auto;">
         <img src="<%= menImage ? menImage : 'https://via.placeholder.com/300x200?text=Men\'s+Shoes' %>" alt="Men's Collection">
         <h3>Men's Collection</h3>
         <p>Sneakers, Formal, Running & Football</p>
-        <button class="btn-black">Shop Men's</button>
+        <button class="btn-black" onclick="window.location.href='/products?category=Men'; event.stopPropagation();">Shop Men's</button>
       </div>
-      <div class="card">
+      <div class="card" style="pointer-events:auto;">
         <img src="<%= womenImage ? womenImage : 'https://via.placeholder.com/300x200?text=Women\'s+Shoes' %>" alt="Women's Collection">
         <h3>Women's Collection</h3>
         <p>Sneakers, Formal, Running & Football</p>
-        <button class="btn-black">Shop Women's</button>
+        <button class="btn-black" onclick="window.location.href='/products?category=Women'; event.stopPropagation();">Shop Women's</button>
       </div>
-      <div class="card">
+      <div class="card" style="pointer-events:auto;">
         <img src="<%= kidsImage ? kidsImage : 'https://via.placeholder.com/300x200?text=Kids+Shoes' %>" alt="Kids' Collection">
         <h3>Kids' Collection</h3>
         <p>Sneakers, School, Running & Football</p>
-        <button class="btn-black">Shop Kids'</button>
+        <button class="btn-black" onclick="window.location.href='/products?category=Kids'; event.stopPropagation();">Shop Kids'</button>
       </div>
     </div>
   </section>
@@ -57,12 +57,12 @@
   <section class="featured">
     <div class="featured-header">
       <h2>Featured Products</h2>
-      <a href="#">View All →</a>
+      <a href="/products">View All →</a>
     </div>
     <div class="product-grid">
       <% if (featuredProducts && featuredProducts.length) { %>
         <% featuredProducts.forEach(product => { %>
-          <div class="product-card">
+          <div class="product-card" style="cursor:pointer;" onclick="window.location.href='/products/<%= product._id %>'">
             <% if (product.image) { %>
               <img src="<%= product.image %>" alt="<%= product.name %>">
             <% } else { %>
