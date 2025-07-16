@@ -15,7 +15,6 @@ router.get('/customers/:id', isAdminAccessible, customerController.getCustomerDe
 router.get('/products/configuration',isAdminAccessible,  productController.getProductConfiguration)
 
 router.get('/products/add-product',isAdminAccessible, productController.getAddProduct)
-router.get('/add-product', isAdminAccessible, adminController.getAddProduct)
 router.post('/products/add', upload.any(), productController.createProduct);
 router.get('/products', isAdminAccessible, productController.getProducts);
 router.post('/products/:id/toggle-active', productController.toggleActive);

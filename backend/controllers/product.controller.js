@@ -346,6 +346,8 @@ const getAddProduct = async (req, res) => {
     types,
     sizes,
     colors,
+    mode: 'add',
+    product: {}
   });
 };
 
