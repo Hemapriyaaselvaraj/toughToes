@@ -189,7 +189,7 @@ const productDetail = async (req, res) => {
     relatedVariations.forEach(v => { relatedImageMap[v._id.toString()] = v.image; });
     relatedProducts.forEach(p => { p.image = relatedImageMap[p._id.toString()] || null; });
     // Fetch user name from DB if logged in
-    let name = "Guest";
+    let name = null;
     if (req.session && req.session.userId) {
       const user = await require("../../models/userModel").findById(req.session.userId).lean();
       if (user) name = user.firstName + (user.lastName ? (" " + user.lastName) : "");

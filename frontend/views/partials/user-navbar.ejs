@@ -6,8 +6,8 @@
     <a href="#" onclick="selectCategory('Kids'); return false;">Kids</a>
   </nav>
   <div class="nav-right">
-    <input type="text" placeholder="Search shoes..." class="search-input" />
-    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Search shoes..." class="search-input" id="navbarSearchInput" />
+    <i class="fas fa-search" id="navbarSearchIcon" style="cursor:pointer;"></i>
     <i class="fas fa-shopping-cart"></i>
     <i class="fas fa-user"></i>
     <% if (typeof name === 'string' && name.trim().length > 0) { %>
@@ -20,6 +20,26 @@
 </header>
 
 <script>
+  // Search functionality
+  const searchInput = document.getElementById('navbarSearchInput');
+  const searchIcon = document.getElementById('navbarSearchIcon');
+  function submitSearch() {
+    const q = searchInput.value.trim();
+    if(q.length > 0) {
+      window.location.href = '/products?search=' + encodeURIComponent(q);
+    }
+  }
+  if(searchInput) {
+    searchInput.addEventListener('keydown', function(e) {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        submitSearch();
+      }
+    });
+  }
+  if(searchIcon) {
+    searchIcon.addEventListener('click', submitSearch);
+  }
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async function () {

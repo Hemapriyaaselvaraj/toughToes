@@ -72,8 +72,10 @@
           </div>
         </div>
 
-        <button class="add-to-cart" id="addToCartBtn">🛒 Add to Cart</button>
-        <button class="add-to-wishlist">♡ Add to Wishlist</button>
+        <% if (typeof name === 'string' && name.trim().length > 0) { %>
+          <button class="add-to-cart" id="addToCartBtn">🛒 Add to Cart</button>
+          <button class="add-to-wishlist">♡ Add to Wishlist</button>
+        <% } %>
 
         <div class="features">
           <p>🚚 Free shipping on orders over Rs. 1000</p>
