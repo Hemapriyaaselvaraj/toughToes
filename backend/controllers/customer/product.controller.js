@@ -28,10 +28,16 @@ const productList = async (req, res) => {
   const pageSize = 20; // changed from 9 to 20
   const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
 
+
   // Build filter
   let andFilters = [{ is_active: true }];
   if (selectedCategory) andFilters.push({ product_category: selectedCategory });
   if (selectedType.length) andFilters.push({ product_type: { $in: selectedType } });
+
+  // Search by product name
+  if (req.query.search && req.query.search.trim().length > 0) {
+    andFilters.push({ name: { $regex: req.query.search.trim(), $options: 'i' } });
+  }
 
   // Variation-based filtering
   let variationProductIds = null;
