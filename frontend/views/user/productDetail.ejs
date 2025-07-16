@@ -8,26 +8,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
-  <!-- Header (replaced with exact home.ejs navbar) -->
-  <header class="navbar">
-    <div class="logo">ToughToes</div>
-    <nav class="nav-links">
-      <a href="#" onclick="selectCategory('Men'); return false;">Men</a>
-      <a href="#" onclick="selectCategory('Women'); return false;">Women</a>
-      <a href="#" onclick="selectCategory('Kids'); return false;">Kids</a>
-      <a href="#" onclick="selectCategory('Sale'); return false;">Sale</a>
-    </nav>
-    <div class="nav-right">
-      <input type="text" placeholder="Search shoes..." class="search-input">
-      <i class="fas fa-search"></i>
-      <i class="fas fa-shopping-cart"></i>
-      <i class="fas fa-user"></i>
-      <span><%= name %></span>
-    </div>
-  </header>
+  <!-- Header -->
+  <%- include('../partials/user-navbar', { name: name }) %>
   <script>
     function selectCategory(category) {
-      window.location.href = '/products?category=' + encodeURIComponent(category);
+      window.location.href = '/admin/products?category=' + encodeURIComponent(category);
     }
   </script>
 

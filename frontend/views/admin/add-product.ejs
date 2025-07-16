@@ -54,7 +54,7 @@
 
           <form
             id="productForm"
-            action="<%= mode === 'edit' && product ? ('/products/edit/' + product._id) : '/products/add' %>"
+            action="<%= mode === 'edit' && product ? ('/admin/products/edit/' + product._id) : '/admin/products/add' %>"
             method="POST"
             enctype="multipart/form-data"
           >
@@ -159,7 +159,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-              <a href="/products?limit=5&skip=0" class="btn btn-outline-secondary"
+              <a href="/admin/products?limit=5&skip=0" class="btn btn-outline-secondary"
                 >Cancel</a
               >
               <button type="submit" class="btn btn-dark"><%= mode === 'edit' ? 'Update Product' : 'Add Product' %></button>
@@ -260,7 +260,7 @@
             body: formData,
           }).then((res) => {
             if (res.ok) {
-              window.location = "/products";
+              window.location = "/admin/products";
             } else {
               alert("Product submission failed");
             }

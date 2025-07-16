@@ -88,7 +88,7 @@
       const value = input.value.trim();
       if (!value) return alert('Cannot be empty');
 
-      const res = await fetch(`/products/${field}`, {
+      const res = await fetch(`/admin/products/${field}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ value })
@@ -147,7 +147,7 @@
       const updated = input.value.trim();
       if (!updated) return alert('Cannot be empty');
 
-      const res = await fetch(`/products/${field}/${id}`, {
+      const res = await fetch(`/admin/products/${field}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ value: updated })
@@ -163,7 +163,7 @@
     async function deleteItem(field, id) {
       if (!confirm('Are you sure?')) return;
 
-      const res = await fetch(`/products/${field}/${id}`, {
+      const res = await fetch(`/admin/products/${field}/${id}`, {
         method: 'DELETE'
       });
 

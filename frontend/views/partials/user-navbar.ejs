@@ -1,0 +1,38 @@
+<header class="navbar">
+  <div class="logo">ToughToes</div>
+  <nav class="nav-links">
+    <a href="#" onclick="selectCategory('Men'); return false;">Men</a>
+    <a href="#" onclick="selectCategory('Women'); return false;">Women</a>
+    <a href="#" onclick="selectCategory('Kids'); return false;">Kids</a>
+  </nav>
+  <div class="nav-right">
+    <input type="text" placeholder="Search shoes..." class="search-input" />
+    <i class="fas fa-search"></i>
+    <i class="fas fa-shopping-cart"></i>
+    <i class="fas fa-user"></i>
+    <span><%= name %></span>
+    <button id="logoutBtn" class="btn btn-outline-danger btn-sm ms-3">
+      Logout
+    </button>
+  </div>
+</header>
+
+<script>
+  document
+    .getElementById("logoutBtn")
+    .addEventListener("click", async function () {
+      try {
+        const response = await fetch("/user/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+        if (response.ok) {
+          window.location.href = "/user/login";
+        } else {
+          alert("Logout failed");
+        }
+      } catch (err) {
+        alert("Logout error");
+      }
+    });
+</script>

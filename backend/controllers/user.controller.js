@@ -146,4 +146,14 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, viewSignUp, viewLogin, login, forgotPassword, sendOtp, verifyOtp, changePassword };
+const logout = (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid');
+    res.json({ success: true });
+  });
+};
+
+module.exports = { signup, viewSignUp, viewLogin, login, forgotPassword, sendOtp, verifyOtp, changePassword, logout };

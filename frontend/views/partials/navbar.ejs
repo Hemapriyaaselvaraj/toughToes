@@ -3,10 +3,27 @@
   <div class="d-flex align-items-center gap-2">
     <span id="adminNamePlaceholder">John Doe</span>
     <i class="fa-solid fa-user"></i>
+    <button id="logoutBtn" class="btn btn-outline-danger btn-sm ms-3">Logout</button>
   </div>
 </div>
 
 <script>
   const adminName = "Hema"; 
   document.getElementById("adminNamePlaceholder").textContent = adminName;
+
+  document.getElementById("logoutBtn").addEventListener("click", async function() {
+    try {
+      const response = await fetch("/user/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+      if (response.ok) {
+        window.location.href = "/user/login";
+      } else {
+        alert("Logout failed");
+      }
+    } catch (err) {
+      alert("Logout error");
+    }
+  });
 </script>

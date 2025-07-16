@@ -9,22 +9,7 @@
 <body>
 
   <!-- Header -->
-  <header class="navbar">
-    <div class="logo">ToughToes</div>
-    <nav class="nav-links">
-      <a href="#">Men</a>
-      <a href="#">Women</a>
-      <a href="#">Kids</a>
-      <a href="#">Sale</a>
-    </nav>
-    <div class="nav-right">
-      <input type="text" placeholder="Search shoes..." class="search-input">
-      <i class="fas fa-search"></i>
-      <i class="fas fa-shopping-cart"></i>
-      <i class="fas fa-user"></i>
-      <span><%= name %></span>
-    </div>
-  </header>
+  <%- include('../partials/user-navbar', { name: name }) %>
 
   <!-- Hero Section -->
   <section class="hero">
