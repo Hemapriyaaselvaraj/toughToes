@@ -4,25 +4,26 @@ const adminController = require('../controllers/admin.controller'); // optional 
 const customerController = require('../controllers/customer.controller'); // optional if using controller
 const productController = require('../controllers/product.controller'); // optional if using controller
 const upload = require('../utils/imageUploader');
+const { isAdminAccessible } = require('../middlewares/auth');
 
 
-router.get('/dashboard', adminController.getDashboard)
-router.get('/customers', customerController.getCustomers);
+router.get('/dashboard',isAdminAccessible, adminController.getDashboard)
+router.get('/customers', isAdminAccessible, customerController.getCustomers);
 router.post('/customers/:id/block-unblock', customerController.blockUnblockCustomer);
-router.get('/customers/:id', customerController.getCustomerDetails);
+router.get('/customers/:id', isAdminAccessible, customerController.getCustomerDetails);
 
-router.get('/products/configuration', productController.getProductConfiguration)
+router.get('/products/configuration',isAdminAccessible,  productController.getProductConfiguration)
 
-router.get('/products/add-product', productController.getAddProduct)
+router.get('/products/add-product',isAdminAccessible, productController.getAddProduct)
 router.post('/products/add', upload.any(), productController.createProduct);
-router.get('/products', productController.getProducts);
-router.post('/:id/toggle-active', productController.toggleActive);
+router.get('/products', isAdminAccessible, productController.getProducts);
+router.post('/products/:id/toggle-active', productController.toggleActive);
 
-router.get('/products/edit/:id', productController.getEditProduct);
+router.get('/products/edit/:id', isAdminAccessible, productController.getEditProduct);
 router.post('/products/edit/:id', upload.any(), productController.postEditProduct);
 
 // Product detail route
-router.get('/products/detail/:id', productController.productDetail);
+router.get('/products/detail/:id', isAdminAccessible, productController.productDetail);
 
 // Category routes
 router.post('/products/category', productController.createCategory)
