@@ -93,15 +93,12 @@ const productList = async (req, res) => {
 
   // --- SORTING LOGIC ---
   let sortOrder = req.query.sort || 'asc';
-  // Always get latest products first
-  let products = await Product.find(productFilter)
-    .sort({ createdAt: -1 })
-    .lean();
+  let products = await Product.find(productFilter).lean();
   products.forEach(p => {
     p.afterDiscountPrice = p.price * (1 - (p.discount_percentage || 0) / 100);
   });
-  // Sort by after-discount price (but keep latest first for same price)
   if (sortOrder === 'asc') {
+    // Price: Low to High
     products.sort((a, b) => {
       if (a.afterDiscountPrice === b.afterDiscountPrice) {
         return new Date(b.createdAt) - new Date(a.createdAt);
@@ -109,12 +106,32 @@ const productList = async (req, res) => {
       return a.afterDiscountPrice - b.afterDiscountPrice;
     });
   } else if (sortOrder === 'desc') {
+    // Price: High to Low
     products.sort((a, b) => {
       if (a.afterDiscountPrice === b.afterDiscountPrice) {
         return new Date(b.createdAt) - new Date(a.createdAt);
       }
       return b.afterDiscountPrice - a.afterDiscountPrice;
     });
+  } else if (sortOrder === 'nameAsc') {
+    // Name: A to Z
+    products.sort((a, b) => {
+      if (a.name.toLowerCase() === b.name.toLowerCase()) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    });
+  } else if (sortOrder === 'nameDesc') {
+    // Name: Z to A
+    products.sort((a, b) => {
+      if (a.name.toLowerCase() === b.name.toLowerCase()) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return b.name.toLowerCase().localeCompare(a.name.toLowerCase());
+    });
+  } else {
+    // Default: Latest
+    products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
   // Pagination after sorting
   const totalResults = products.length;

@@ -96,6 +96,8 @@
             <select name="sort" onchange="this.form.submit()">
               <option value="asc" <%= sort === 'asc' ? 'selected' : '' %>>Price: Low to High</option>
               <option value="desc" <%= sort === 'desc' ? 'selected' : '' %>>Price: High to Low</option>
+              <option value="nameAsc" <%= sort === 'nameAsc' ? 'selected' : '' %>>Name: A to Z</option>
+              <option value="nameDesc" <%= sort === 'nameDesc' ? 'selected' : '' %>>Name: Z to A</option>
             </select>
             <% /* preserve other filters in query params */ %>
             <% Object.keys(query || {}).forEach(function(key) { if(key !== 'sort' && key !== 'page') { %>

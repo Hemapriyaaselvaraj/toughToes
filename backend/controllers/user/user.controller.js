@@ -56,10 +56,15 @@ const forgotPassword = (req, res) => {
 const sendOtp = async(req, res) => {
   const { email } = req.body;
 
+
   const user = await userModel.findOne({email});
 
   if(!user) {
-   return res.render('user/forgot', { error: "Invalid email"})
+    return res.render('user/forgot', { error: "Invalid email"})
+  }
+
+  if (user.isBlocked) {
+    return res.render('user/forgot', { error: "Your account is blocked. Please contact support." })
   }
 
 
@@ -138,6 +143,11 @@ const login = async (req, res) => {
   const user = await userModel.findOne({ email });
 
   if (!user) return res.render("user/login", { error: "User does not exist" });
+
+  // Prevent login if user is blocked
+  if (user.isBlocked) {
+    return res.render("user/login", { error: "Your account is blocked. Please contact support." });
+  }
 
   const isMatch = await bcrypt.compare(password, user.password);
 
