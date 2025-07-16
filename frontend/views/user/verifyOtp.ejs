@@ -61,10 +61,10 @@
         <button class="btn btn-dark w-100" type="submit">Verify Code</button>
 
         <div class="text-center mt-3">
-          <small class="text-muted"><i class="fas fa-clock me-1"></i>Code expires in <span id="timer">04:32</span></small>
+          <small class="text-muted"><i class="fas fa-clock me-1"></i>Code expires in <span id="timer">05:00</span></small>
           <p class="small mt-1 mb-0">Didn’t receive the code?</p>
           <p class="small">
-            <a href="#">Resend via SMS</a> • <a href="#">Call me instead</a>
+            <a href="#" id="resendOtpLink" style="pointer-events:none;opacity:0.5;">Resend OTP</a>
           </p>
         </div>
 
@@ -118,6 +118,7 @@
 
 
 <script>
+  // OTP input auto-focus
   const inputs = document.querySelectorAll(".otp-input");
   inputs.forEach((input, index) => {
     input.addEventListener("input", () => {
@@ -125,6 +126,67 @@
         inputs[index + 1].focus();
       }
     });
+  });
+
+  // OTP timer and resend logic
+  let timerSeconds = 60; // 1 minute
+  const timerSpan = document.getElementById('timer');
+  const resendOtpLink = document.getElementById('resendOtpLink');
+  let timerInterval = setInterval(() => {
+    let min = Math.floor(timerSeconds / 60);
+    let sec = timerSeconds % 60;
+    timerSpan.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      resendOtpLink.style.pointerEvents = 'auto';
+      resendOtpLink.style.opacity = '1';
+      resendOtpLink.textContent = 'Resend OTP';
+    } else {
+      timerSeconds--;
+    }
+  }, 1000);
+
+  resendOtpLink.addEventListener('click', function(e) {
+    if (resendOtpLink.style.pointerEvents === 'auto') {
+      e.preventDefault();
+      resendOtpLink.textContent = 'Resending...';
+      resendOtpLink.style.pointerEvents = 'none';
+      resendOtpLink.style.opacity = '0.5';
+      // Send AJAX request to resend OTP
+      fetch('/user/login/sendOtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: document.querySelector('input[name="email"]').value })
+      })
+      // .then(res => res.json())
+      .then(data => {
+        // Reset timer
+        timerSeconds = 60;
+        resendOtpLink.textContent = 'Resend OTP';
+        resendOtpLink.style.pointerEvents = 'none';
+        resendOtpLink.style.opacity = '0.5';
+        timerInterval = setInterval(() => {
+          let min = Math.floor(timerSeconds / 60);
+          let sec = timerSeconds % 60;
+          timerSpan.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+          if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            resendOtpLink.style.pointerEvents = 'auto';
+            resendOtpLink.style.opacity = '1';
+            resendOtpLink.textContent = 'Resend OTP';
+          } else {
+            timerSeconds--;
+          }
+        }, 1000);
+        alert('OTP resent to your email.');
+      })
+      .catch(() => {
+        resendOtpLink.textContent = 'Resend OTP';
+        resendOtpLink.style.pointerEvents = 'auto';
+        resendOtpLink.style.opacity = '1';
+        alert('Failed to resend OTP. Please try again.');
+      });
+    }
   });
 </script>
 

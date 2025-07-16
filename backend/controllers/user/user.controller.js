@@ -62,6 +62,7 @@ const sendOtp = async(req, res) => {
    return res.render('user/forgot', { error: "Invalid email"})
   }
 
+
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expiry =  new Date(Date.now() + 10 * 60 * 1000)
 
@@ -72,13 +73,20 @@ const sendOtp = async(req, res) => {
     html: `<h3>Your OTP is: <b>${otp}</b></h3>`
   });
 
-  const otpVerification = new otpVerificationModel( {
-    email,
-    otp,
-    expiry
-  })
-
-  await otpVerification.save();
+  // Check if OTP already exists for this email
+  let otpVerification = await otpVerificationModel.findOne({ email });
+  if (otpVerification) {
+    otpVerification.otp = otp;
+    otpVerification.expiry = expiry;
+    await otpVerification.save();
+  } else {
+    otpVerification = new otpVerificationModel({
+      email,
+      otp,
+      expiry
+    });
+    await otpVerification.save();
+  }
 
   res.render('user/verifyOtp', { error: null, email});
 
