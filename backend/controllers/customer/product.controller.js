@@ -93,17 +93,28 @@ const productList = async (req, res) => {
 
   // --- SORTING LOGIC ---
   let sortOrder = req.query.sort || 'asc';
-  // Calculate after-discount price for sorting
+  // Always get latest products first
   let products = await Product.find(productFilter)
+    .sort({ createdAt: -1 })
     .lean();
   products.forEach(p => {
     p.afterDiscountPrice = p.price * (1 - (p.discount_percentage || 0) / 100);
   });
-  // Sort by after-discount price
+  // Sort by after-discount price (but keep latest first for same price)
   if (sortOrder === 'asc') {
-    products.sort((a, b) => a.afterDiscountPrice - b.afterDiscountPrice);
+    products.sort((a, b) => {
+      if (a.afterDiscountPrice === b.afterDiscountPrice) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return a.afterDiscountPrice - b.afterDiscountPrice;
+    });
   } else if (sortOrder === 'desc') {
-    products.sort((a, b) => b.afterDiscountPrice - a.afterDiscountPrice);
+    products.sort((a, b) => {
+      if (a.afterDiscountPrice === b.afterDiscountPrice) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return b.afterDiscountPrice - a.afterDiscountPrice;
+    });
   }
   // Pagination after sorting
   const totalResults = products.length;

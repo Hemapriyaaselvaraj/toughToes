@@ -432,9 +432,9 @@ const getProducts = async (req, res) => {
     if (type !== 'all') filter.product_type = type;
     if (search) filter.name = { $regex: search, $options: 'i' };
 
-    let sortObj = {};
-    if (sort === 'nameAsc') sortObj = { name: 1 };
-    else if (sort === 'nameDesc') sortObj = { name: -1 };
+    let sortObj = { createdAt: -1 };
+    if (sort === 'nameAsc') sortObj = { name: 1, createdAt: -1 };
+    else if (sort === 'nameDesc') sortObj = { name: -1, createdAt: -1 };
 
     const totalResults = await Product.countDocuments(filter);
 

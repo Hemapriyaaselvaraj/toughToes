@@ -14,13 +14,11 @@ const getCustomers = async (req, res) => {
       { phoneNumber: { $regex: search, $options: 'i' } }
     ];
   }
-  let sortOption = {};
+  let sortOption = { createdAt: -1 };
   if (sort === 'nameAsc') {
-    sortOption.firstName = 1;
-    sortOption.lastName = 1;
+    sortOption = { firstName: 1, lastName: 1, createdAt: -1 };
   } else if (sort === 'nameDesc') {
-    sortOption.firstName = -1;
-    sortOption.lastName = -1;
+    sortOption = { firstName: -1, lastName: -1, createdAt: -1 };
   }
   // If status is not provided or is 'all', do not filter by isBlocked
   if (!status || status === 'all') {
