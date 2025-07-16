@@ -1,4 +1,4 @@
-const userModel = require("../models/userModel");
+const userModel = require("../../models/userModel");
 
 const getCustomers = async (req, res) => {
   // Get filters from query params

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const adminController = require('../controllers/admin.controller'); // optional if using controller
-const customerController = require('../controllers/customer.controller'); // optional if using controller
-const productController = require('../controllers/product.controller'); // optional if using controller
+const adminController = require('../controllers/admin/dashboard.controller'); // optional if using controller
+const customerController = require('../controllers/admin/customer-management.controller'); // optional if using controller
+const productController = require('../controllers/admin/product.controller'); // optional if using controller
 const upload = require('../utils/imageUploader');
 const { isAdminAccessible } = require('../middlewares/auth');
 
@@ -22,8 +22,6 @@ router.post('/products/:id/toggle-active', productController.toggleActive);
 router.get('/products/edit/:id', isAdminAccessible, productController.getEditProduct);
 router.post('/products/edit/:id', upload.any(), productController.postEditProduct);
 
-// Product detail route
-router.get('/products/detail/:id', isAdminAccessible, productController.productDetail);
 
 // Category routes
 router.post('/products/category', productController.createCategory)

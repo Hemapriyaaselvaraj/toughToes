@@ -1,6 +1,6 @@
-const userModel = require("../models/userModel");
-const Product = require("../models/productModel");
-const ProductVariation = require("../models/productVariationModel");
+const userModel = require("../../models/userModel");
+const Product = require("../../models/productModel");
+const ProductVariation = require("../../models/productVariationModel");
 
 const home = async (req, res) => {
     let name = "Guest";
@@ -8,7 +8,6 @@ const home = async (req, res) => {
         const user = await userModel.findById(req.session.userId);
         if (user) name = user.firstName + ' ' + user.lastName;
     }
-    // Get 4 random products
     const featuredProducts = await Product.aggregate([{ $match: { is_active: true } }, { $sample: { size: 4 } }]);
     // For each product, get one image from its variations
     const productIds = featuredProducts.map(p => p._id);
@@ -43,21 +42,21 @@ const home = async (req, res) => {
 
     // --- NEW LOGIC FOR HERO SHOE IMAGE ---
     // Get one random product variation image for hero section
-    const heroProduct = await Product.aggregate([
+    const bannerProduct = await Product.aggregate([
       { $match: { is_active: true } },
       { $sample: { size: 1 } }
     ]);
-    let heroImage = null;
-    if (heroProduct.length) {
-      const heroVariation = await ProductVariation.aggregate([
-        { $match: { product_id: heroProduct[0]._id } },
+    let bannerImage = null;
+    if (bannerProduct.length) {
+      const bannerVariation = await ProductVariation.aggregate([
+        { $match: { product_id: bannerProduct[0]._id } },
         { $sample: { size: 1 } }
       ]);
-      if (heroVariation[0] && heroVariation[0].images && heroVariation[0].images.length) {
-        heroImage = heroVariation[0].images[0];
+      if (bannerVariation[0] && bannerVariation[0].images && bannerVariation[0].images.length) {
+        bannerImage = bannerVariation[0].images[0];
       }
     }
-    res.render('user/home', { name, featuredProducts, menImage, womenImage, kidsImage, heroImage });
+    res.render('user/home', { name, featuredProducts, menImage, womenImage, kidsImage, bannerImage });
 }
 
 module.exports = {

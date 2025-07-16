@@ -70,7 +70,7 @@
         <div class="alert alert-danger text-center"><%= error %></div>
         <% } %>
 
-        <form method="POST" action="/user/signup">
+        <form method="POST" action="/user/signup" onsubmit="return formValidate(event)">
           <div class="row mb-3">
             <div class="col">
               <input
@@ -96,6 +96,7 @@
 
           <div class="mb-3">
             <input
+              id="email"
               type="email"
               name="email"
               class="form-control"
@@ -118,6 +119,7 @@
 
           <div class="mb-3">
             <input
+              id="password"
               type="password"
               name="password"
               class="form-control"
@@ -128,6 +130,7 @@
 
           <div class="mb-3">
             <input
+              id="confirmPassword"
               type="password"
               name="confirmPassword"
               class="form-control"

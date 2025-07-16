@@ -1,5 +1,5 @@
-const userModel = require("../models/userModel");
-const otpVerificationModel = require("../models/otpVerificationModel");
+const userModel = require("../../models/userModel");
+const otpVerificationModel = require("../../models/otpVerificationModel");
 require('dotenv').config();
 
 const bcrypt = require("bcrypt");
