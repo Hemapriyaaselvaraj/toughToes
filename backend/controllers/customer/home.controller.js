@@ -3,7 +3,7 @@ const Product = require("../../models/productModel");
 const ProductVariation = require("../../models/productVariationModel");
 
 const home = async (req, res) => {
-    let name = "Guest";
+  let name = null;
     if (req.session && req.session.userId) {
         const user = await userModel.findById(req.session.userId);
         if (user) name = user.firstName + ' ' + user.lastName;
