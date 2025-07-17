@@ -1,7 +1,7 @@
 const userModel = require("../../models/userModel");
 
 const getCustomers = async (req, res) => {
-  // Get filters from query params
+  
   const { status, search, sort, page } = req.query;
   let filter = { role: 'user' };
   if (status === 'active') filter.isBlocked = false;
@@ -59,6 +59,8 @@ const getCustomers = async (req, res) => {
   });
 };
 
+//how this function is working? is that only for switching?
+
 const blockUnblockCustomer = async (req, res) => {
   const { id } = req.params;
   const user = await userModel.findById(id);
@@ -68,16 +70,11 @@ const blockUnblockCustomer = async (req, res) => {
   res.json({ success: true, isBlocked: user.isBlocked });
 };
 
-const getCustomerDetails = async (req, res) => {
-  const { id } = req.params;
-  const user = await userModel.findById(id);
-  if (!user) return res.status(404).render('admin/customer-details', { error: 'User not found' });
-  // Add more fields as needed
-  res.render('admin/customer-details', { customer: user });
-};
+
+
+
 
 module.exports = {
   getCustomers,
   blockUnblockCustomer,
-  getCustomerDetails
 };

@@ -27,21 +27,21 @@ const getProductConfiguration = async (req, res) => {
   });
 };
 
-const createCategory = async (req, res) => {
+  const createCategory = async (req, res) => {
   try {
     const { value } = req.body;
 
     const isCategoryAlreadyAvailable = await productCategoryModel.findOne({
       category: value,
     });
-
+    
     if (isCategoryAlreadyAvailable) {
       throw new Error("Category already exists");
-    }
-
+    } 
+      
     const newCategory = new productCategoryModel({ category: value });
     await newCategory.save();
-
+     
     res.status(201).json({
       message: "Category created",
     });
@@ -51,7 +51,7 @@ const createCategory = async (req, res) => {
       .json({ message: error.message || "Failed to create category" });
   }
 };
-
+  
 const updateCategory = async (req, res) => {
   try {
     const { value } = req.body;
@@ -351,6 +351,9 @@ const getAddProduct = async (req, res) => {
   });
 };
 
+
+//doubt - why cant we check if the product is already available.
+
 const createProduct = async (req, res) => {
   try {
     const {
@@ -379,6 +382,7 @@ const createProduct = async (req, res) => {
 
     const savedProduct = await newProduct.save();
 
+    //whats the use of multer and cloudinary?
     const variationEntries = [];
     const files = req.files || [];
 
@@ -446,9 +450,7 @@ const getProducts = async (req, res) => {
       .skip(skipCount)
       .limit(pageSize)
       .lean();
-    // Debug: Log skip/limit and product count
-    console.log(`Pagination: skip=${skipCount}, limit=${pageSize}, returned=${products.length}`);
-
+    
     for (let product of products) {
       product.stock = product.stock || 0;
     }

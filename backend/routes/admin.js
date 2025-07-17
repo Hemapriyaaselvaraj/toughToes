@@ -10,7 +10,6 @@ const { isAdminAccessible } = require('../middlewares/auth');
 router.get('/dashboard',isAdminAccessible, adminController.getDashboard)
 router.get('/customers', isAdminAccessible, customerController.getCustomers);
 router.post('/customers/:id/block-unblock', customerController.blockUnblockCustomer);
-router.get('/customers/:id', isAdminAccessible, customerController.getCustomerDetails);
 
 router.get('/products/configuration',isAdminAccessible,  productController.getProductConfiguration)
 
@@ -20,7 +19,7 @@ router.get('/products', isAdminAccessible, productController.getProducts);
 router.post('/products/:id/toggle-active', productController.toggleActive);
 
 router.get('/products/edit/:id', isAdminAccessible, productController.getEditProduct);
-router.post('/products/edit/:id', upload.any(), productController.postEditProduct);
+router.post('/products/edit/:id', upload.any(), productController.postEditProduct); 
 
 
 // Category routes
