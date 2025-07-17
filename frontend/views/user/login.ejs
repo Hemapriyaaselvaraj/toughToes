@@ -10,50 +10,73 @@
 </head>
 
 <body>
-
-  
-  <nav class="navbar navbar-expand-lg bg-light px-4 py-2">
-  <div class="container-fluid">
-
-    
-    <a class="navbar-brand fw-bold" href="#">ToughToes</a>
-
-    
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-  
-    <div class="collapse navbar-collapse" id="navbarContent">
-      
-      
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-4">
-        <li class="nav-item"><a class="nav-link" href="#">Men</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Women</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Kids</a></li>
-      </ul>
-
-      
-      <form class="d-flex me-3" role="search">
-        <div class="input-group">
-          <input class="form-control" type="search" placeholder="Search shoes..." aria-label="Search">
-          <button class="btn btn-outline-secondary" type="submit">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
-      </form>
-
-      
-      <div class="d-flex align-items-center gap-4">
-        <i class="fa-regular fa-heart fs-5"></i>
-        <i class="fa-solid fa-cart-shopping fs-5"></i>
-        <i class="fa-solid fa-user fs-5"></i>
-      </div>
-
+  <header class="navbar">
+    <a href="/" class="logo" style="text-decoration:none;color:inherit;">ToughToes</a>
+    <nav class="nav-links">
+      <a href="#" onclick="selectCategory('Men'); return false;">Men</a>
+      <a href="#" onclick="selectCategory('Women'); return false;">Women</a>
+      <a href="#" onclick="selectCategory('Kids'); return false;">Kids</a>
+    </nav>
+    <div class="nav-right">
+      <input type="text" placeholder="Search shoes..." class="search-input" id="navbarSearchInput" />
+      <i class="fas fa-search" id="navbarSearchIcon" style="cursor:pointer;"></i>
+      <i class="fas fa-user"></i>
+      <% if (typeof name === 'string' && name.trim().length > 0) { %>
+        <span><%= name %></span>
+        <button id="logoutBtn" class="btn btn-logout">Logout</button>
+      <% } else { %>
+        <button id="loginBtn" class="btn btn-login">Login</button>
+      <% } %>
     </div>
-  </div>
-</nav>
-
+  </header>
+  <script>
+    function selectCategory(category) {
+      window.location.href = '/products?category=' + encodeURIComponent(category);
+    }
+    const searchInput = document.getElementById('navbarSearchInput');
+    const searchIcon = document.getElementById('navbarSearchIcon');
+    function submitSearch() {
+      const q = searchInput.value.trim();
+      if(q.length > 0) {
+        window.location.href = '/products?search=' + encodeURIComponent(q);
+      }
+    }
+    if(searchInput) {
+      searchInput.addEventListener('keydown', function(e) {
+        if(e.key === 'Enter') {
+          e.preventDefault();
+          submitSearch();
+        }
+      });
+    }
+    if(searchIcon) {
+      searchIcon.addEventListener('click', submitSearch);
+    }
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async function () {
+        try {
+          const response = await fetch("/user/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+          if (response.ok) {
+            window.location.href = "/user/login";
+          } else {
+            alert("Logout failed");
+          }
+        } catch (err) {
+          alert("Logout error");
+        }
+      });
+    }
+    const loginBtn = document.getElementById("loginBtn");
+    if (loginBtn) {
+      loginBtn.addEventListener("click", function () {
+        window.location.href = "/user/login";
+      });
+    }
+  </script>
 
   
   <div class="container text-center my-5">

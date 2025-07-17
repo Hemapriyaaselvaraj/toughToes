@@ -82,6 +82,8 @@ body {
 
 .product-images {
   flex: 1;
+  min-width: 45%;
+  max-width: 50%;
 }
 
 .product-images .main-img {
