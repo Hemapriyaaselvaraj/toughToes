@@ -542,7 +542,6 @@ const postEditProduct = async (req, res) => {
     // Update or add variations
     const variations = req.body.variations || {};
     const files = req.files || {};
-    const variationOps = [];
 
     // Get all existing variations for this product
     const existingVariations = await ProductVariation.find({ product_id: productId });
@@ -552,12 +551,17 @@ const postEditProduct = async (req, res) => {
       return existingVariations.find(v => v.product_size === size && v.product_color === color);
     }
 
+    // Build a set of submitted variations (size+color) for easy lookup
+    const submittedKeys = new Set();
     const variationEntries = [];
 
     for (let i = 0; i < variations.length; i++) {
       const variation = variations[i];
       const images = files.filter(file => file.fieldname === `variationImages_${i}`) || [];
       const imageUrls = images.map((file) => file.path);
+
+      const key = `${variation.size}__${variation.color}`;
+      submittedKeys.add(key);
 
       let existing = findExistingVar(variation.size, variation.color);
 
@@ -586,7 +590,16 @@ const postEditProduct = async (req, res) => {
       }
     }
 
-    await Promise.all(variationEntries);
+    // Delete variations that are no longer present in the submitted form
+    const deleteOps = [];
+    for (const v of existingVariations) {
+      const key = `${v.product_size}__${v.product_color}`;
+      if (!submittedKeys.has(key)) {
+        deleteOps.push(ProductVariation.deleteOne({ _id: v._id }));
+      }
+    }
+
+    await Promise.all([...variationEntries, ...deleteOps]);
     res.status(200).json({ success: true });
   } catch (err) {
     console.error("Error updating product:", err);

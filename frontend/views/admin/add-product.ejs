@@ -244,30 +244,49 @@
         input.click();
       }
 
-      document
-        .getElementById("productForm")
-        .addEventListener("submit", function (e) {
-          const formData = new FormData(this);
 
-          Object.entries(variationFiles).forEach(([index, files]) => {
-            files.forEach((file) => {
-              formData.append(`variationImages_${index}`, file);
-            });
+      document.getElementById("productForm").addEventListener("submit", function (e) {
+        // Re-index all variation fields in the DOM
+        const variationBoxes = document.querySelectorAll('.variation-box');
+        variationBoxes.forEach((box, newIdx) => {
+          // Update dataset
+          box.dataset.index = newIdx;
+          // Update all input/select names inside this box
+          box.querySelectorAll('[name]').forEach(input => {
+            input.name = input.name.replace(/variations\[\d+\]/, `variations[${newIdx}]`);
           });
-
-          fetch(this.action, {
-            method: this.method,
-            body: formData,
-          }).then((res) => {
-            if (res.ok) {
-              window.location = "/admin/products";
-            } else {
-              alert("Product submission failed");
-            }
-          });
-
-          e.preventDefault();
         });
+
+        // Rebuild variationFiles with new indices
+        const newVariationFiles = {};
+        variationBoxes.forEach((box, newIdx) => {
+          const oldIdx = box.dataset.index;
+          newVariationFiles[newIdx] = variationFiles[oldIdx] || [];
+        });
+        // Clear old variationFiles and copy new
+        Object.keys(variationFiles).forEach(k => delete variationFiles[k]);
+        Object.assign(variationFiles, newVariationFiles);
+
+        const formData = new FormData(this);
+        Object.entries(variationFiles).forEach(([index, files]) => {
+          files.forEach((file) => {
+            formData.append(`variationImages_${index}`, file);
+          });
+        });
+
+        fetch(this.action, {
+          method: this.method,
+          body: formData,
+        }).then((res) => {
+          if (res.ok) {
+            window.location = "/admin/products";
+          } else {
+            alert("Product submission failed");
+          }
+        });
+
+        e.preventDefault();
+      });
 
       // If in edit mode, pre-populate variations
       <% if (mode === 'edit' && product && product.variations && product.variations.length) { %>
