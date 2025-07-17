@@ -12,13 +12,10 @@
   <div class="container-fluid">
     <div class="row">
       
-      <!-- ✅ Sidebar partial -->
       <%- include('../partials/sidebar') %>
 
-      <!-- ✅ Right side content area -->
       <div class="col-md-10 p-0">
         
-        <!-- ✅ Top navbar -->
         <div class="bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
           <h5 class="mb-0">Customers</h5>
           <div class="d-flex align-items-center gap-2">
@@ -27,14 +24,12 @@
           </div>
         </div>
 
-        <!-- ✅ Main content -->
         <div class="p-4">
           <section class="main-content">
             <div class="content-header">
               <p>Manage your customer accounts and data</p>
             </div>
 
-            <!-- Filter and Search -->
             <div class="search-container">
               <div style="display: flex; gap: 10px; align-items: center;">
                 <label for="status">Status:</label>
@@ -56,7 +51,6 @@
               </div>
             </div>
 
-            <!-- Customers Table -->
             <table class="customers-table">
               <thead>
                 <tr>
@@ -86,7 +80,6 @@
                       </span>
                     </td>
                     <td>
-                      <!-- <button class="view" title="View"><i class="fa fa-eye"></i></button> -->
                       <% if (customer.status === 'active') { %>
                         <button class="block" title="Block" data-id="<%= customer._id %>"><i class="fa fa-lock"></i></button>
                       <% } else { %>
@@ -98,12 +91,10 @@
               </tbody>
             </table>
 
-            <!-- Results Info -->
             <div style="font-size:13px;color:#888;margin-top:8px;">
               Showing <%= (totalResults === 0 ? 0 : ((currentPage - 1) * 5 + 1)) %> to <%= Math.min(currentPage * 5, totalResults) %> of <%= totalResults %> results
             </div>
 
-            <!-- Pagination -->
             <div class="pagination">
               <button <%= currentPage === 1 ? 'class="disabled" disabled' : '' %> onclick="goToPage(<%= currentPage - 1 %>)">Previous</button>
               <% for(let i = 1; i <= totalPages; i++) { %>
@@ -117,7 +108,6 @@
     </div>
   </div>
 
-  <!-- JavaScript for button actions -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.view').forEach(button => {
@@ -134,7 +124,6 @@
       });
     });
 
-    // Filtering, searching, sorting
     document.getElementById('status').addEventListener('change', function() {
       updateQuery();
     });
@@ -155,7 +144,6 @@
       window.location.search = params.toString();
     }
 
-    // Block/Unblock with confirmation
     document.querySelectorAll('.block, .unblock').forEach(button => {
       button.addEventListener('click', function() {
         const row = button.closest('tr');
@@ -175,7 +163,6 @@
         }
       });
     });
-    // View details
     document.querySelectorAll('.view').forEach(button => {
       button.addEventListener('click', function() {
         const row = button.closest('tr');

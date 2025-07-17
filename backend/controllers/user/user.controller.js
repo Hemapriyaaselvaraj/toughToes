@@ -78,7 +78,6 @@ const sendOtp = async(req, res) => {
     html: `<h3>Your OTP is: <b>${otp}</b></h3>`
   });
 
-  // Check if OTP already exists for this email
   let otpVerification = await otpVerificationModel.findOne({ email });
   if (otpVerification) {
     otpVerification.otp = otp;
@@ -144,7 +143,6 @@ const login = async (req, res) => {
 
   if (!user) return res.render("user/login", { error: "User does not exist" });
 
-  // Prevent login if user is blocked
   if (user.isBlocked) {
     return res.render("user/login", { error: "Your account is blocked. Please contact support." });
   }

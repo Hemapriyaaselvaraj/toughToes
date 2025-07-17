@@ -21,8 +21,6 @@
       </ul>
     </div>
     <form class="d-flex ms-auto me-3">
-      <!-- <input class="form-control me-2" type="search" placeholder="Search shoes..." />
-      <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button> -->
     </form>
     <div class="d-flex align-items-center gap-3">
       <i class="far fa-heart"></i>
@@ -118,7 +116,6 @@
 
 
 <script>
-  // OTP input auto-focus
   const inputs = document.querySelectorAll(".otp-input");
   inputs.forEach((input, index) => {
     input.addEventListener("input", () => {
@@ -128,8 +125,7 @@
     });
   });
 
-  // OTP timer and resend logic
-  let timerSeconds = 60; // 1 minute
+  let timerSeconds = 60;
   const timerSpan = document.getElementById('timer');
   const resendOtpLink = document.getElementById('resendOtpLink');
   let timerInterval = setInterval(() => {
@@ -152,15 +148,12 @@
       resendOtpLink.textContent = 'Resending...';
       resendOtpLink.style.pointerEvents = 'none';
       resendOtpLink.style.opacity = '0.5';
-      // Send AJAX request to resend OTP
       fetch('/user/login/sendOtp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: document.querySelector('input[name="email"]').value })
       })
-      // .then(res => res.json())
       .then(data => {
-        // Reset timer
         timerSeconds = 60;
         resendOtpLink.textContent = 'Resend OTP';
         resendOtpLink.style.pointerEvents = 'none';

@@ -104,7 +104,6 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-// CREATE Product Type
 const createType = async (req, res) => {
   try {
     const { value } = req.body;
@@ -128,7 +127,6 @@ const createType = async (req, res) => {
   }
 };
 
-// UPDATE Product Type
 const updateType = async (req, res) => {
   try {
     const { value } = req.body;
@@ -163,7 +161,6 @@ const updateType = async (req, res) => {
   }
 };
 
-// DELETE Product Type
 const deleteType = async (req, res) => {
   try {
     const { id } = req.params;
@@ -178,7 +175,6 @@ const deleteType = async (req, res) => {
   }
 };
 
-// CREATE Product Size
 const createSize = async (req, res) => {
   try {
     const { value } = req.body;
@@ -202,7 +198,6 @@ const createSize = async (req, res) => {
   }
 };
 
-// UPDATE Product Size
 const updateSize = async (req, res) => {
   try {
     const { value } = req.body;
@@ -237,7 +232,6 @@ const updateSize = async (req, res) => {
   }
 };
 
-// DELETE Product Size
 const deleteSize = async (req, res) => {
   try {
     const { id } = req.params;
@@ -252,7 +246,6 @@ const deleteSize = async (req, res) => {
   }
 };
 
-// CREATE Product Color
 const createColor = async (req, res) => {
   try {
     const { value } = req.body;
@@ -278,7 +271,6 @@ const createColor = async (req, res) => {
   }
 };
 
-// UPDATE Product Color
 const updateColor = async (req, res) => {
   try {
     const { value } = req.body;
@@ -315,7 +307,6 @@ const updateColor = async (req, res) => {
   }
 };
 
-// DELETE Product Color
 const deleteColor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -352,7 +343,6 @@ const getAddProduct = async (req, res) => {
 };
 
 
-//doubt - why cant we check if the product is already available.
 
 const createProduct = async (req, res) => {
   try {
@@ -382,7 +372,6 @@ const createProduct = async (req, res) => {
 
     const savedProduct = await newProduct.save();
 
-    //whats the use of multer and cloudinary?
     const variationEntries = [];
     const files = req.files || [];
 
@@ -419,7 +408,6 @@ const getProducts = async (req, res) => {
     const categories = await productCategoryModel.find({});
     const types = await productTypeModel.find({});
 
-    // Filters
     const {
       category = 'all',
       type = 'all',
@@ -436,7 +424,6 @@ const getProducts = async (req, res) => {
     if (type !== 'all') filter.product_type = type;
     if (search) filter.name = { $regex: search, $options: 'i' };
 
-    // Use created_at for sorting, fallback to _id if missing
     let sortObj = { created_at: -1, _id: -1 };
     if (sort === 'nameAsc') sortObj = { name: 1, created_at: -1, _id: -1 };
     else if (sort === 'nameDesc') sortObj = { name: -1, created_at: -1, _id: -1 };
@@ -490,14 +477,12 @@ const toggleActive = async (req, res) => {
   }
 };
 
-// GET: Render edit product page
 const getEditProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const product = await Product.findById(productId).lean();
     if (!product) return res.status(404).send('Product not found');
 
-    // Fetch variations for this product
     const variations = await ProductVariation.find({ product_id: productId }).lean();
     product.variations = variations.map(v => ({
       size: v.product_size,
@@ -525,14 +510,12 @@ const getEditProduct = async (req, res) => {
   }
 };
 
-// POST: Update product
 const postEditProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const product = await Product.findById(productId);
     if (!product) return res.status(404).send('Product not found');
 
-    // Update main fields
     product.name = req.body.name;
     product.price = req.body.price;
     product.discount_percentage = req.body.discount;
@@ -541,19 +524,15 @@ const postEditProduct = async (req, res) => {
     product.product_type = req.body.type;
     const savedProduct = await product.save();
 
-    // Update or add variations
     const variations = req.body.variations || {};
     const files = req.files || {};
 
-    // Get all existing variations for this product
     const existingVariations = await ProductVariation.find({ product_id: productId });
 
-    // Helper to find a matching variation (by size and color)
     function findExistingVar(size, color) {
       return existingVariations.find(v => v.product_size === size && v.product_color === color);
     }
 
-    // Build a set of submitted variations (size+color) for easy lookup
     const submittedKeys = new Set();
     const variationEntries = [];
 
@@ -568,17 +547,14 @@ const postEditProduct = async (req, res) => {
       let existing = findExistingVar(variation.size, variation.color);
 
       if (existing) {
-        // Clone the document to avoid ParallelSaveError
         const updateVariation = await ProductVariation.findById(existing._id);
         updateVariation.stock_quantity = variation.stock;
-        // If new images are uploaded, prepend them to the images array
         if (imageUrls.length > 0) {
           updateVariation.images = [...imageUrls, ...(updateVariation.images || [])];
         }
         updateVariation.updated_at = new Date();
         variationEntries.push(updateVariation.save());
       } else {
-        // Create a new variation if not found
         const newVariation = new ProductVariation({
           product_id: savedProduct._id,
           product_size: variation.size,
@@ -592,7 +568,6 @@ const postEditProduct = async (req, res) => {
       }
     }
 
-    // Delete variations that are no longer present in the submitted form
     const deleteOps = [];
     for (const v of existingVariations) {
       const key = `${v.product_size}__${v.product_color}`;

@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
-  <!-- Header -->
   <%- include('../partials/user-navbar', { name: name }) %>
   <script>
     function selectCategory(category) {
@@ -16,7 +15,6 @@
     }
   </script>
 
-  <!-- Main Product Section -->
   <main class="product-page">
     <div class="product-container">
       <div class="product-images">
@@ -89,12 +87,10 @@
       </div>
     </div>
 
-    <!-- Description (moved below warranty/features, now dynamic from DB) -->
     <div class="description">
       <p><%= product.description %></p>
     </div>
 
-    <!-- Reviews -->
     <div class="reviews">
       <h2>Recent Reviews</h2>
       <div class="review">
@@ -103,7 +99,6 @@
       </div>
     </div>
 
-    <!-- Write a Review -->
     <div class="write-review">
       <h2>Write a Review</h2>
       <p><strong>Nike Air Max 270</strong> — Men's Sports Shoes</p>
@@ -112,7 +107,6 @@
       <button>Submit Review</button>
     </div>
 
-    <!-- Related Products -->
     <div class="related-products">
       <h2>Related Products</h2>
       <div class="product-list-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 24px;">
@@ -150,7 +144,6 @@
     </div>
   </main>
 
-  <!-- Footer -->
   <footer>
     <div class="footer-columns">
       <div>
@@ -182,7 +175,6 @@
   </footer>
 
   <script>
-    // Always define sizeColorMap to avoid ReferenceError
     const sizeColorMap = JSON.parse('<%- JSON.stringify(typeof sizeColorMap !== "undefined" ? sizeColorMap : {}) %>');
     const variations = JSON.parse('<%- JSON.stringify(typeof variations !== "undefined" ? variations : []) %>');
 
@@ -205,7 +197,6 @@
           cb.style.cursor = 'not-allowed';
         }
       });
-      // Deselect color if not available
       if(document.querySelector('.color-btn.selected') && document.querySelector('.color-btn.selected').classList.contains('unavailable')) {
         document.querySelector('.color-btn.selected').classList.remove('selected');
       }
@@ -239,12 +230,10 @@
     }
 
 
-    // On page load, set color availability for the initially selected size and select first color
     let initialSelectedSizeBtn = document.querySelector('.size-btn.selected') || document.querySelector('.size-btn[aria-pressed="true"]') || sizeBtns[0];
     if (initialSelectedSizeBtn) {
       initialSelectedSizeBtn.classList.add('selected');
       updateColorAvailability(initialSelectedSizeBtn.dataset.size);
-      // Select the first available color button
       let firstColorBtn = document.querySelector('.color-btn');
       if (firstColorBtn && !firstColorBtn.classList.contains('unavailable')) {
         firstColorBtn.classList.add('selected');
@@ -252,7 +241,6 @@
       }
     }
 
-    // Highlight selected size and update color availability
     sizeBtns.forEach(btn => {
       btn.addEventListener('click', function() {
         sizeBtns.forEach(b => b.classList.remove('selected'));
@@ -260,7 +248,6 @@
         updateColorAvailability(this.dataset.size);
       });
     });
-    // Highlight selected color (only if not unavailable)
     colorBtns.forEach(btn => {
       btn.addEventListener('click', function() {
         if (btn.classList.contains('unavailable')) return;
@@ -269,7 +256,6 @@
         updateStockMessage();
       });
     });
-    // Quantity controls
     const qtyInput = document.getElementById('qty-input');
     document.getElementById('qty-minus').onclick = function() {
       let val = parseInt(qtyInput.value, 10);
@@ -279,12 +265,10 @@
       let val = parseInt(qtyInput.value, 10);
       qtyInput.value = val + 1;
     };
-    // Add to Cart button (collects selected options)
     document.getElementById('addToCartBtn').onclick = function() {
       const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
       const quantity = qtyInput.value;
-      // You can send these values to your backend via AJAX or a form
       alert(`Added to cart:\nSize: ${selectedSize}\nColor: ${selectedColor}\nQuantity: ${quantity}`);
     };
   </script>
