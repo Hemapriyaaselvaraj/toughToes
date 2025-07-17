@@ -537,7 +537,7 @@ const postEditProduct = async (req, res) => {
     product.description = req.body.description;
     product.product_category = req.body.category;
     product.product_type = req.body.type;
-    await product.save();
+    const savedProduct = await product.save();
 
     // Update or add variations
     const variations = req.body.variations || {};
@@ -554,30 +554,42 @@ const postEditProduct = async (req, res) => {
 
     const variationEntries = [];
 
-     for (let i = 0; i < variations.length; i++) {
+    for (let i = 0; i < variations.length; i++) {
       const variation = variations[i];
       const images = files.filter(file => file.fieldname === `variationImages_${i}`) || [];
       const imageUrls = images.map((file) => file.path);
 
-       let existing = findExistingVar(variation.size, variation.color);
+      let existing = findExistingVar(variation.size, variation.color);
 
-      const newVariation = new ProductVariation({
-        product_id: savedProduct._id,
-        product_size: variation.size,
-        product_color: variation.color,
-        stock_quantity: variation.stock,
-        images: imageUrls.length > 0 && existing?.images ? [...imageUrls, ...existing.images] : imageUrls.length > 0 ? imageUrls : existing?.images || [],
-        created_at: new Date(),
-        updated_at: new Date(),
-      });
-
-      variationEntries.push(newVariation.save());
+      if (existing) {
+        // Clone the document to avoid ParallelSaveError
+        const updateVariation = await ProductVariation.findById(existing._id);
+        updateVariation.stock_quantity = variation.stock;
+        // If new images are uploaded, prepend them to the images array
+        if (imageUrls.length > 0) {
+          updateVariation.images = [...imageUrls, ...(updateVariation.images || [])];
+        }
+        updateVariation.updated_at = new Date();
+        variationEntries.push(updateVariation.save());
+      } else {
+        // Create a new variation if not found
+        const newVariation = new ProductVariation({
+          product_id: savedProduct._id,
+          product_size: variation.size,
+          product_color: variation.color,
+          stock_quantity: variation.stock,
+          images: imageUrls,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+        variationEntries.push(newVariation.save());
+      }
     }
 
-  
-    await Promise.all(variationOps);
+    await Promise.all(variationEntries);
     res.status(200).json({ success: true });
   } catch (err) {
+    console.error("Error updating product:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 };
