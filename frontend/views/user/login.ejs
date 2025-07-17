@@ -10,25 +10,26 @@
 </head>
 
 <body>
-  <header class="navbar">
-    <a href="/" class="logo" style="text-decoration:none;color:inherit;">ToughToes</a>
-    <nav class="nav-links">
-      <a href="#" onclick="selectCategory('Men'); return false;">Men</a>
-      <a href="#" onclick="selectCategory('Women'); return false;">Women</a>
-      <a href="#" onclick="selectCategory('Kids'); return false;">Kids</a>
-    </nav>
-    <div class="nav-right">
-      <input type="text" placeholder="Search shoes..." class="search-input" id="navbarSearchInput" />
-      <i class="fas fa-search" id="navbarSearchIcon" style="cursor:pointer;"></i>
-      <i class="fas fa-user"></i>
-      <% if (typeof name === 'string' && name.trim().length > 0) { %>
-        <span><%= name %></span>
-        <button id="logoutBtn" class="btn btn-logout">Logout</button>
-      <% } else { %>
-        <button id="loginBtn" class="btn btn-login">Login</button>
-      <% } %>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4">
+    <a class="navbar-brand" href="/">ToughToes</a>
+    <div class="collapse 1navbar-collapse">
+      <ul class="navbar-nav ms-3">
+        <li class="nav-item"><a class="nav-link" href="#">Men</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Women</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Kids</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Sale</a></li>
+      </ul>
     </div>
-  </header>
+    <form class="d-flex ms-auto me-3">
+      <!-- <input class="form-control me-2" type="search" placeholder="Search shoes..." />
+      <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button> -->
+    </form>
+    <div class="d-flex align-items-center gap-3">
+      <i class="far fa-heart"></i>
+      <i class="fas fa-shopping-cart"></i>
+      <i class="fas fa-user"></i>
+    </div>
+  </nav>
   <script>
     function selectCategory(category) {
       window.location.href = '/products?category=' + encodeURIComponent(category);
