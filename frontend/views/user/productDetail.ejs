@@ -63,6 +63,10 @@
           </div>
         </div>
 
+
+        <div class="stock-info">
+          <span id="stock-message"></span>
+        </div>
         <div class="quantity">
           <p>Quantity</p>
           <div class="quantity-controls">
@@ -180,9 +184,11 @@
   <script>
     // Always define sizeColorMap to avoid ReferenceError
     const sizeColorMap = JSON.parse('<%- JSON.stringify(typeof sizeColorMap !== "undefined" ? sizeColorMap : {}) %>');
+    const variations = JSON.parse('<%- JSON.stringify(typeof variations !== "undefined" ? variations : []) %>');
 
     const sizeBtns = document.querySelectorAll('.size-btn');
     const colorBtns = document.querySelectorAll('.color-btn');
+    const stockMessage = document.getElementById('stock-message');
 
     function updateColorAvailability(selectedSize) {
       const availableColors = sizeColorMap[selectedSize] || [];
@@ -203,13 +209,47 @@
       if(document.querySelector('.color-btn.selected') && document.querySelector('.color-btn.selected').classList.contains('unavailable')) {
         document.querySelector('.color-btn.selected').classList.remove('selected');
       }
+      updateStockMessage();
     }
 
-    // On page load, set color availability for the initially selected size
+    function updateStockMessage() {
+      const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
+      const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
+      if (!selectedSize || !selectedColor) {
+        stockMessage.textContent = '';
+        return;
+      }
+      const match = variations.find(v => v.product_size == selectedSize && v.product_color == selectedColor);
+      if (!match) {
+        stockMessage.textContent = 'Sold out';
+        stockMessage.style.color = 'red';
+        return;
+      }
+      const stock = match.stock_quantity;
+      if (stock === 0) {
+        stockMessage.textContent = 'Sold out';
+        stockMessage.style.color = 'red';
+      } else if (stock < 10) {
+        stockMessage.textContent = `Few stocks left (${stock})`;
+        stockMessage.style.color = 'orange';
+      } else {
+        stockMessage.textContent = `In stock (${stock})`;
+        stockMessage.style.color = 'green';
+      }
+    }
+
+
+    // On page load, set color availability for the initially selected size and select first color
     let initialSelectedSizeBtn = document.querySelector('.size-btn.selected') || document.querySelector('.size-btn[aria-pressed="true"]') || sizeBtns[0];
     if (initialSelectedSizeBtn) {
       initialSelectedSizeBtn.classList.add('selected');
       updateColorAvailability(initialSelectedSizeBtn.dataset.size);
+      // Select the first available color button
+      let firstColorBtn = document.querySelector('.color-btn');
+      if (firstColorBtn && !firstColorBtn.classList.contains('unavailable')) {
+        firstColorBtn.classList.add('selected');
+        updateStockMessage();
+      }
     }
 
     // Highlight selected size and update color availability
@@ -226,6 +266,7 @@
         if (btn.classList.contains('unavailable')) return;
         colorBtns.forEach(b => b.classList.remove('selected'));
         this.classList.add('selected');
+        updateStockMessage();
       });
     });
     // Quantity controls

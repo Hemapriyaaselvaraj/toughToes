@@ -188,7 +188,7 @@ const productDetail = async (req, res) => {
     // Fetch product by ID
     const product = await Product.findById(productId).lean();
     if (!product) return res.status(404).send('Product not found');
-    // Fetch variations (images, sizes, colors)
+    // Fetch variations (images, sizes, colors, stock)
     const variations = await ProductVariation.find({ product_id: productId }).lean();
     // Prepare images array (main + thumbnails)
     let images = [];
@@ -202,8 +202,8 @@ const productDetail = async (req, res) => {
     const sizeColorMap = {};
     if (variations && variations.length) {
       variations.forEach(variation => {
-        const size = variation.size;
-        const color = variation.color;
+        const size = variation.product_size;
+        const color = variation.product_color;
         if (!sizeColorMap[size]) sizeColorMap[size] = [];
         if (color && !sizeColorMap[size].includes(color)) sizeColorMap[size].push(color);
       });
@@ -236,6 +236,7 @@ const productDetail = async (req, res) => {
       relatedProducts,
       name,
       sizeColorMap,
+      variations, // pass variations to EJS
     });
   } catch (err) {
     res.status(500).send('Error loading product detail');
