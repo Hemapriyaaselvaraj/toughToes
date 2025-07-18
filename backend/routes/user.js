@@ -19,7 +19,6 @@ router.get('/auth/google', isNotLogin, passport.authenticate('google', { scope: 
 router.get('/auth/google/callback', isNotLogin, passport.authenticate('google', {
   failureRedirect: '/user/login',
 }), (req, res) => {
-  // Successful authentication
   req.session.user = true;
   req.session.role = req.user.role;
   req.session.userId = req.user._id;

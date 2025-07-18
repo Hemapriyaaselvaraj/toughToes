@@ -1,10 +1,3 @@
-const checkSession = (req,res,next) => {
-    if(req.session.user){
-        next();
-    }else {
-        res.redirect('/user/login')
-    }
-}
 
 const isNotLogin = (req,res,next) => {
     if(req.session.user){
@@ -36,4 +29,4 @@ const isAdminAccessible = (req, res, next) => {
     }
 }
 
-module.exports = {checkSession , isNotLogin, isCustomerAccessible, isAdminAccessible}
+module.exports = {isNotLogin, isCustomerAccessible, isAdminAccessible}

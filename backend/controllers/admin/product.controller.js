@@ -438,9 +438,6 @@ const getProducts = async (req, res) => {
       .limit(pageSize)
       .lean();
     
-    for (let product of products) {
-      product.stock = product.stock || 0;
-    }
 
     const totalPages = Math.ceil(totalResults / pageSize);
 
