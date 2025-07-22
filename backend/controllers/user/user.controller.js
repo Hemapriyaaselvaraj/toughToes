@@ -1,3 +1,56 @@
+const requestEmailOtp = async (req, res) => {
+  const { newEmail } = req.body;
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Not logged in' });
+  }
+  // Check if email already exists
+  const existingUser = await userModel.findOne({ email: newEmail });
+  if (existingUser) {
+    return res.json({ success: false, message: 'Email already registered.' });
+  }
+  // Generate OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiry = new Date(Date.now() + 10 * 60 * 1000);
+  // Save OTP for this user and new email
+  let otpVerification = await otpVerificationModel.findOne({ email: newEmail });
+  if (otpVerification) {
+    otpVerification.otp = otp;
+    otpVerification.expiry = expiry;
+    await otpVerification.save();
+  } else {
+    otpVerification = new otpVerificationModel({ email: newEmail, otp, expiry });
+    await otpVerification.save();
+  }
+  // Send OTP to new email
+  await transporter.sendMail({
+    from: `Tough Toes <${process.env.EMAIL_USER}>`,
+    to: newEmail,
+    subject: 'Email Change OTP',
+    html: `<h3>Your OTP for email change is: <b>${otp}</b></h3>`
+  });
+  // Store newEmail in session for verification
+  req.session.pendingEmail = newEmail;
+  res.json({ success: true });
+};
+
+const verifyEmailOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  if (!req.session || !req.session.userId || !req.session.pendingEmail) {
+    return res.render('user/verifyOtp', { error: 'Session expired. Please try again.', email });
+  }
+  const otpVerification = await otpVerificationModel.findOne({ email });
+  if (!otpVerification || otpVerification.otp !== otp || otpVerification.expiry < new Date()) {
+    if (otpVerification && otpVerification.expiry < new Date()) {
+      await otpVerification.deleteOne();
+    }
+    return res.render('user/verifyOtp', { error: 'Invalid or expired OTP', email });
+  }
+  // Update user's email
+  await userModel.findByIdAndUpdate(req.session.userId, { email });
+  await otpVerification.deleteOne();
+  delete req.session.pendingEmail;
+  res.redirect('/profile');
+};
 const userModel = require("../../models/userModel");
 const otpVerificationModel = require("../../models/otpVerificationModel");
 require('dotenv').config();
@@ -172,4 +225,16 @@ const logout = (req, res) => {
   });
 };
 
-module.exports = { signup, viewSignUp, viewLogin, login, forgotPassword, sendOtp, verifyOtp, changePassword, logout };
+module.exports = {
+  signup,
+  viewSignUp,
+  viewLogin,
+  login,
+  forgotPassword,
+  sendOtp,
+  verifyOtp,
+  changePassword,
+  logout,
+  requestEmailOtp,
+  verifyEmailOtp
+};

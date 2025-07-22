@@ -87,7 +87,10 @@
           <div class="row mb-3">
             <div class="col">
               <label>Email Address</label>
-              <input type="email" class="form-control" value="<%= user.email %>" disabled>
+              <div class="input-group">
+                <input type="email" class="form-control" name="email" id="emailInput" value="<%= user.email %>" disabled>
+                <button type="button" class="btn btn-outline-secondary" id="editEmailBtn">Edit</button>
+              </div>
             </div>
             <div class="col">
               <label>Phone Number</label>
@@ -108,6 +111,9 @@
           const firstNameInput = form.elements['firstName'];
           const lastNameInput = form.elements['lastName'];
           const phoneInput = form.elements['phoneNumber'];
+          const emailInput = document.getElementById('emailInput');
+          const editEmailBtn = document.getElementById('editEmailBtn');
+
           editBtn.onclick = function() {
             firstNameInput.disabled = false;
             lastNameInput.disabled = false;
@@ -123,14 +129,43 @@
               firstNameInput.disabled = true;
               lastNameInput.disabled = true;
               phoneInput.disabled = true;
+              emailInput.value = '<%= user.email %>';
+              emailInput.disabled = true;
+              editEmailBtn.style.display = '';
               editBtns.style.display = 'none';
               editBtn.style.display = '';
             };
           }
-          form.onsubmit = function() {
+
+          // Email edit logic
+          editEmailBtn.onclick = function() {
+            emailInput.disabled = false;
+            emailInput.focus();
+            editEmailBtn.style.display = 'none';
+            editBtns.style.display = '';
+          };
+
+          form.onsubmit = function(e) {
             firstNameInput.disabled = false;
             lastNameInput.disabled = false;
             phoneInput.disabled = false;
+            // If email is being changed, start OTP flow
+            if (!emailInput.disabled && emailInput.value !== '<%= user.email %>') {
+              e.preventDefault();
+              fetch('/user/request-email-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newEmail: emailInput.value })
+              })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  window.location.href = '/user/verifyotp?email=' + encodeURIComponent(emailInput.value);
+                } else {
+                  alert(data.message || 'Could not send OTP.');
+                }
+              });
+            }
           };
         </script>
       </div>
