@@ -170,6 +170,13 @@
         </script>
       </div>
 
+      <!-- Change Password Section -->
+      <div class="border rounded p-4 mb-4 bg-light">
+        <h6>Change Password</h6>
+        <p class="text-muted small">Change your account password securely.</p>
+        <button class="btn btn-outline-dark" id="changePasswordBtn">Change Password</button>
+      </div>
+
       <!-- Danger Zone -->
       <div class="danger-zone border rounded p-4 bg-light">
         <h6>Danger Zone</h6>
@@ -182,6 +189,126 @@
           <button class="btn btn-outline-dark">Deactivate Account</button>
         </div>
       </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="changePasswordForm">
+          <div class="mb-3">
+            <label for="changePasswordEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="changePasswordEmail" value="<%= user.email %>" readonly>
+          </div>
+          <div class="mb-3">
+            <button type="button" class="btn btn-outline-secondary" id="sendOtpBtn">Send OTP</button>
+          </div>
+          <div class="mb-3">
+            <label for="otpInput" class="form-label">OTP</label>
+            <input type="text" class="form-control" id="otpInput" placeholder="Enter OTP" disabled>
+          </div>
+          <div class="mb-3">
+            <label for="newPasswordInput" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="newPasswordInput" placeholder="New Password" disabled>
+          </div>
+          <div class="mb-3">
+            <label for="confirmPasswordInput" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPasswordInput" placeholder="Confirm Password" disabled>
+          </div>
+          <button type="submit" class="btn btn-dark" id="submitChangePasswordBtn" disabled>Change Password</button>
+        </form>
+        <div id="changePasswordError" class="text-danger mt-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Change Password Modal logic
+  const changePasswordBtn = document.getElementById('changePasswordBtn');
+  const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+  const sendOtpBtn = document.getElementById('sendOtpBtn');
+  const otpInput = document.getElementById('otpInput');
+  const newPasswordInput = document.getElementById('newPasswordInput');
+  const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+  const submitChangePasswordBtn = document.getElementById('submitChangePasswordBtn');
+  const changePasswordError = document.getElementById('changePasswordError');
+
+  changePasswordBtn.onclick = function() {
+    changePasswordModal.show();
+    otpInput.value = '';
+    newPasswordInput.value = '';
+    confirmPasswordInput.value = '';
+    otpInput.disabled = true;
+    newPasswordInput.disabled = true;
+    confirmPasswordInput.disabled = true;
+    submitChangePasswordBtn.disabled = true;
+    changePasswordError.textContent = '';
+  };
+
+  sendOtpBtn.onclick = function() {
+    fetch('/user/login/sendOtp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('changePasswordEmail').value })
+    })
+    .then(res => res.text())
+    .then(() => {
+      otpInput.disabled = false;
+      changePasswordError.textContent = 'OTP sent to your email.';
+    })
+    .catch(() => {
+      changePasswordError.textContent = 'Failed to send OTP.';
+    });
+  };
+
+  otpInput.oninput = function() {
+    if (otpInput.value.length === 6) {
+      newPasswordInput.disabled = false;
+      confirmPasswordInput.disabled = false;
+      submitChangePasswordBtn.disabled = false;
+    } else {
+      newPasswordInput.disabled = true;
+      confirmPasswordInput.disabled = true;
+      submitChangePasswordBtn.disabled = true;
+    }
+  };
+
+  document.getElementById('changePasswordForm').onsubmit = function(e) {
+    e.preventDefault();
+    fetch('/user/changePassword', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: document.getElementById('changePasswordEmail').value,
+        otp: otpInput.value,
+        password: newPasswordInput.value,
+        confirmPassword: confirmPasswordInput.value
+      })
+    })
+    .then(res => res.text())
+    .then(response => {
+      const trimmed = response.trim();
+      if (trimmed === 'Password changed successfully!') {
+        changePasswordModal.hide();
+        alert('Password changed successfully!');
+      } else if (trimmed.includes('Invalid otp')) {
+        changePasswordError.textContent = 'Wrong OTP';
+      } else {
+        changePasswordError.textContent = trimmed;
+      }
+    })
+    .catch(() => {
+      changePasswordError.textContent = 'Failed to change password.';
+    });
+  };
+</script>
     </div>
   </div>
 

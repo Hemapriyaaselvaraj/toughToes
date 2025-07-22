@@ -168,23 +168,47 @@ const verifyOtp = async(req, res) => {
 }
 
 const changePassword = async(req, res) => {
-  const { email, password, confirmPassword } = req.body;
+  const { email, password, confirmPassword, otp } = req.body;
+  const isAjax = req.xhr || req.headers['content-type'] === 'application/json';
+
+  // If OTP is required, check OTP validity
+  if (otp !== undefined) {
+    const otpVerification = await otpVerificationModel.findOne({ email });
+    if (!otpVerification || otpVerification.otp !== otp || otpVerification.expiry < new Date()) {
+      if (isAjax) {
+        return res.status(400).send('Invalid otp');
+      } else {
+        return res.render('user/verifyOtp', { error: 'Invalid otp', email });
+      }
+    }
+    await otpVerification.deleteOne();
+  }
 
   const user = await userModel.findOne({ email });
+  if (!user) {
+    if (isAjax) return res.status(400).send('User does not exist');
+    return res.render("user/changePassword", { error: "User does not exist", email });
+  }
 
-  if (!user) return res.render("user/changePassword", { error: "User does not exist", email });
-
-  if (password !== confirmPassword) return res.render("user/changePassword", { error: "Passwords does not match", email });
+  if (password !== confirmPassword) {
+    if (isAjax) return res.status(400).send('Passwords does not match');
+    return res.render("user/changePassword", { error: "Passwords does not match", email });
+  }
 
   const isMatch = await bcrypt.compare(password, user.password);
-  if(isMatch) return res.render("user/changePassword", { error: "New password should not be same as previous one", email });
-
+  if(isMatch) {
+    if (isAjax) return res.status(400).send('New password should not be same as previous one');
+    return res.render("user/changePassword", { error: "New password should not be same as previous one", email });
+  }
 
   user.password = await bcrypt.hash(password, saltround);
+  await user.save();
 
-  user.save();
-
-  res.redirect('/user/login');
+  if (isAjax) {
+    return res.send('Password changed successfully!');
+  } else {
+    res.redirect('/user/login');
+  }
 
 
 }
