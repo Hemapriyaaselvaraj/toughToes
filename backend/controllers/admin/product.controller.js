@@ -5,16 +5,14 @@ const productSizeModel = require("../../models/productSizeModel");
 const productTypeModel = require("../../models/productTypeModel");
 const Product = require("../../models/productModel");
 const ProductVariation = require("../../models/productVariationModel");
-const cloudinary = require("../../config/cloudinary");
-const productVariationModel = require("../../models/productVariationModel");
 
 const getProductConfiguration = async (req, res) => {
   const user = await userModel.findOne({ _id: req.session.userId });
 
-  const categories = await productCategoryModel.find({});
-  const types = await productTypeModel.find({});
-  const sizes = await productSizeModel.find({});
-  const colors = await productColorModel.find({});
+  const categories = await productCategoryModel.find({}).sort({ category: 1 });
+  const types = await productTypeModel.find({}).sort({ type: 1 });
+  const sizes = await productSizeModel.find({}).sort({ size: 1 });
+  const colors = await productColorModel.find({}).sort({ color: 1 });
 
   res.render("admin/product-configuration", {
     name: user.firstName,
@@ -32,14 +30,14 @@ const getProductConfiguration = async (req, res) => {
     const { value } = req.body;
 
     const isCategoryAlreadyAvailable = await productCategoryModel.findOne({
-      category: value,
+      category: { $regex: `^${value}$`, $options: 'i' }
     });
     
     if (isCategoryAlreadyAvailable) {
       throw new Error("Category already exists");
     } 
       
-    const newCategory = new productCategoryModel({ category: value });
+    const newCategory = new productCategoryModel({ category: value.toUpperCase() });
     await newCategory.save();
      
     res.status(201).json({
@@ -64,7 +62,7 @@ const updateCategory = async (req, res) => {
     }
 
     const isCategoryAlreadyAvailable = await productCategoryModel.findOne({
-      category: value,
+      category: { $regex: `^${value}$`, $options: 'i' }
     });
 
     if (isCategoryAlreadyAvailable) {
@@ -73,7 +71,7 @@ const updateCategory = async (req, res) => {
 
     var myquery = { _id: id };
     var newvalues = {
-      $set: { category: value },
+      $set: { category: value.toUpperCase() },
     };
 
     await productCategoryModel.updateOne(myquery, newvalues);
@@ -109,14 +107,14 @@ const createType = async (req, res) => {
     const { value } = req.body;
 
     const isTypeAlreadyAvailable = await productTypeModel.findOne({
-      type: value,
+      type: { $regex: `^${value}$`, $options: 'i' }
     });
 
     if (isTypeAlreadyAvailable) {
       throw new Error("Type already exists");
     }
 
-    const newType = new productTypeModel({ type: value });
+    const newType = new productTypeModel({ type: value.toUpperCase() });
     await newType.save();
 
     res.status(201).json({
@@ -139,8 +137,9 @@ const updateType = async (req, res) => {
     }
 
     const isTypeAlreadyAvailable = await productTypeModel.findOne({
-      type: value,
+      type: { $regex: `^${value}$`, $options: 'i' }
     });
+
 
     if (isTypeAlreadyAvailable) {
       throw new Error("Type already exists");
@@ -148,7 +147,7 @@ const updateType = async (req, res) => {
 
     const myquery = { _id: id };
     const newvalues = {
-      $set: { type: value },
+      $set: { type: value.toUpperCase() },
     };
 
     await productTypeModel.updateOne(myquery, newvalues);
@@ -180,14 +179,15 @@ const createSize = async (req, res) => {
     const { value } = req.body;
 
     const isSizeAlreadyAvailable = await productSizeModel.findOne({
-      size: value,
+      size: { $regex: `^${value}$`, $options: 'i' }
     });
+
 
     if (isSizeAlreadyAvailable) {
       throw new Error("Size already exists");
     }
 
-    const newSize = new productSizeModel({ size: value });
+    const newSize = new productSizeModel({ size: value.toUpperCase() });
     await newSize.save();
 
     res.status(201).json({
@@ -210,8 +210,9 @@ const updateSize = async (req, res) => {
     }
 
     const isSizeAlreadyAvailable = await productSizeModel.findOne({
-      size: value,
+      size: { $regex: `^${value}$`, $options: 'i' }
     });
+
 
     if (isSizeAlreadyAvailable) {
       throw new Error("Size already exists");
@@ -219,7 +220,7 @@ const updateSize = async (req, res) => {
 
     const myquery = { _id: id };
     const newvalues = {
-      $set: { size: value },
+      $set: { size: value.toUpperCase() },
     };
 
     await productSizeModel.updateOne(myquery, newvalues);
@@ -250,15 +251,16 @@ const createColor = async (req, res) => {
   try {
     const { value } = req.body;
 
-    const isColorAlreadyAvailable = await productColorModel.findOne({
-      color: value,
+    const isColorAlreadyAvailable =  await productColorModel.findOne({
+      color: { $regex: `^${value}$`, $options: 'i' }
     });
+
 
     if (isColorAlreadyAvailable) {
       throw new Error("Color already exists");
     }
 
-    const newColor = new productColorModel({ color: value });
+    const newColor = new productColorModel({ color: value.toUpperCase() });
     await newColor.save();
 
     res.status(201).json({
@@ -283,7 +285,7 @@ const updateColor = async (req, res) => {
     }
 
     const isColorAlreadyAvailable = await productColorModel.findOne({
-      color: value,
+      color: { $regex: `^${value}$`, $options: 'i' }
     });
 
     if (isColorAlreadyAvailable) {
@@ -292,7 +294,7 @@ const updateColor = async (req, res) => {
 
     const myquery = { _id: id };
     const newvalues = {
-      $set: { color: value },
+      $set: { color: value.toUpperCase() },
     };
 
     await productColorModel.updateOne(myquery, newvalues);

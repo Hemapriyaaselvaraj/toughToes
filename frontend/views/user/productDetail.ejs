@@ -182,6 +182,16 @@
     const colorBtns = document.querySelectorAll('.color-btn');
     const stockMessage = document.getElementById('stock-message');
 
+    // Thumbnail click handler
+    document.querySelectorAll('.thumbnails img').forEach(function(thumb) {
+      thumb.addEventListener('click', function() {
+        const mainImg = document.querySelector('.main-img');
+        if (mainImg && this.src) {
+          mainImg.src = this.src;
+        }
+      });
+    });
+
     function updateColorAvailability(selectedSize) {
       const availableColors = sizeColorMap[selectedSize] || [];
       colorBtns.forEach(cb => {
@@ -228,7 +238,6 @@
         stockMessage.style.color = 'green';
       }
     }
-
 
     let initialSelectedSizeBtn = document.querySelector('.size-btn.selected') || document.querySelector('.size-btn[aria-pressed="true"]') || sizeBtns[0];
     if (initialSelectedSizeBtn) {
