@@ -35,5 +35,11 @@ app.use('/user',userRoutes)
 app.use('/admin',adminRoutes)
 app.use('/', customerRoutes)
 
+const userWishlistRoute = require('./backend/routes/user/wishlist');
+app.use('/wishlist', userWishlistRoute);
+
+const userProfileRoute = require('./backend/routes/user/profile');
+app.use('/profile', userProfileRoute);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

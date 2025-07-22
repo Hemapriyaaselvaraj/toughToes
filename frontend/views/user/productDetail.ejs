@@ -76,7 +76,7 @@
 
         <% if (typeof name === 'string' && name.trim().length > 0) { %>
           <button class="add-to-cart" id="addToCartBtn">🛒 Add to Cart</button>
-          <button class="add-to-wishlist">♡ Add to Wishlist</button>
+          <button class="add-to-wishlist" id="addToWishlistBtn">♡ Add to Wishlist</button>
         <% } %>
 
         <div class="features">
@@ -271,6 +271,30 @@
       const quantity = qtyInput.value;
       alert(`Added to cart:\nSize: ${selectedSize}\nColor: ${selectedColor}\nQuantity: ${quantity}`);
     };
+
+    // Add to Wishlist AJAX
+    const addToWishlistBtn = document.getElementById('addToWishlistBtn');
+    if (addToWishlistBtn) {
+      addToWishlistBtn.onclick = function() {
+        fetch('/wishlist/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ productId: '<%= product._id %>' })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(data.message || 'Added to wishlist!');
+          } else {
+            alert(data.message || 'Could not add to wishlist.');
+          }
+        })
+        .catch(() => alert('Could not add to wishlist.'));
+      };
+    }
   </script>
 </body>
 </html>
