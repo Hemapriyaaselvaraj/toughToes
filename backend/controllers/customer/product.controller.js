@@ -181,7 +181,10 @@ const productDetail = async (req, res) => {
         const size = variation.product_size;
         const color = variation.product_color;
         if (!sizeColorMap[size]) sizeColorMap[size] = [];
-        if (color && !sizeColorMap[size].includes(color)) sizeColorMap[size].push(color);
+        if (color && !sizeColorMap[size].includes(color)) sizeColorMap[size].push( {
+          color: color, 
+          images: variation.images
+        });
       });
     }
     const relatedProducts = await Product.find({
@@ -199,7 +202,7 @@ const productDetail = async (req, res) => {
     relatedProducts.forEach(p => { p.image = relatedImageMap[p._id.toString()] || null; });
     let name = null;
     if (req.session && req.session.userId) {
-      const user = await require("../../models/userModel").findById(req.session.userId).lean();
+      const user = await userModel.findById(req.session.userId).lean();
       if (user) name = user.firstName + (user.lastName ? (" " + user.lastName) : "");
     }
     res.render('user/productDetail', {
