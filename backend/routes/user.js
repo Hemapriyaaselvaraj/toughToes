@@ -8,7 +8,7 @@ router.get('/login', isNotLogin,userController.viewLogin);
 router.post('/login',userController.login);
 router.get('/login/forgotPassword', isNotLogin ,userController.forgotPassword)
 router.post('/login/sendOtp', userController.sendOtp)
-router.post('/login/verifyOtp', userController.verifyOtp)
+router.post('/verifyOtp', userController.verifyOtp)
 router.post('/changePassword' , userController.changePassword);
 
 
