@@ -7,50 +7,49 @@ const Product = require("../../models/productModel");
 const ProductVariation = require("../../models/productVariationModel");
 
 const productList = async (req, res) => {
+  // Step 1: Get logged-in user's name
   let name = null;
   if (req.session && req.session.userId) {
     const user = await userModel.findById(req.session.userId);
     if (user) name = user.firstName + ' ' + user.lastName;
   }
+
+  // Step 2: Get filters from query
   const selectedCategory = req.query.category || null;
-  const typeArr = req.query.type ? (Array.isArray(req.query.type) ? req.query.type : [req.query.type]) : (req.query['type[]'] ? (Array.isArray(req.query['type[]']) ? req.query['type[]'] : [req.query['type[]']]) : []);
-  const sizeArr = req.query.size ? (Array.isArray(req.query.size) ? req.query.size : [req.query.size]) : (req.query['size[]'] ? (Array.isArray(req.query['size[]']) ? req.query['size[]'] : [req.query['size[]']]) : []);
-  const colorArr = req.query.color ? (Array.isArray(req.query.color) ? req.query.color : [req.query.color]) : (req.query['color[]'] ? (Array.isArray(req.query['color[]']) ? req.query['color[]'] : [req.query['color[]']]) : []);
-  const priceArr = req.query.price ? (Array.isArray(req.query.price) ? req.query.price : [req.query.price]) : (req.query['price[]'] ? (Array.isArray(req.query['price[]']) ? req.query['price[]'] : [req.query['price[]']]) : []);
-  const selectedType = typeArr.length ? typeArr : [];
-  const selectedSize = sizeArr.length ? sizeArr : [];
-  const selectedColor = colorArr.length ? colorArr : [];
-  const selectedPrice = priceArr.length ? priceArr : [];
-
+  const selectedType = [].concat(req.query.type || []);
+  const selectedSize = [].concat(req.query.size || []);
+  const selectedColor = [].concat(req.query.color || []);
+  const selectedPrice = [].concat(req.query.price || []);
+  const search = req.query.search?.trim() || '';
+  const sortOrder = req.query.sort || 'newest';
+  const currentPage = parseInt(req.query.page) || 1;
   const pageSize = 20;
-  const currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
 
+  // Step 3: Create filter for product model
+  const filter = { is_active: true };
+  if (selectedCategory) filter.product_category = selectedCategory;
+  if (selectedType.length) filter.product_type = { $in: selectedType };
+  if (search) filter.name = { $regex: search, $options: 'i' };
 
-  let andFilters = [{ is_active: true }];
-  if (selectedCategory) andFilters.push({ product_category: selectedCategory });
-  if (selectedType.length) andFilters.push({ product_type: { $in: selectedType } });
-
-  if (req.query.search && req.query.search.trim().length > 0) {
-    andFilters.push({ name: { $regex: req.query.search.trim(), $options: 'i' } });
-  }
-
+  // Step 4: Handle size/color filtering via ProductVariation
   let variationProductIds = null;
-
   if (selectedSize.length || selectedColor.length) {
-    let variationFilter = {};
+    const variationFilter = {};
     if (selectedSize.length) variationFilter.product_size = { $in: selectedSize };
     if (selectedColor.length) variationFilter.product_color = { $in: selectedColor };
-    const matchingVariations = await ProductVariation.find(variationFilter, 'product_id').lean();
-    variationProductIds = [...new Set(matchingVariations.map(v => v.product_id.toString()))];
-    if (variationProductIds.length === 0) {
+
+    const variations = await ProductVariation.find(variationFilter, 'product_id').lean();
+    variationProductIds = [...new Set(variations.map(v => v.product_id.toString()))];
+
+    if (!variationProductIds.length) {
       return res.render('user/productList', {
         products: [],
         name,
-        categories,
-        types,
-        sizes,
-        colors,
-        priceRanges,
+        categories: [],
+        types: [],
+        sizes: [],
+        colors: [],
+        priceRanges: [],
         selectedCategory,
         selectedType,
         selectedSize,
@@ -62,84 +61,80 @@ const productList = async (req, res) => {
         pageSize
       });
     }
-    andFilters.push({ _id: { $in: variationProductIds } });
+
+    filter._id = { $in: variationProductIds };
   }
+
+  // Step 5: Apply price range filters
   if (selectedPrice.length) {
-    let priceFilters = [];
-    selectedPrice.forEach(range => {
+    const priceConditions = selectedPrice.map(range => {
       const [min, max] = range.split('-');
-      let pf = {};
-      if (min) pf.$gte = Number(min);
-      if (max && max !== 'null') pf.$lte = Number(max);
-      priceFilters.push(pf);
+      const cond = {};
+      if (min) cond.$gte = parseFloat(min);
+      if (max && max !== 'null') cond.$lte = parseFloat(max);
+      return cond;
     });
-    if (priceFilters.length === 1) {
-      andFilters.push({ price: priceFilters[0] });
-    } else if (priceFilters.length > 1) {
-      andFilters.push({ $or: priceFilters.map(pf => ({ price: pf })) });
+
+    if (priceConditions.length === 1) {
+      filter.price = priceConditions[0];
+    } else {
+      filter.$or = priceConditions.map(p => ({ price: p }));
     }
   }
-  andFilters = andFilters.filter(f => Object.keys(f).length > 0);
-  let productFilter = andFilters.length > 1 ? { $and: andFilters } : andFilters[0];
 
-  let sortOrder = req.query.sort || 'asc';
-  let products = await Product.find(productFilter).lean();
+  // Step 6: Fetch and sort products
+  let products = await Product.find(filter).lean();
   products.forEach(p => {
     p.afterDiscountPrice = p.price * (1 - (p.discount_percentage || 0) / 100);
   });
+
   if (sortOrder === 'asc') {
-    products.sort((a, b) => {
-      if (a.afterDiscountPrice === b.afterDiscountPrice) {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-      return a.afterDiscountPrice - b.afterDiscountPrice;
-    });
+    products.sort((a, b) => a.afterDiscountPrice - b.afterDiscountPrice);
   } else if (sortOrder === 'desc') {
-    products.sort((a, b) => {
-      if (a.afterDiscountPrice === b.afterDiscountPrice) {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-      return b.afterDiscountPrice - a.afterDiscountPrice;
-    });
+    products.sort((a, b) => b.afterDiscountPrice - a.afterDiscountPrice);
   } else if (sortOrder === 'nameAsc') {
-    products.sort((a, b) => {
-      if (a.name.toLowerCase() === b.name.toLowerCase()) {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-    });
+    products.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sortOrder === 'nameDesc') {
-    products.sort((a, b) => {
-      if (a.name.toLowerCase() === b.name.toLowerCase()) {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-      return b.name.toLowerCase().localeCompare(a.name.toLowerCase());
-    });
+    products.sort((a, b) => b.name.localeCompare(a.name));
   } else {
     products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
+
   const totalResults = products.length;
   const totalPages = Math.ceil(totalResults / pageSize);
   products = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  // Step 7: Fetch first image for each product
   const productIds = products.map(p => p._id);
-  const variations = await ProductVariation.aggregate([
+  const images = await ProductVariation.aggregate([
     { $match: { product_id: { $in: productIds } } },
     { $group: { _id: "$product_id", image: { $first: { $arrayElemAt: ["$images", 0] } } } }
   ]);
+
   const imageMap = {};
-  variations.forEach(v => { imageMap[v._id.toString()] = v.image; });
-  products.forEach(p => { p.image = imageMap[p._id.toString()] || null; });
-  const categories = await productCategoryModel.find({}).lean();
-  const types = await productTypeModel.find({}).lean();
-  const sizes = await productSizeModel.find({}).lean();
-  const colors = await productColorModel.find({}).lean();
+  images.forEach(i => {
+    imageMap[i._id.toString()] = i.image;
+  });
+  products.forEach(p => {
+    p.image = imageMap[p._id.toString()] || null;
+  });
+
+  // Step 8: Get all filter data (for sidebar)
+  const [categories, types, sizes, colors] = await Promise.all([
+    productCategoryModel.find({}).lean(),
+    productTypeModel.find({}).lean(),
+    productSizeModel.find({}).lean(),
+    productColorModel.find({}).lean()
+  ]);
   const priceRanges = [
-    { label: '$0 - $500', min: 0, max: 50 },
-    { label: '$500 - $1000', min: 500, max: 1000 },
-    { label: '$1000 - $2000', min: 1000, max: 2000 },
-    { label: '$2000 - $5000', min: 2000, max: 5000 },
-    { label: '$5000 - $10000', min: 5000, max: 10000 }
+    { label: '0 - 500', min: 0, max: 500 },
+    { label: '500 - 1000', min: 500, max: 1000 },
+    { label: '1000 - 2000', min: 1000, max: 2000 },
+    { label: '2000 - 5000', min: 2000, max: 5000 },
+    { label: '5000 - 10000', min: 5000, max: 10000 }
   ];
+
+  // Step 9: Render the page
   res.render('user/productList', {
     products,
     name,
@@ -162,63 +157,110 @@ const productList = async (req, res) => {
   });
 };
 
+
 const productDetail = async (req, res) => {
   try {
     const productId = req.params.id;
+
+    // Get the main product details
     const product = await Product.findById(productId).lean();
     if (!product) return res.status(404).send('Product not found');
+
+    // Get all variations for this product
     const variations = await ProductVariation.find({ product_id: productId }).lean();
-    let images = [];
-    variations.forEach(v => {
-      if (v.images && v.images.length) images.push(...v.images);
+
+    // Collect all images from the variations
+    let allImages = [];
+    variations.forEach(variation => {
+      if (variation.images && variation.images.length > 0) {
+        allImages.push(...variation.images);
+      }
     });
-    images = [...new Set(images)];
+    // Remove duplicate images
+    allImages = [...new Set(allImages)];
+
+    // Get all unique sizes
     const sizes = [...new Set(variations.map(v => v.product_size))];
+
+    // Get all unique colors
     const colors = [...new Set(variations.map(v => v.product_color))];
+
+    // Map each size to its available colors and images
     const sizeColorMap = {};
-    if (variations && variations.length) {
-      variations.forEach(variation => {
-        const size = variation.product_size;
-        const color = variation.product_color;
-        if (!sizeColorMap[size]) sizeColorMap[size] = [];
-        if (color && !sizeColorMap[size].includes(color)) sizeColorMap[size].push( {
-          color: color, 
+    variations.forEach(variation => {
+      const size = variation.product_size;
+      const color = variation.product_color;
+
+      if (!sizeColorMap[size]) {
+        sizeColorMap[size] = [];
+      }
+
+      const alreadyHasColor = sizeColorMap[size].some(c => c.color === color);
+      if (!alreadyHasColor) {
+        sizeColorMap[size].push({
+          color: color,
           images: variation.images
         });
-      });
-    }
+      }
+    });
+
+    // Get related products from the same category (excluding the current product)
     const relatedProducts = await Product.find({
       product_category: product.product_category,
       _id: { $ne: product._id },
       is_active: true
     }).limit(4).lean();
+
+    // Get one image from variations for each related product
     const relatedIds = relatedProducts.map(p => p._id);
-    const relatedVariations = await ProductVariation.aggregate([
+    const relatedImages = await ProductVariation.aggregate([
       { $match: { product_id: { $in: relatedIds } } },
-      { $group: { _id: "$product_id", image: { $first: { $arrayElemAt: ["$images", 0] } } } }
+      {
+        $group: {
+          _id: "$product_id",
+          image: { $first: { $arrayElemAt: ["$images", 0] } }
+        }
+      }
     ]);
-    const relatedImageMap = {};
-    relatedVariations.forEach(v => { relatedImageMap[v._id.toString()] = v.image; });
-    relatedProducts.forEach(p => { p.image = relatedImageMap[p._id.toString()] || null; });
+
+    // Create a map of productId -> image
+    const imageMap = {};
+    relatedImages.forEach(item => {
+      imageMap[item._id.toString()] = item.image;
+    });
+
+    // Attach image to each related product
+    relatedProducts.forEach(product => {
+      const id = product._id.toString();
+      product.image = imageMap[id] || null;
+    });
+
+    // Get user name from session (if logged in)
     let name = null;
     if (req.session && req.session.userId) {
       const user = await userModel.findById(req.session.userId).lean();
-      if (user) name = user.firstName + (user.lastName ? (" " + user.lastName) : "");
+      if (user) {
+        name = user.firstName + (user.lastName ? " " + user.lastName : "");
+      }
     }
+
+    // Render the product detail page
     res.render('user/productDetail', {
       product,
-      images,
+      images: allImages,
       sizes,
       colors,
+      sizeColorMap,
       relatedProducts,
       name,
-      sizeColorMap,
-      variations,
+      variations
     });
-  } catch (err) {
+
+  } catch (error) {
     res.status(500).send('Error loading product detail');
   }
 };
+
 
 module.exports = {
   productList,
