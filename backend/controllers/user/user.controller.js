@@ -63,11 +63,13 @@ const viewSignUp = (req, res) => {
 };
 
 const viewLogin = (req, res) => {
-  const flashError = req.flash('error');
-  console.log("Flash :", flashError);
-  const error = flashError.length > 0 ? flashError[0] : null;
-  console.log('Flash error:', error); // Add this for debugging
-  res.render("user/login", { error: error });
+    const loginError = req.session.loginError || null;
+  
+  if (req.session.loginError) {
+    delete req.session.loginError;
+  }
+
+  res.render("user/login", { error: loginError });
 };
 
 const forgotPassword = (req, res) => {

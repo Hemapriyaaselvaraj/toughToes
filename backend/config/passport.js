@@ -7,9 +7,10 @@ const nodemailer = require('nodemailer');
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/user/auth/google/callback'
+    callbackURL: '/user/auth/google/callback',
+    passReqToCallback: true    // This enables passing the request object
   },
-  async (accessToken, refreshToken, profile, done) => {
+  async (req, accessToken, refreshToken, profile, done) => {
     try {
       const email = profile.emails[0].value;
       let user = await userModel.findOne({ email });
@@ -18,7 +19,6 @@ passport.use(new GoogleStrategy({
           return done(null, false, { message: 'Your account has been blocked. Please contact support.' });
         }
         if (user.signupMethod !== 'google') {
-          console.log('Auth Error: Account not created with Google');
           return done(null, false, { message: 'Please login with email and password. This account was not created using Google.' });
         }
         return done(null, user);
