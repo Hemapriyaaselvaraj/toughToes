@@ -445,7 +445,6 @@
     
     function completeCrop() {
       if (!activeCropper) return;
-      
       // Get the cropped canvas
       const canvas = activeCropper.getCroppedCanvas({
         width: 600,
@@ -453,7 +452,6 @@
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high',
       });
-      
       // Convert canvas to blob
       canvas.toBlob((blob) => {
         // Create a new file from the blob
@@ -461,21 +459,18 @@
           type: 'image/jpeg',
           lastModified: new Date().getTime()
         });
-        
         // Create a preview
         const reader = new FileReader();
         reader.onload = function(e) {
           const img = document.createElement('img');
           img.src = e.target.result;
-          currentPreviewBox.innerHTML = '';
-          currentPreviewBox.appendChild(img);
+          currentPreviewBox.appendChild(img); // Append instead of replace
         };
         reader.readAsDataURL(croppedFile);
-        
         // Update the variation files array
         const variationIndex = currentFileInput.closest('.variation-box').dataset.index;
-        variationFiles[variationIndex] = [croppedFile];
-        
+        if (!variationFiles[variationIndex]) variationFiles[variationIndex] = [];
+        variationFiles[variationIndex].push(croppedFile); // Add to array
         // Close modal and cleanup
         cancelCrop();
       }, 'image/jpeg', 0.9);
@@ -530,9 +525,24 @@
 
       fileInput.addEventListener("change", function () {
         const files = Array.from(this.files);
-        if (files.length > 0) {
-          startCrop(files[0], this, previewBox);
+        let fileIdx = 0;
+        function cropNext() {
+          if (fileIdx < files.length) {
+            startCrop(files[fileIdx], fileInput, previewBox);
+            // After cropping, increment and check for next
+            // Use a MutationObserver to detect when modal closes
+            const modal = document.getElementById('cropperModal');
+            const observer = new MutationObserver(() => {
+              if (modal.style.display === 'none') {
+                observer.disconnect();
+                fileIdx++;
+                cropNext();
+              }
+            });
+            observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+          }
         }
+        cropNext();
       });
 
       document.getElementById("variationsContainer").appendChild(container);
