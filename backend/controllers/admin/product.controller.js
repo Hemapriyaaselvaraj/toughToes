@@ -544,6 +544,7 @@ const postEditProduct = async (req, res) => {
       const variation = variations[i];
       const images = files.filter(file => file.fieldname === `variationImages_${i}`) || [];
       const imageUrls = images.map((file) => file.path);
+      const deletedImages = req.body[`deletedVariationImage_${i}`] || [];
 
       const key = `${variation.size}__${variation.color}`;
       submittedKeys.add(key);
@@ -553,8 +554,12 @@ const postEditProduct = async (req, res) => {
       if (existing) {
         const updateVariation = await ProductVariation.findById(existing._id);
         updateVariation.stock_quantity = variation.stock;
+        const exitingImageUrls = updateVariation.images || [];
+        const filteredImages = exitingImageUrls.filter(url => !deletedImages.includes(url));
+
+
         if (imageUrls.length > 0) {
-          updateVariation.images = [...imageUrls, ...(updateVariation.images || [])];
+          updateVariation.images = [...imageUrls, ...filteredImages];
         }
         updateVariation.updated_at = new Date();
         variationEntries.push(updateVariation.save());

@@ -248,60 +248,93 @@
         container.className = "variation-box";
         container.dataset.index = index;
 
+        // Build image preview HTML for edit mode
+        let imagesHtml = "";
+        if (data.images && data.images.length) {
+          data.images.forEach((url, imgIdx) => {
+            imagesHtml += `<span class="image-wrapper" style="position:relative;display:inline-block;margin-right:5px;">
+              <img src="${url}" />
+              <button type="button" class="remove-img-btn" data-img-idx="${imgIdx}" style="position:absolute;top:2px;right:2px;background:#fff;border:none;color:red;font-size:1.1rem;padding:0 4px;line-height:1;cursor:pointer;">&times;</button>
+            </span>`;
+          });
+        }
+
         container.innerHTML = `
-      <span class="remove-btn" onclick="this.parentElement.remove()">&times;</span>
-      <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label>Size</label>
-          <select name="variations[${index}][size]" class="form-select" required>
-            <option value="">Select</option>
-            <% sizes.forEach(size => { %>
-              <option value="<%= size.size %>" ${data.size === "<%= size.size %>" ? 'selected' : ''}><%= size.size %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label>Color</label>
-          <select name="variations[${index}][color]" class="form-select" required>
-            <option value="">Select</option>
-            <% colors.forEach(color => { %>
-              <option value="<%= color.color %>" ${data.color === "<%= color.color %>" ? 'selected' : ''}><%= color.color %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label>Stock Quantity</label>
-          <input type="number" name="variations[${index}][stock]" class="form-control" min="0" value="${data.stock ?? ''}" required />
-        </div>
-        <div class="col-md-4">
-          <label>Images</label>
-          <button type="button" class="btn btn-outline-secondary w-100" onclick="triggerImageUpload(this)">+ Add Image</button>
-          <input type="file" accept="image/*" style="display:none" multiple />
-          <div class="image-preview mt-2">
-            ${(data.images || []).map(url => `<img src="${url}" />`).join('')}
+          <span class="remove-btn" onclick="this.parentElement.remove()">&times;</span>
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label>Size</label>
+              <select name="variations[${index}][size]" class="form-select" required>
+                <option value="">Select</option>
+                <% sizes.forEach(size => { %>
+                  <option value="<%= size.size %>" ${data.size === "<%= size.size %>" ? 'selected' : ''}><%= size.size %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label>Color</label>
+              <select name="variations[${index}][color]" class="form-select" required>
+                <option value="">Select</option>
+                <% colors.forEach(color => { %>
+                  <option value="<%= color.color %>" ${data.color === "<%= color.color %>" ? 'selected' : ''}><%= color.color %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label>Stock Quantity</label>
+              <input type="number" name="variations[${index}][stock]" class="form-control" min="0" value="${data.stock ?? ''}" required />
+            </div>
+            <div class="col-md-4">
+              <label>Images</label>
+              <button type="button" class="btn btn-outline-secondary w-100" onclick="triggerImageUpload(this)">+ Add Image</button>
+              <input type="file" accept="image/*" style="display:none" multiple />
+              <div class="image-preview mt-2">${imagesHtml}</div>
+            </div>
           </div>
-        </div>
-      </div>
-    `;
+        `;
 
         const fileInput = container.querySelector('input[type="file"]');
         const previewBox = container.querySelector(".image-preview");
         variationFiles[index] = [];
 
+        // Handle removal of pre-populated images (edit mode)
+        if (data.images && data.images.length) {
+          previewBox.querySelectorAll('.remove-img-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              const imgIdx = parseInt(btn.getAttribute('data-img-idx'));
+              // Remove from UI
+              btn.parentElement.remove();
+              // Mark for deletion by adding a hidden input
+              const delInput = document.createElement('input');
+              delInput.type = 'hidden';
+              delInput.name = `variations[${index}][deleteImages][]`;
+              delInput.value = data.images[imgIdx];
+              container.appendChild(delInput);
+            });
+          });
+        }
+
         fileInput.addEventListener("change", function () {
           const files = Array.from(this.files);
-          variationFiles[index].push(...files);
-
-          previewBox.innerHTML = "";
-          variationFiles[index].forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const img = document.createElement("img");
-              img.src = e.target.result;
-              previewBox.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-          });
+          let fileIdx = 0;
+          function cropNext() {
+            if (fileIdx < files.length) {
+              startCrop(files[fileIdx], fileInput, previewBox);
+              // After cropping, increment and check for next
+              // Use a MutationObserver to detect when modal closes
+              const modal = document.getElementById('cropperModal');
+              const observer = new MutationObserver(() => {
+                if (modal.style.display === 'none') {
+                  observer.disconnect();
+                  fileIdx++;
+                  cropNext();
+                }
+              });
+              observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+            }
+          }
+          cropNext();
         });
 
         document.getElementById("variationsContainer").appendChild(container);
@@ -340,6 +373,14 @@
         Object.entries(variationFiles).forEach(([index, files]) => {
           files.forEach((file) => {
             formData.append(`variationImages_${index}`, file);
+          });
+        });
+
+        // Collect deleted image URLs for each variation and send as deletedVariationImage_{index}
+        variationBoxes.forEach((box, idx) => {
+          const deletedInputs = box.querySelectorAll('input[name^="variations[' + idx + '][deleteImages]"]');
+          deletedInputs.forEach(input => {
+            formData.append(`deletedVariationImage_${idx}`, input.value);
           });
         });
 
@@ -483,6 +524,17 @@
       container.className = "variation-box";
       container.dataset.index = index;
 
+      // Build image preview HTML for edit mode
+      let imagesHtml = "";
+      if (data.images && data.images.length) {
+        data.images.forEach((url, imgIdx) => {
+          imagesHtml += `<span class="image-wrapper" style="position:relative;display:inline-block;margin-right:5px;">
+            <img src="${url}" />
+            <button type="button" class="remove-img-btn" data-img-idx="${imgIdx}" style="position:absolute;top:2px;right:2px;background:#fff;border:none;color:red;font-size:1.1rem;padding:0 4px;line-height:1;cursor:pointer;">&times;</button>
+          </span>`;
+        });
+      }
+
       container.innerHTML = `
         <span class="remove-btn" onclick="this.parentElement.remove()">&times;</span>
         <div class="row g-3 align-items-end">
@@ -512,9 +564,7 @@
             <label>Images</label>
             <button type="button" class="btn btn-outline-secondary w-100" onclick="triggerImageUpload(this)">+ Add Image</button>
             <input type="file" accept="image/*" style="display:none" multiple />
-            <div class="image-preview mt-2">
-              ${(data.images || []).map(url => `<img src="${url}" />`).join('')}
-            </div>
+            <div class="image-preview mt-2">${imagesHtml}</div>
           </div>
         </div>
       `;
@@ -522,6 +572,24 @@
       const fileInput = container.querySelector('input[type="file"]');
       const previewBox = container.querySelector(".image-preview");
       variationFiles[index] = [];
+
+      // Handle removal of pre-populated images (edit mode)
+      if (data.images && data.images.length) {
+        previewBox.querySelectorAll('.remove-img-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const imgIdx = parseInt(btn.getAttribute('data-img-idx'));
+            // Remove from UI
+            btn.parentElement.remove();
+            // Mark for deletion by adding a hidden input
+            const delInput = document.createElement('input');
+            delInput.type = 'hidden';
+            delInput.name = `variations[${index}][deleteImages][]`;
+            delInput.value = data.images[imgIdx];
+            container.appendChild(delInput);
+          });
+        });
+      }
 
       fileInput.addEventListener("change", function () {
         const files = Array.from(this.files);
