@@ -532,8 +532,12 @@
             // Remove from variationFiles
             const variationIndex = currentFileInput.closest('.variation-box').dataset.index;
             const filesArr = variationFiles[variationIndex];
-            const fileIdx = Array.from(wrapper.parentNode.children).indexOf(wrapper);
-            filesArr.splice(fileIdx, 1);
+            // Find the index of this image in preview
+            const wrappers = Array.from(currentPreviewBox.querySelectorAll('.image-wrapper'));
+            const fileIdx = wrappers.indexOf(wrapper);
+            if (fileIdx > -1) {
+              filesArr.splice(fileIdx - countExistingImages(variationIndex), 1);
+            }
           });
           wrapper.appendChild(removeBtn);
           currentPreviewBox.appendChild(wrapper);
@@ -546,6 +550,13 @@
         // Close modal and cleanup
         cancelCrop();
       }, 'image/jpeg', 0.9);
+    }
+    
+    // Helper to count existing images in preview (for correct index mapping)
+    function countExistingImages(variationIndex) {
+      const box = document.querySelector(`.variation-box[data-index='${variationIndex}']`);
+      if (!box) return 0;
+      return box.querySelectorAll('.image-wrapper .remove-img-btn[data-img-idx]').length;
     }
     
     // Update the file input change handler
