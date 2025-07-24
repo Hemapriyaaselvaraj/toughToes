@@ -500,12 +500,43 @@
           type: 'image/jpeg',
           lastModified: new Date().getTime()
         });
-        // Create a preview
+        // Create a preview with remove button
         const reader = new FileReader();
         reader.onload = function(e) {
+          const wrapper = document.createElement('span');
+          wrapper.className = 'image-wrapper';
+          wrapper.style.position = 'relative';
+          wrapper.style.display = 'inline-block';
+          wrapper.style.marginRight = '5px';
           const img = document.createElement('img');
           img.src = e.target.result;
-          currentPreviewBox.appendChild(img); // Append instead of replace
+          wrapper.appendChild(img);
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'remove-img-btn';
+          removeBtn.innerHTML = '&times;';
+          removeBtn.style.position = 'absolute';
+          removeBtn.style.top = '2px';
+          removeBtn.style.right = '2px';
+          removeBtn.style.background = '#fff';
+          removeBtn.style.border = 'none';
+          removeBtn.style.color = 'red';
+          removeBtn.style.fontSize = '1.1rem';
+          removeBtn.style.padding = '0 4px';
+          removeBtn.style.lineHeight = '1';
+          removeBtn.style.cursor = 'pointer';
+          removeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Remove from UI
+            wrapper.remove();
+            // Remove from variationFiles
+            const variationIndex = currentFileInput.closest('.variation-box').dataset.index;
+            const filesArr = variationFiles[variationIndex];
+            const fileIdx = Array.from(wrapper.parentNode.children).indexOf(wrapper);
+            filesArr.splice(fileIdx, 1);
+          });
+          wrapper.appendChild(removeBtn);
+          currentPreviewBox.appendChild(wrapper);
         };
         reader.readAsDataURL(croppedFile);
         // Update the variation files array

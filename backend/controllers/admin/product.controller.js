@@ -543,7 +543,7 @@ const postEditProduct = async (req, res) => {
     for (let i = 0; i < variations.length; i++) {
       const variation = variations[i];
       const images = files.filter(file => file.fieldname === `variationImages_${i}`) || [];
-      const imageUrls = images.map((file) => file.path);
+      const imageUrls = images.map((file) => file.path) || [];
       const deletedImages = req.body[`deletedVariationImage_${i}`] || [];
 
       const key = `${variation.size}__${variation.color}`;
@@ -557,10 +557,7 @@ const postEditProduct = async (req, res) => {
         const exitingImageUrls = updateVariation.images || [];
         const filteredImages = exitingImageUrls.filter(url => !deletedImages.includes(url));
 
-
-        if (imageUrls.length > 0) {
-          updateVariation.images = [...imageUrls, ...filteredImages];
-        }
+        updateVariation.images = [...imageUrls, ...filteredImages];
         updateVariation.updated_at = new Date();
         variationEntries.push(updateVariation.save());
       } else {
