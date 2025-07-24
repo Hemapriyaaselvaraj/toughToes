@@ -34,22 +34,38 @@ const requestEmailOtp = async (req, res) => {
 };
 
 const verifyEmailOtp = async (req, res) => {
-  const { email, otp } = req.body;
-  if (!req.session || !req.session.userId || !req.session.pendingEmail) {
-    return res.render('user/verifyOtp', { error: 'Session expired. Please try again.', email });
-  }
-  const otpVerification = await otpVerificationModel.findOne({ email });
-  if (!otpVerification || otpVerification.otp !== otp || otpVerification.expiry < new Date()) {
-    if (otpVerification && otpVerification.expiry < new Date()) {
-      await otpVerification.deleteOne();
+  try {
+    // Support both AJAX (JSON) and form POST (HTML) requests
+    const { newEmail, otp } = req.body;
+    const isAjax = req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1);
+    if (!req.session || !req.session.userId || !req.session.pendingEmail) {
+      if (isAjax) return res.json({ success: false, message: 'Session expired. Please try again.' });
+      return res.render('user/verifyOtp', { error: 'Session expired. Please try again.', email: newEmail });
     }
-    return res.render('user/verifyOtp', { error: 'Invalid or expired OTP', email });
+    // Only allow OTP verification for the email in session (pendingEmail)
+    if (newEmail !== req.session.pendingEmail) {
+      if (isAjax) return res.json({ success: false, message: 'Email mismatch. Please try again.' });
+      return res.render('user/verifyOtp', { error: 'Email mismatch. Please try again.', email: newEmail });
+    }
+    const otpVerification = await otpVerificationModel.findOne({ email: newEmail });
+    if (!otpVerification || otpVerification.otp !== otp || otpVerification.expiry < new Date()) {
+      if (otpVerification && otpVerification.expiry < new Date()) {
+        await otpVerification.deleteOne();
+      }
+      if (isAjax) return res.json({ success: false, message: 'Invalid or expired OTP' });
+      return res.render('user/verifyOtp', { error: 'Invalid or expired OTP', email: newEmail });
+    }
+    // Update user's email
+    await userModel.findByIdAndUpdate(req.session.userId, { email: newEmail });
+    await otpVerification.deleteOne();
+    delete req.session.pendingEmail;
+    if (isAjax) return res.json({ success: true });
+    res.redirect('/profile');
+  } catch (err) {
+    const isAjax = req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1);
+    if (isAjax) return res.json({ success: false, message: 'Server error. Please try again.' });
+    res.render('user/verifyOtp', { error: 'Server error. Please try again.', email: req.body.newEmail });
   }
-  // Update user's email
-  await userModel.findByIdAndUpdate(req.session.userId, { email });
-  await otpVerification.deleteOne();
-  delete req.session.pendingEmail;
-  res.redirect('/profile');
 };
 const userModel = require("../../models/userModel");
 const otpVerificationModel = require("../../models/otpVerificationModel");

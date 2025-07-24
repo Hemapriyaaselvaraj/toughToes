@@ -35,6 +35,9 @@ app.use('/user',userRoutes)
 app.use('/admin',adminRoutes)
 app.use('/', customerRoutes)
 
+const cartRoutes = require('./backend/routes/cart');
+app.use('/cart', cartRoutes);
+
 const userWishlistRoute = require('./backend/routes/user/wishlist');
 app.use('/wishlist', userWishlistRoute);
 

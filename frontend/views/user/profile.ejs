@@ -41,7 +41,7 @@
         <li><a href="#" class="active"><i class="fas fa-user me-2"></i>Profile</a></li>
         <li><a href="#"><i class="fas fa-box me-2"></i>Orders</a></li>
         <li><a href="#"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
-        <li><a href="#"><i class="fas fa-map-marker-alt me-2"></i>Addresses</a></li>
+        <li><a href="/addresses"><i class="fas fa-map-marker-alt me-2"></i>Addresses</a></li>
         <li><a href="#"><i class="fas fa-wallet me-2"></i>My Wallet</a></li>
         <li>
           <form id="logoutForm" method="POST" action="/user/logout" style="display:inline;">
@@ -89,7 +89,6 @@
               <label>Email Address</label>
               <div class="input-group">
                 <input type="email" class="form-control" name="email" id="emailInput" value="<%= user.email %>" disabled>
-                <button type="button" class="btn btn-outline-secondary" id="editEmailBtn">Edit</button>
               </div>
             </div>
             <div class="col">
@@ -102,72 +101,7 @@
             <button class="btn btn-link text-muted" type="button" id="cancelEditBtn">Cancel</button>
           </div>
         </form>
-        <button class="btn btn-outline-dark mt-2" id="editProfileBtn" type="button"><i class="fas fa-edit me-2"></i>Edit</button>
-        <script>
-          const editBtn = document.getElementById('editProfileBtn');
-          const cancelBtn = document.getElementById('cancelEditBtn');
-          const form = document.getElementById('profileForm');
-          const editBtns = document.getElementById('profileEditBtns');
-          const firstNameInput = form.elements['firstName'];
-          const lastNameInput = form.elements['lastName'];
-          const phoneInput = form.elements['phoneNumber'];
-          const emailInput = document.getElementById('emailInput');
-          const editEmailBtn = document.getElementById('editEmailBtn');
-
-          editBtn.onclick = function() {
-            firstNameInput.disabled = false;
-            lastNameInput.disabled = false;
-            phoneInput.disabled = false;
-            editBtns.style.display = '';
-            editBtn.style.display = 'none';
-          };
-          if(cancelBtn) {
-            cancelBtn.onclick = function() {
-              firstNameInput.value = '<%= user.firstName %>';
-              lastNameInput.value = '<%= user.lastName %>';
-              phoneInput.value = '<%= user.phoneNumber %>';
-              firstNameInput.disabled = true;
-              lastNameInput.disabled = true;
-              phoneInput.disabled = true;
-              emailInput.value = '<%= user.email %>';
-              emailInput.disabled = true;
-              editEmailBtn.style.display = '';
-              editBtns.style.display = 'none';
-              editBtn.style.display = '';
-            };
-          }
-
-          // Email edit logic
-          editEmailBtn.onclick = function() {
-            emailInput.disabled = false;
-            emailInput.focus();
-            editEmailBtn.style.display = 'none';
-            editBtns.style.display = '';
-          };
-
-          form.onsubmit = function(e) {
-            firstNameInput.disabled = false;
-            lastNameInput.disabled = false;
-            phoneInput.disabled = false;
-            // If email is being changed, start OTP flow
-            if (!emailInput.disabled && emailInput.value !== '<%= user.email %>') {
-              e.preventDefault();
-              fetch('/user/request-email-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ newEmail: emailInput.value })
-              })
-              .then(res => res.json())
-              .then(data => {
-                if (data.success) {
-                  window.location.href = '/user/verifyotp?email=' + encodeURIComponent(emailInput.value);
-                } else {
-                  alert(data.message || 'Could not send OTP.');
-                }
-              });
-            }
-          };
-        </script>
+        <a class="btn btn-outline-dark mt-2" href="/profile/edit"><i class="fas fa-edit me-2"></i>Edit Profile</a>
       </div>
 
       <!-- Change Password Section -->

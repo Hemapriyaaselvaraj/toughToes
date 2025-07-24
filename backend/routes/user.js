@@ -6,6 +6,10 @@ router.get('/verifyotp', (req, res) => {
   res.render('user/verifyOtp', { error: null, email });
 });
 const userController = require('../controllers/user/user.controller');
+const editProfileController = require('../controllers/user/editProfile.controller');
+// Profile edit routes
+router.get('/profile/edit', editProfileController.getEditProfile);
+router.post('/profile/edit', editProfileController.postEditProfile);
 const passport = require('../config/passport');
 const { isNotLogin, isCustomerAccessible } = require('../middlewares/auth');
 
