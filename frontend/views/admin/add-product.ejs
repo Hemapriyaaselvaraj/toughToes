@@ -243,6 +243,19 @@
       const variationFiles = {}; // Track files by variation
 
       function addVariation(data = {}) {
+        // Check for duplicate size+color combination
+        if (data.size && data.color) {
+          const existingBoxes = document.querySelectorAll('.variation-box');
+          for (const box of existingBoxes) {
+            const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+            const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+            if (sizeSel && colorSel && sizeSel.value === data.size && colorSel.value === data.color) {
+              alert('This size and color combination already exists.');
+              return;
+            }
+          }
+        }
+
         const index = data.index ?? variationIndex;
         const container = document.createElement("div");
         container.className = "variation-box";
@@ -292,6 +305,30 @@
             </div>
           </div>
         `;
+
+        // Prevent duplicate size+color in the form itself
+        const sizeSelect = container.querySelector('select[name^="variations"][name$="[size]"]');
+        const colorSelect = container.querySelector('select[name^="variations"][name$="[color]"]');
+        function checkDuplicate() {
+          const selectedSize = sizeSelect.value;
+          const selectedColor = colorSelect.value;
+          if (!selectedSize || !selectedColor) return;
+          const existingBoxes = document.querySelectorAll('.variation-box');
+          for (const box of existingBoxes) {
+            if (box === container) continue;
+            const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+            const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+            if (sizeSel && colorSel && sizeSel.value === selectedSize && colorSel.value === selectedColor) {
+              alert('This size and color combination already exists.');
+              // Reset the changed select
+              if (event.target === sizeSelect) sizeSelect.value = '';
+              if (event.target === colorSelect) colorSelect.value = '';
+              return;
+            }
+          }
+        }
+        sizeSelect.addEventListener('change', checkDuplicate);
+        colorSelect.addEventListener('change', checkDuplicate);
 
         const fileInput = container.querySelector('input[type="file"]');
         const previewBox = container.querySelector(".image-preview");
@@ -561,6 +598,19 @@
     
     // Update the file input change handler
     function addVariation(data = {}) {
+      // Check for duplicate size+color combination
+      if (data.size && data.color) {
+        const existingBoxes = document.querySelectorAll('.variation-box');
+        for (const box of existingBoxes) {
+          const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+          const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+          if (sizeSel && colorSel && sizeSel.value === data.size && colorSel.value === data.color) {
+            alert('This size and color combination already exists.');
+            return;
+          }
+        }
+      }
+
       const index = data.index ?? variationIndex;
       const container = document.createElement("div");
       container.className = "variation-box";
@@ -610,6 +660,30 @@
           </div>
         </div>
       `;
+
+      // Prevent duplicate size+color in the form itself
+      const sizeSelect = container.querySelector('select[name^="variations"][name$="[size]"]');
+      const colorSelect = container.querySelector('select[name^="variations"][name$="[color]"]');
+      function checkDuplicate() {
+        const selectedSize = sizeSelect.value;
+        const selectedColor = colorSelect.value;
+        if (!selectedSize || !selectedColor) return;
+        const existingBoxes = document.querySelectorAll('.variation-box');
+        for (const box of existingBoxes) {
+          if (box === container) continue;
+          const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+          const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+          if (sizeSel && colorSel && sizeSel.value === selectedSize && colorSel.value === selectedColor) {
+            alert('This size and color combination already exists.');
+            // Reset the changed select
+            if (event.target === sizeSelect) sizeSelect.value = '';
+            if (event.target === colorSelect) colorSelect.value = '';
+            return;
+          }
+        }
+      }
+      sizeSelect.addEventListener('change', checkDuplicate);
+      colorSelect.addEventListener('change', checkDuplicate);
 
       const fileInput = container.querySelector('input[type="file"]');
       const previewBox = container.querySelector(".image-preview");
