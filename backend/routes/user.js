@@ -18,6 +18,7 @@ router.post('/signup', userController.signup)
 router.get('/auth/google', isNotLogin, passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/auth/google/callback', isNotLogin, passport.authenticate('google', {
   failureRedirect: '/user/login',
+  failureFlash: true
 }), (req, res) => {
   req.session.user = true;
   req.session.role = req.user.role;

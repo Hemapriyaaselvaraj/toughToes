@@ -46,6 +46,7 @@ const signup = async (req, res) => {
     phoneNumber,
     password: hashedPassword,
     isVerified: false,
+    signupMethod: 'email'
    });
 
   await newUser.save();
@@ -62,7 +63,11 @@ const viewSignUp = (req, res) => {
 };
 
 const viewLogin = (req, res) => {
-  res.render("user/login", { error : null});
+  const flashError = req.flash('error');
+  console.log("Flash :", flashError);
+  const error = flashError.length > 0 ? flashError[0] : null;
+  console.log('Flash error:', error); // Add this for debugging
+  res.render("user/login", { error: error });
 };
 
 const forgotPassword = (req, res) => {

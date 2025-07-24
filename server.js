@@ -8,8 +8,24 @@ const connectDB = require('./backend/config/db');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const passport = require('./backend/config/passport');
-
 const app = express();
+
+const flash = require('connect-flash');
+
+// Session middleware setup
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // set to true if using https
+}));
+
+app.use(flash());
+app.use((req, res, next) => {
+    res.locals.messages = req.flash();
+    next();
+});
+
 require('dotenv').config();
 connectDB();
 
