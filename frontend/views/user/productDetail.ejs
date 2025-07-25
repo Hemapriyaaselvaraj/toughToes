@@ -106,7 +106,7 @@
 
   <main class="product-page">
     <div class="product-container">
-      <!-- Fullscreen Image Viewer -->
+      
       <div class="fullscreen-viewer">
         <button class="close-fullscreen" aria-label="Close fullscreen view">×</button>
         <div class="fullscreen-main">
@@ -286,14 +286,14 @@
     const colorBtns = document.querySelectorAll('.color-btn');
     const stockMessage = document.getElementById('stock-message');
 
-    // 🖼️ Thumbnail clicks update main image
+    
     document.querySelectorAll('.thumbnails img').forEach(thumb => {
       thumb.addEventListener('click', function () {
         mainImg.src = this.src;
       });
     });
 
-    // 🔍 Fullscreen viewer functionality
+    
     const fullscreenViewer = document.querySelector('.fullscreen-viewer');
     const fullscreenImage = fullscreenViewer.querySelector('.fullscreen-main img');
     const fullscreenThumbnails = fullscreenViewer.querySelector('.fullscreen-thumbnails');
@@ -351,7 +351,7 @@
       }
     });
 
-    // 🎨 Color/size/stock switching
+    
     function updateColorAvailability(selectedSize) {
       const colorDataList = sizeColorMap[selectedSize] || [];
 
@@ -452,7 +452,7 @@
       });
     });
 
-    // ➕➖ Quantity controls
+    
     const qtyInput = document.getElementById('qty-input');
     document.getElementById('qty-minus').onclick = () => {
       const val = parseInt(qtyInput.value);
@@ -463,7 +463,7 @@
       qtyInput.value = val + 1;
     };
 
-    // 🛒 Add to Cart
+    
     document.getElementById('addToCartBtn').onclick = function () {
       const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;

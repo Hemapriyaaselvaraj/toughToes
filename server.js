@@ -12,13 +12,13 @@ const passport = require('./backend/config/passport');
 const app = express();
 
 
-// Session middleware setup
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-    cookie: { secure: false } // set to true if using https
+    cookie: { secure: false } 
 }));
 
 app.use(flash());
