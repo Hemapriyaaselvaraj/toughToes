@@ -7,14 +7,14 @@ const Product = require("../../models/productModel");
 const ProductVariation = require("../../models/productVariationModel");
 
 const productList = async (req, res) => {
-  // Step 1: Get logged-in user's name
+ 
   let name = null;
   if (req.session && req.session.userId) {
     const user = await userModel.findById(req.session.userId);
     if (user) name = user.firstName + ' ' + user.lastName;
   }
 
-  // Step 2: Get filters from query
+  
   const selectedCategory = req.query.category || null;
   const selectedType = [].concat(req.query.type || []);
   const selectedSize = [].concat(req.query.size || []);
@@ -25,13 +25,13 @@ const productList = async (req, res) => {
   const currentPage = parseInt(req.query.page) || 1;
   const pageSize = 20;
 
-  // Step 3: Create filter for product model
+ 
   const filter = { is_active: true };
   if (selectedCategory) filter.product_category = selectedCategory;
   if (selectedType.length) filter.product_type = { $in: selectedType };
   if (search) filter.name = { $regex: search, $options: 'i' };
 
-  // Step 4: Handle size/color filtering via ProductVariation
+  
   let variationProductIds = null;
   if (selectedSize.length || selectedColor.length) {
     const variationFilter = {};
@@ -65,7 +65,7 @@ const productList = async (req, res) => {
     filter._id = { $in: variationProductIds };
   }
 
-  // Step 5: Apply price range filters
+  
   if (selectedPrice.length) {
     const priceConditions = selectedPrice.map(range => {
       const [min, max] = range.split('-');
@@ -82,7 +82,7 @@ const productList = async (req, res) => {
     }
   }
 
-  // Step 6: Fetch and sort products
+  
   let products = await Product.find(filter).lean();
   products.forEach(p => {
     p.afterDiscountPrice = p.price * (1 - (p.discount_percentage || 0) / 100);
@@ -104,7 +104,7 @@ const productList = async (req, res) => {
   const totalPages = Math.ceil(totalResults / pageSize);
   products = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // Step 7: Fetch first image for each product
+  
   const productIds = products.map(p => p._id);
   const images = await ProductVariation.aggregate([
     { $match: { product_id: { $in: productIds } } },
@@ -119,7 +119,7 @@ const productList = async (req, res) => {
     p.image = imageMap[p._id.toString()] || null;
   });
 
-  // Step 8: Get all filter data (for sidebar)
+  
   const [categories, types, sizes, colors] = await Promise.all([
     productCategoryModel.find({}).lean(),
     productTypeModel.find({}).lean(),
@@ -134,7 +134,7 @@ const productList = async (req, res) => {
     { label: '5000 - 10000', min: 5000, max: 10000 }
   ];
 
-  // Step 9: Render the page
+  
   res.render('user/productList', {
     products,
     name,
@@ -162,30 +162,30 @@ const productDetail = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Get the main product details
+    
     const product = await Product.findById(productId).lean();
     if (!product) return res.status(404).send('Product not found');
 
-    // Get all variations for this product
+    
     const variations = await ProductVariation.find({ product_id: productId }).lean();
 
-    // Collect all images from the variations
+    
     let allImages = [];
     variations.forEach(variation => {
       if (variation.images && variation.images.length > 0) {
         allImages.push(...variation.images);
       }
     });
-    // Remove duplicate images
+    
     allImages = [...new Set(allImages)];
 
-    // Get all unique sizes
+    
     const sizes = [...new Set(variations.map(v => v.product_size))];
 
-    // Get all unique colors
+    
     const colors = [...new Set(variations.map(v => v.product_color))];
 
-    // Map each size to its available colors and images
+    
     const sizeColorMap = {};
     variations.forEach(variation => {
       const size = variation.product_size;
@@ -204,14 +204,14 @@ const productDetail = async (req, res) => {
       }
     });
 
-    // Get related products from the same category (excluding the current product)
+    
     const relatedProducts = await Product.find({
       product_category: product.product_category,
       _id: { $ne: product._id },
       is_active: true
     }).limit(4).lean();
 
-    // Get one image from variations for each related product
+    
     const relatedIds = relatedProducts.map(p => p._id);
     const relatedImages = await ProductVariation.aggregate([
       { $match: { product_id: { $in: relatedIds } } },
@@ -223,19 +223,19 @@ const productDetail = async (req, res) => {
       }
     ]);
 
-    // Create a map of productId -> image
+    
     const imageMap = {};
     relatedImages.forEach(item => {
       imageMap[item._id.toString()] = item.image;
     });
 
-    // Attach image to each related product
+   
     relatedProducts.forEach(product => {
       const id = product._id.toString();
       product.image = imageMap[id] || null;
     });
 
-    // Get user name from session (if logged in)
+   
     let name = null;
     if (req.session && req.session.userId) {
       const user = await userModel.findById(req.session.userId).lean();
@@ -244,7 +244,7 @@ const productDetail = async (req, res) => {
       }
     }
 
-    // Render the product detail page
+    
     res.render('user/productDetail', {
       product,
       images: allImages,

@@ -377,14 +377,14 @@ const createProduct = async (req, res) => {
     const variationEntries = [];
     const files = req.files || [];
 
-    // Process each variation
+    
     for (let i = 0; i < variations.length; i++) {
       const variation = variations[i];
       
-      // Get the cropped image for this variation
+      
       const images = files.filter(file => file.fieldname === `variationImages_${i}`) || [];
       
-      // These images are already cropped to squares by the frontend
+      
       const imageUrls = images.map((file) => file.path);
 
       const newVariation = new ProductVariation({

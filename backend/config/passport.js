@@ -8,8 +8,8 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: '/user/auth/google/callback',
-    passReqToCallback: true    // This enables passing the request object
-  },
+    passReqToCallback: true   
+    },
   async (req, accessToken, refreshToken, profile, done) => {
     try {
       const email = profile.emails[0].value;

@@ -24,7 +24,7 @@ app.use(session({
 app.use(flash());
 app.use((req, res, next) => {
     res.locals.messages = req.flash();
-    next();
+    next(); 
 });
 
 require('dotenv').config();

@@ -2,7 +2,7 @@ const userModel = require("../../models/userModel");
 const Product = require("../../models/productModel");
 const ProductVariation = require("../../models/productVariationModel");
 
-// Helper: Get first image from first variation of a product
+
 const getFirstImage = async (productId) => {
   try {
     const variation = await ProductVariation.findOne({
@@ -17,7 +17,7 @@ const getFirstImage = async (productId) => {
   }
 };
 
-// Helper: Get first image for any product in a given category
+
 const getCategoryFirstImage = async (category) => {
   try {
     const product = await Product.findOne({
@@ -41,7 +41,7 @@ const getCategoryFirstImage = async (category) => {
 
 const home = async (req, res) => {
   try {
-    // Get logged-in user name
+    
     let name = null;
     if (req.session?.userId) {
       const user = await userModel.findById(req.session.userId);
@@ -50,29 +50,28 @@ const home = async (req, res) => {
       }
     }
 
-    // Get 4 random featured products
+    
     const featuredProducts = await Product.aggregate([
       { $match: { is_active: true } },
       { $sample: { size: 4 } },
     ]);
 
-    // Attach first image to each featured product
+    
     for (let product of featuredProducts) {
       product.image = await getFirstImage(product._id);
     }
 
-    // Get first image for Men, Women, and Kids categories
+    
     const [menImage, womenImage, kidsImage] = await Promise.all([
       getCategoryFirstImage("Men"),
       getCategoryFirstImage("Women"),
       getCategoryFirstImage("Kids"),
     ]);
 
-    // Get banner product and its image
     const bannerProduct = await Product.findOne({ is_active: true });
     const bannerImage = bannerProduct ? await getFirstImage(bannerProduct._id) : null;
 
-    // Render home page
+    
     res.render("user/home", {
       name,
       featuredProducts,
