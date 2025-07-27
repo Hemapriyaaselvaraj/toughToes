@@ -42,7 +42,7 @@
         <div class="alert alert-danger text-center"><%= error %></div>
         <% } %>
 
-      <form method="post" action="/user/login/verifyOtp" onsubmit="return collectOTP()">
+      <form method="post" action="/user/verifyOtp" onsubmit="return collectOTP()">
         <div class="otp-box">
           <input type="text" class="otp-input" maxlength="1" />
           <input type="text" class="otp-input" maxlength="1" />
@@ -55,6 +55,8 @@
          <input type="hidden" name="otp" id="otp-full" />
 
         <input type="hidden" name="email" value="<%= email %>" />
+        <input type="hidden" name="flow" value="<%= flow %>" />
+
 
         <button class="btn btn-dark w-100" type="submit">Verify Code</button>
 

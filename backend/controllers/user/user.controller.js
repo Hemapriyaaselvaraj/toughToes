@@ -88,7 +88,7 @@ const signup = async (req, res) => {
 
   const user = await userModel.findOne({ email });
 
-  if (user) {
+  if (user && user.isVerified) {
     return res.render("user/signup", {
       error: "Email already registered, please login",
       oldInput: req.body,
@@ -97,17 +97,34 @@ const signup = async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, saltround);
 
-  const newUser = new userModel({
+  if (user) {
+ 
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.phoneNumber = phoneNumber;
+    user.password = hashedPassword;
+
+    await user.save();
+
+  } else {
+
+    const newUser = new userModel({
     firstName,
     lastName,
     email,
     phoneNumber,
     password: hashedPassword,
-  });
+    isVerified: false,
+    signupMethod: 'email'
+   });
 
   await newUser.save();
 
-  res.redirect("/user/login");
+  }
+
+  await sendOtpToVerifyEmail(email);
+
+  res.render('user/verifyOtp', { error: null, email, flow: 'sign-up'});
 };
 
 const viewSignUp = (req, res) => {
@@ -115,7 +132,13 @@ const viewSignUp = (req, res) => {
 };
 
 const viewLogin = (req, res) => {
-  res.render("user/login", { error : null});
+    const loginError = req.session.loginError || null;
+  
+  if (req.session.loginError) {
+    delete req.session.loginError;
+  }
+
+  res.render("user/login", { error: loginError });
 };
 
 const forgotPassword = (req, res) => {
@@ -137,36 +160,14 @@ const sendOtp = async(req, res) => {
   }
 
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiry =  new Date(Date.now() + 10 * 60 * 1000)
+  await sendOtpToVerifyEmail(email);
 
-  await transporter.sendMail({
-    from: `"Tough Toes" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: 'Password Reset OTP',
-    html: `<h3>Your OTP is: <b>${otp}</b></h3>`
-  });
-
-  let otpVerification = await otpVerificationModel.findOne({ email });
-  if (otpVerification) {
-    otpVerification.otp = otp;
-    otpVerification.expiry = expiry;
-    await otpVerification.save();
-  } else {
-    otpVerification = new otpVerificationModel({
-      email,
-      otp,
-      expiry
-    });
-    await otpVerification.save();
-  }
-
-  res.render('user/verifyOtp', { error: null, email});
+  res.render('user/verifyOtp', { error: null, email, flow: 'forgot-password'});
 
 }
 
 const verifyOtp = async(req, res) => {
-  const { email, otp } = req.body;
+  const { email, otp, flow } = req.body;
 
   const otpVerification = await otpVerificationModel.findOne({email});
 
@@ -174,13 +175,38 @@ const verifyOtp = async(req, res) => {
     if(otpVerification.expiry < new Date()) {
       await otpVerification.deleteOne();
     }
-   return res.render('user/verifyOtp', { error: "Invalid otp", email})
+   return res.render('user/verifyOtp', { error: "Invalid otp", email, flow})
   }
 
   await otpVerification.deleteOne();
 
-  res.render('user/changePassword', {email, error: null});
+  if (flow == 'sign-up') {
+      const user = await userModel.findOne({ email });
 
+      user.isVerified = true;
+
+      await user.save();
+
+       res.redirect('/user/login');
+
+  } else if (flow == 'login') {
+
+     const user = await userModel.findOne({ email });
+
+      user.isVerified = true;
+
+      await user.save();
+
+      req.session.user = true;
+      req.session.role = user.role;
+       req.session.userId = user._id;
+
+        res.redirect('/');
+
+      
+  } else {
+     res.render('user/changePassword', {email, error: null});
+  }
 }
 
 const changePassword = async(req, res) => {
@@ -244,6 +270,14 @@ const login = async (req, res) => {
 
   if (!isMatch) return res.render("user/login", { error: "Incorrrect password" });
 
+
+  if (!user.isVerified) {
+
+    await sendOtpToVerifyEmail(email);
+
+    return res.render('user/verifyOtp', { error: "Please verify your account with OTP sent to your email", email, flow: 'login'});
+  }
+
   req.session.user = true;
   req.session.role = user.role;
   req.session.userId = user._id;
@@ -278,3 +312,31 @@ module.exports = {
   requestEmailOtp,
   verifyEmailOtp
 };
+
+
+async function sendOtpToVerifyEmail(email) {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiry = new Date(Date.now() + 10 * 60 * 1000);
+
+  await transporter.sendMail({
+    from: `"Tough Toes" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Your otp to verify your account',
+    html: `<h3>Your OTP is: <b>${otp}</b></h3>`
+  });
+
+  let otpVerification = await otpVerificationModel.findOne({ email });
+  if (otpVerification) {
+    otpVerification.otp = otp;
+    otpVerification.expiry = expiry;
+    await otpVerification.save();
+  } else {
+    otpVerification = new otpVerificationModel({
+      email,
+      otp,
+      expiry
+    });
+    await otpVerification.save();
+  }
+}
+

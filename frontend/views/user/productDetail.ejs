@@ -3,31 +3,132 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nike Air Max 270 | ToughToes</title>
+  <title><%= product.name %> | ToughToes</title>
   <link rel="stylesheet" href="/css/productDetail.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .main-img-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .main-img {
+      width: 100%;
+    }
+
+    .expand-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .fullscreen-viewer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .fullscreen-viewer.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fullscreen-main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .fullscreen-main img {
+      max-height: 80vh;
+      max-width: 90vw;
+      object-fit: contain;
+    }
+
+    .fullscreen-thumbnails {
+      height: 100px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .fullscreen-thumbnails img {
+      height: 80px;
+      width: auto;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    .fullscreen-thumbnails img:hover,
+    .fullscreen-thumbnails img.active {
+      opacity: 1;
+    }
+
+    .close-fullscreen {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+  </style>
 </head>
 <body>
   <%- include('../partials/user-navbar', { name: name }) %>
-  <script>
-    function selectCategory(category) {
-      window.location.href = '/products?category=' + encodeURIComponent(category);
-    }
-  </script>
 
   <main class="product-page">
     <div class="product-container">
+      <!-- Fullscreen Image Viewer -->
+      <div class="fullscreen-viewer">
+        <button class="close-fullscreen" aria-label="Close fullscreen view">×</button>
+        <div class="fullscreen-main">
+          <img src="" alt="<%= product.name %>" />
+        </div>
+        <div class="fullscreen-thumbnails"></div>
+      </div>
+
       <div class="product-images">
-        <% if (images && images.length) { %>
-          <img src="<%= images[0] %>" alt="<%= product.name %>" class="main-img" />
-          <div class="thumbnails">
-            <% images.forEach(function(img, idx) { if(idx > 0) { %>
+        <div class="main-img-container">
+          <img src="<%= images && images.length ? images[0] : '/images/shoe_main.png' %>" alt="<%= product.name %>" class="main-img" />
+          <button type="button" class="expand-btn" aria-label="View full screen">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+        <div class="thumbnails">
+          <% if (images && images.length) { %>
+            <% images.forEach(function(img) { %>
               <img src="<%= img %>" />
-            <% } }) %>
-          </div>
-        <% } else { %>
-          <img src="/images/shoe_main.png" alt="<%= product.name %>" class="main-img" />
-        <% } %>
+            <% }) %>
+          <% } %>
+        </div>
       </div>
 
       <div class="product-info">
@@ -61,10 +162,10 @@
           </div>
         </div>
 
-
         <div class="stock-info">
           <span id="stock-message"></span>
         </div>
+
         <div class="quantity">
           <p>Quantity</p>
           <div class="quantity-controls">
@@ -101,7 +202,7 @@
 
     <div class="write-review">
       <h2>Write a Review</h2>
-      <p><strong>Nike Air Max 270</strong> — Men's Sports Shoes</p>
+      <p><strong><%= product.name %></strong> — <%= product.product_type %></p>
       <div class="rating">Rating: ⭐⭐⭐⭐☆ (4/5)</div>
       <textarea placeholder="Tell us about your experience with this product..."></textarea>
       <button>Submit Review</button>
@@ -112,7 +213,7 @@
       <div class="product-list-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 24px;">
         <% if (relatedProducts && relatedProducts.length) { %>
           <% relatedProducts.forEach(function(product) { %>
-            <a href="/products/detail/<%= product._id %>" style="text-decoration:none;color:inherit;">
+            <a href="/products/<%= product._id %>" style="text-decoration:none;color:inherit;">
               <div class="product-card enhanced-card">
                 <div class="product-image-wrapper">
                   <% if (product.image) { %>
@@ -174,19 +275,90 @@
     <p class="copyright">© 2025 ToughToes. All rights reserved.</p>
   </footer>
 
-  <script>
-    const sizeColorMap = JSON.parse('<%- JSON.stringify(typeof sizeColorMap !== "undefined" ? sizeColorMap : {}) %>');
-    const variations = JSON.parse('<%- JSON.stringify(typeof variations !== "undefined" ? variations : []) %>');
+ <script>
+  const sizeColorMap = JSON.parse('<%- JSON.stringify(sizeColorMap || {}) %>');
+  const variations = JSON.parse('<%- JSON.stringify(variations || []) %>');
 
+  document.addEventListener('DOMContentLoaded', function () {
+    const mainImg = document.querySelector('.main-img');
+    const thumbnails = document.querySelector('.thumbnails');
     const sizeBtns = document.querySelectorAll('.size-btn');
     const colorBtns = document.querySelectorAll('.color-btn');
     const stockMessage = document.getElementById('stock-message');
 
+    // 🖼️ Thumbnail clicks update main image
+    document.querySelectorAll('.thumbnails img').forEach(thumb => {
+      thumb.addEventListener('click', function () {
+        mainImg.src = this.src;
+      });
+    });
+
+    // 🔍 Fullscreen viewer functionality
+    const fullscreenViewer = document.querySelector('.fullscreen-viewer');
+    const fullscreenImage = fullscreenViewer.querySelector('.fullscreen-main img');
+    const fullscreenThumbnails = fullscreenViewer.querySelector('.fullscreen-thumbnails');
+    const expandBtn = document.querySelector('.expand-btn');
+    const closeBtn = document.querySelector('.close-fullscreen');
+
+    function openFullscreen(mainImageSrc, thumbnailSrcs) {
+      fullscreenImage.src = mainImageSrc;
+      fullscreenThumbnails.innerHTML = '';
+
+      thumbnailSrcs.forEach((src, index) => {
+        const thumb = document.createElement('img');
+        thumb.src = src;
+        thumb.alt = 'Thumbnail ' + (index + 1);
+        thumb.classList.toggle('active', src === mainImageSrc);
+
+        thumb.addEventListener('click', () => {
+          fullscreenImage.src = src;
+          fullscreenThumbnails.querySelectorAll('img').forEach(img => {
+            img.classList.remove('active');
+          });
+          thumb.classList.add('active');
+        });
+
+        fullscreenThumbnails.appendChild(thumb);
+      });
+
+      fullscreenViewer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeFullscreen() {
+      fullscreenViewer.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    expandBtn.addEventListener('click', () => {
+      const mainImageSrc = mainImg.src;
+      const thumbImages = Array.from(document.querySelectorAll('.thumbnails img')).map(img => img.src);
+      const allImages = [mainImageSrc, ...thumbImages.filter(src => src !== mainImageSrc)];
+      openFullscreen(mainImageSrc, allImages);
+    });
+
+    closeBtn.addEventListener('click', closeFullscreen);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && fullscreenViewer.classList.contains('active')) {
+        closeFullscreen();
+      }
+    });
+
+    fullscreenViewer.addEventListener('click', (e) => {
+      if (e.target === fullscreenViewer) {
+        closeFullscreen();
+      }
+    });
+
+    // 🎨 Color/size/stock switching
     function updateColorAvailability(selectedSize) {
-      const availableColors = sizeColorMap[selectedSize] || [];
+      const colorDataList = sizeColorMap[selectedSize] || [];
+
       colorBtns.forEach(cb => {
         const colorVal = cb.dataset.color;
-        if (availableColors.includes(colorVal)) {
+        const found = colorDataList.find(c => c.color === colorVal);
+        if (found) {
           cb.classList.remove('unavailable');
           cb.style.opacity = '1';
           cb.style.cursor = 'pointer';
@@ -197,9 +369,12 @@
           cb.style.cursor = 'not-allowed';
         }
       });
-      if(document.querySelector('.color-btn.selected') && document.querySelector('.color-btn.selected').classList.contains('unavailable')) {
-        document.querySelector('.color-btn.selected').classList.remove('selected');
+
+      const selected = document.querySelector('.color-btn.selected');
+      if (selected && selected.classList.contains('unavailable')) {
+        selected.classList.remove('selected');
       }
+
       updateStockMessage();
     }
 
@@ -210,12 +385,14 @@
         stockMessage.textContent = '';
         return;
       }
+
       const match = variations.find(v => v.product_size == selectedSize && v.product_color == selectedColor);
       if (!match) {
         stockMessage.textContent = 'Sold out';
         stockMessage.style.color = 'red';
         return;
       }
+
       const stock = match.stock_quantity;
       if (stock === 0) {
         stockMessage.textContent = 'Sold out';
@@ -229,43 +406,65 @@
       }
     }
 
-
-    let initialSelectedSizeBtn = document.querySelector('.size-btn.selected') || document.querySelector('.size-btn[aria-pressed="true"]') || sizeBtns[0];
-    if (initialSelectedSizeBtn) {
-      initialSelectedSizeBtn.classList.add('selected');
-      updateColorAvailability(initialSelectedSizeBtn.dataset.size);
-      let firstColorBtn = document.querySelector('.color-btn');
-      if (firstColorBtn && !firstColorBtn.classList.contains('unavailable')) {
-        firstColorBtn.classList.add('selected');
-        updateStockMessage();
-      }
-    }
-
     sizeBtns.forEach(btn => {
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', function () {
         sizeBtns.forEach(b => b.classList.remove('selected'));
         this.classList.add('selected');
+
         updateColorAvailability(this.dataset.size);
+
+        const colorList = sizeColorMap[this.dataset.size] || [];
+        if (colorList.length > 0) {
+          const firstColor = colorList[0].color;
+          const firstBtn = [...colorBtns].find(cb => cb.dataset.color === firstColor);
+          if (firstBtn) {
+            colorBtns.forEach(b => b.classList.remove('selected'));
+            firstBtn.classList.add('selected');
+            firstBtn.click();
+          }
+        }
       });
     });
+
     colorBtns.forEach(btn => {
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', function () {
         if (btn.classList.contains('unavailable')) return;
         colorBtns.forEach(b => b.classList.remove('selected'));
         this.classList.add('selected');
+
+        const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
+        const selectedColor = this.dataset.color;
+        const colorList = sizeColorMap[selectedSize] || [];
+        const colorEntry = colorList.find(c => c.color === selectedColor);
+
+        if (colorEntry?.images?.length) {
+          mainImg.src = colorEntry.images[0];
+          thumbnails.innerHTML = '';
+          colorEntry.images.slice(0).forEach(url => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.addEventListener('click', () => mainImg.src = url);
+            thumbnails.appendChild(img);
+          });
+        }
+
         updateStockMessage();
       });
     });
+
+    // ➕➖ Quantity controls
     const qtyInput = document.getElementById('qty-input');
-    document.getElementById('qty-minus').onclick = function() {
-      let val = parseInt(qtyInput.value, 10);
-      if(val > 1) qtyInput.value = val - 1;
+    document.getElementById('qty-minus').onclick = () => {
+      const val = parseInt(qtyInput.value);
+      if (val > 1) qtyInput.value = val - 1;
     };
-    document.getElementById('qty-plus').onclick = function() {
-      let val = parseInt(qtyInput.value, 10);
+    document.getElementById('qty-plus').onclick = () => {
+      const val = parseInt(qtyInput.value);
       qtyInput.value = val + 1;
     };
-    document.getElementById('addToCartBtn').onclick = function() {
+
+    // 🛒 Add to Cart
+    document.getElementById('addToCartBtn').onclick = function () {
       const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
       const quantity = parseInt(qtyInput.value, 10);
@@ -343,5 +542,11 @@
       };
     }
   </script>
+    // ✅ Auto-select first size on load
+    const firstSizeBtn = document.querySelector('.size-btn');
+    if (firstSizeBtn) firstSizeBtn.click();
+  });
+</script>
+
 </body>
 </html>

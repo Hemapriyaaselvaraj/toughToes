@@ -12,6 +12,11 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
       .image-preview img {
         width: 60px;
@@ -20,6 +25,68 @@
         margin-right: 5px;
         border-radius: 4px;
       }
+      
+      /* Modal styles */
+      #cropperModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        z-index: 9999;
+      }
+
+      /* Container for cropper */
+      #cropperModal .cropper-container {
+        position: relative;
+        width: 90%;
+        max-width: 800px;
+        margin: 40px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Wrapper for image */
+      #cropperModal .cropper-wrapper {
+        width: 100%;
+        height: 500px;
+        margin-bottom: 20px;
+        background: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Image to crop */
+      #cropperModal .cropper-wrapper img {
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+      }
+
+      /* Cropper overrides */
+      .cropper-view-box {
+        outline: 1px solid #39f;
+        outline-color: rgba(51, 153, 255, 0.75);
+      }
+
+      .cropper-face {
+        background-color: #fff;
+        left: 0;
+        opacity: 0.1;
+        position: absolute;
+        top: 0;
+      }
+
+      .cropper-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
       .variation-box {
         border: 1px solid #ccc;
         padding: 1rem;
@@ -95,6 +162,7 @@
                   type="number"
                   name="price"
                   step="0.01"
+                  min="0"
                   class="form-control"
                   value="<%= product ? product.price : '' %>"
                   required
@@ -106,6 +174,7 @@
                   type="number"
                   name="discount"
                   step="0.01"
+                  min="0"
                   class="form-control"
                   value="<%= product ? product.discount_percentage : '' %>"
                 />
@@ -174,65 +243,135 @@
       const variationFiles = {}; // Track files by variation
 
       function addVariation(data = {}) {
+        // Check for duplicate size+color combination
+        if (data.size && data.color) {
+          const existingBoxes = document.querySelectorAll('.variation-box');
+          for (const box of existingBoxes) {
+            const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+            const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+            if (sizeSel && colorSel && sizeSel.value === data.size && colorSel.value === data.color) {
+              alert('This size and color combination already exists.');
+              return;
+            }
+          }
+        }
+
         const index = data.index ?? variationIndex;
         const container = document.createElement("div");
         container.className = "variation-box";
         container.dataset.index = index;
 
+        // Build image preview HTML for edit mode
+        let imagesHtml = "";
+        if (data.images && data.images.length) {
+          data.images.forEach((url, imgIdx) => {
+            imagesHtml += `<span class="image-wrapper" style="position:relative;display:inline-block;margin-right:5px;">
+              <img src="${url}" />
+              <button type="button" class="remove-img-btn" data-img-idx="${imgIdx}" style="position:absolute;top:2px;right:2px;background:#fff;border:none;color:red;font-size:1.1rem;padding:0 4px;line-height:1;cursor:pointer;">&times;</button>
+            </span>`;
+          });
+        }
+
         container.innerHTML = `
-      <span class="remove-btn" onclick="this.parentElement.remove()">&times;</span>
-      <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label>Size</label>
-          <select name="variations[${index}][size]" class="form-select" required>
-            <option value="">Select</option>
-            <% sizes.forEach(size => { %>
-              <option value="<%= size.size %>" ${data.size === "<%= size.size %>" ? 'selected' : ''}><%= size.size %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label>Color</label>
-          <select name="variations[${index}][color]" class="form-select" required>
-            <option value="">Select</option>
-            <% colors.forEach(color => { %>
-              <option value="<%= color.color %>" ${data.color === "<%= color.color %>" ? 'selected' : ''}><%= color.color %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label>Stock Quantity</label>
-          <input type="number" name="variations[${index}][stock]" class="form-control" min="0" value="${data.stock ?? ''}" required />
-        </div>
-        <div class="col-md-4">
-          <label>Images</label>
-          <button type="button" class="btn btn-outline-secondary w-100" onclick="triggerImageUpload(this)">+ Add Image</button>
-          <input type="file" accept="image/*" style="display:none" multiple />
-          <div class="image-preview mt-2">
-            ${(data.images || []).map(url => `<img src="${url}" />`).join('')}
+          <span class="remove-btn" onclick="this.parentElement.remove()">&times;</span>
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label>Size</label>
+              <select name="variations[${index}][size]" class="form-select" required>
+                <option value="">Select</option>
+                <% sizes.forEach(size => { %>
+                  <option value="<%= size.size %>" ${data.size === "<%= size.size %>" ? 'selected' : ''}><%= size.size %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label>Color</label>
+              <select name="variations[${index}][color]" class="form-select" required>
+                <option value="">Select</option>
+                <% colors.forEach(color => { %>
+                  <option value="<%= color.color %>" ${data.color === "<%= color.color %>" ? 'selected' : ''}><%= color.color %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label>Stock Quantity</label>
+              <input type="number" name="variations[${index}][stock]" class="form-control" min="0" value="${data.stock ?? ''}" required />
+            </div>
+            <div class="col-md-4">
+              <label>Images</label>
+              <button type="button" class="btn btn-outline-secondary w-100" onclick="triggerImageUpload(this)">+ Add Image</button>
+              <input type="file" accept="image/*" style="display:none" multiple />
+              <div class="image-preview mt-2">${imagesHtml}</div>
+            </div>
           </div>
-        </div>
-      </div>
-    `;
+        `;
+
+        // Prevent duplicate size+color in the form itself
+        const sizeSelect = container.querySelector('select[name^="variations"][name$="[size]"]');
+        const colorSelect = container.querySelector('select[name^="variations"][name$="[color]"]');
+        function checkDuplicate() {
+          const selectedSize = sizeSelect.value;
+          const selectedColor = colorSelect.value;
+          if (!selectedSize || !selectedColor) return;
+          const existingBoxes = document.querySelectorAll('.variation-box');
+          for (const box of existingBoxes) {
+            if (box === container) continue;
+            const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+            const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+            if (sizeSel && colorSel && sizeSel.value === selectedSize && colorSel.value === selectedColor) {
+              alert('This size and color combination already exists.');
+              // Reset the changed select
+              if (event.target === sizeSelect) sizeSelect.value = '';
+              if (event.target === colorSelect) colorSelect.value = '';
+              return;
+            }
+          }
+        }
+        sizeSelect.addEventListener('change', checkDuplicate);
+        colorSelect.addEventListener('change', checkDuplicate);
 
         const fileInput = container.querySelector('input[type="file"]');
         const previewBox = container.querySelector(".image-preview");
         variationFiles[index] = [];
 
+        // Handle removal of pre-populated images (edit mode)
+        if (data.images && data.images.length) {
+          previewBox.querySelectorAll('.remove-img-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              const imgIdx = parseInt(btn.getAttribute('data-img-idx'));
+              // Remove from UI
+              btn.parentElement.remove();
+              // Mark for deletion by adding a hidden input
+              const delInput = document.createElement('input');
+              delInput.type = 'hidden';
+              delInput.name = `variations[${index}][deleteImages][]`;
+              delInput.value = data.images[imgIdx];
+              container.appendChild(delInput);
+            });
+          });
+        }
+
         fileInput.addEventListener("change", function () {
           const files = Array.from(this.files);
-          variationFiles[index].push(...files);
-
-          previewBox.innerHTML = "";
-          variationFiles[index].forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const img = document.createElement("img");
-              img.src = e.target.result;
-              previewBox.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-          });
+          let fileIdx = 0;
+          function cropNext() {
+            if (fileIdx < files.length) {
+              startCrop(files[fileIdx], fileInput, previewBox);
+              // After cropping, increment and check for next
+              // Use a MutationObserver to detect when modal closes
+              const modal = document.getElementById('cropperModal');
+              const observer = new MutationObserver(() => {
+                if (modal.style.display === 'none') {
+                  observer.disconnect();
+                  fileIdx++;
+                  cropNext();
+                }
+              });
+              observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+            }
+          }
+          cropNext();
         });
 
         document.getElementById("variationsContainer").appendChild(container);
@@ -274,6 +413,14 @@
           });
         });
 
+        // Collect deleted image URLs for each variation and send as deletedVariationImage_{index}
+        variationBoxes.forEach((box, idx) => {
+          const deletedInputs = box.querySelectorAll('input[name^="variations[' + idx + '][deleteImages]"]');
+          deletedInputs.forEach(input => {
+            formData.append(`deletedVariationImage_${idx}`, input.value);
+          });
+        });
+
         fetch(this.action, {
           method: this.method,
           body: formData,
@@ -303,6 +450,288 @@
           });
         };
       <% } %>
-    </script>
-  </body>
+  </script>
+
+  <!-- Cropper Modal -->
+  <div class="cropper-modal" id="cropperModal">
+    <div class="cropper-container">
+      <div class="cropper-wrapper">
+        <img id="cropperImage" src="" alt="Image to crop">
+      </div>
+      <div class="cropper-buttons">
+        <button type="button" class="btn btn-secondary" onclick="cancelCrop()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="completeCrop()">Crop & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prevent background scrolling when modal is open -->
+  <style>
+    body.cropper-active {
+      overflow: hidden;
+      padding-right: 17px; /* Prevent layout shift */
+    }
+  </style>
+
+  <script>
+    let activeCropper = null;
+    let currentFileInput = null;
+    let currentPreviewBox = null;
+    
+    function startCrop(file, fileInput, previewBox) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const modal = document.getElementById('cropperModal');
+        const image = document.getElementById('cropperImage');
+        
+        // Reset cropper if exists
+        if (activeCropper) {
+          activeCropper.destroy();
+        }
+        
+        // Show modal and setup image
+        modal.style.display = 'block';
+        document.body.classList.add('cropper-active');
+        image.src = e.target.result;
+        
+        // Initialize cropper
+        activeCropper = new Cropper(image, {
+          aspectRatio: 1,
+          viewMode: 2,
+          autoCropArea: 1,
+        });
+        
+        // Store references
+        currentFileInput = fileInput;
+        currentPreviewBox = previewBox;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function cancelCrop() {
+      const modal = document.getElementById('cropperModal');
+      modal.style.display = 'none';
+      document.body.classList.remove('cropper-active');
+      if (activeCropper) {
+        activeCropper.destroy();
+        activeCropper = null;
+      }
+      if (currentFileInput) {
+        currentFileInput.value = '';
+      }
+    }
+    
+    function completeCrop() {
+      if (!activeCropper) return;
+      // Get the cropped canvas
+      const canvas = activeCropper.getCroppedCanvas({
+        width: 600,
+        height: 600,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        // Create a new file from the blob
+        const croppedFile = new File([blob], 'cropped.jpg', {
+          type: 'image/jpeg',
+          lastModified: new Date().getTime()
+        });
+        // Create a preview with remove button
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const wrapper = document.createElement('span');
+          wrapper.className = 'image-wrapper';
+          wrapper.style.position = 'relative';
+          wrapper.style.display = 'inline-block';
+          wrapper.style.marginRight = '5px';
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          wrapper.appendChild(img);
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'remove-img-btn';
+          removeBtn.innerHTML = '&times;';
+          removeBtn.style.position = 'absolute';
+          removeBtn.style.top = '2px';
+          removeBtn.style.right = '2px';
+          removeBtn.style.background = '#fff';
+          removeBtn.style.border = 'none';
+          removeBtn.style.color = 'red';
+          removeBtn.style.fontSize = '1.1rem';
+          removeBtn.style.padding = '0 4px';
+          removeBtn.style.lineHeight = '1';
+          removeBtn.style.cursor = 'pointer';
+          removeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Remove from UI
+            wrapper.remove();
+            // Remove from variationFiles
+            const variationIndex = currentFileInput.closest('.variation-box').dataset.index;
+            const filesArr = variationFiles[variationIndex];
+            // Find the index of this image in preview
+            const wrappers = Array.from(currentPreviewBox.querySelectorAll('.image-wrapper'));
+            const fileIdx = wrappers.indexOf(wrapper);
+            if (fileIdx > -1) {
+              filesArr.splice(fileIdx - countExistingImages(variationIndex), 1);
+            }
+          });
+          wrapper.appendChild(removeBtn);
+          currentPreviewBox.appendChild(wrapper);
+        };
+        reader.readAsDataURL(croppedFile);
+        // Update the variation files array
+        const variationIndex = currentFileInput.closest('.variation-box').dataset.index;
+        if (!variationFiles[variationIndex]) variationFiles[variationIndex] = [];
+        variationFiles[variationIndex].push(croppedFile); // Add to array
+        // Close modal and cleanup
+        cancelCrop();
+      }, 'image/jpeg', 0.9);
+    }
+    
+    // Helper to count existing images in preview (for correct index mapping)
+    function countExistingImages(variationIndex) {
+      const box = document.querySelector(`.variation-box[data-index='${variationIndex}']`);
+      if (!box) return 0;
+      return box.querySelectorAll('.image-wrapper .remove-img-btn[data-img-idx]').length;
+    }
+    
+    // Update the file input change handler
+    function addVariation(data = {}) {
+      // Check for duplicate size+color combination
+      if (data.size && data.color) {
+        const existingBoxes = document.querySelectorAll('.variation-box');
+        for (const box of existingBoxes) {
+          const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+          const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+          if (sizeSel && colorSel && sizeSel.value === data.size && colorSel.value === data.color) {
+            alert('This size and color combination already exists.');
+            return;
+          }
+        }
+      }
+
+      const index = data.index ?? variationIndex;
+      const container = document.createElement("div");
+      container.className = "variation-box";
+      container.dataset.index = index;
+
+      // Build image preview HTML for edit mode
+      let imagesHtml = "";
+      if (data.images && data.images.length) {
+        data.images.forEach((url, imgIdx) => {
+          imagesHtml += `<span class="image-wrapper" style="position:relative;display:inline-block;margin-right:5px;">
+            <img src="${url}" />
+            <button type="button" class="remove-img-btn" data-img-idx="${imgIdx}" style="position:absolute;top:2px;right:2px;background:#fff;border:none;color:red;font-size:1.1rem;padding:0 4px;line-height:1;cursor:pointer;">&times;</button>
+          </span>`;
+        });
+      }
+
+      container.innerHTML = `
+        <span class="remove-btn" onclick="this.parentElement.remove()">&times;</span>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label>Size</label>
+            <select name="variations[${index}][size]" class="form-select" required>
+              <option value="">Select</option>
+              <% sizes.forEach(size => { %>
+                <option value="<%= size.size %>" ${data.size === "<%= size.size %>" ? 'selected' : ''}><%= size.size %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label>Color</label>
+            <select name="variations[${index}][color]" class="form-select" required>
+              <option value="">Select</option>
+              <% colors.forEach(color => { %>
+                <option value="<%= color.color %>" ${data.color === "<%= color.color %>" ? 'selected' : ''}><%= color.color %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label>Stock Quantity</label>
+            <input type="number" name="variations[${index}][stock]" class="form-control" min="0" value="${data.stock ?? ''}" required />
+          </div>
+          <div class="col-md-4">
+            <label>Images</label>
+            <button type="button" class="btn btn-outline-secondary w-100" onclick="triggerImageUpload(this)">+ Add Image</button>
+            <input type="file" accept="image/*" style="display:none" multiple />
+            <div class="image-preview mt-2">${imagesHtml}</div>
+          </div>
+        </div>
+      `;
+
+      // Prevent duplicate size+color in the form itself
+      const sizeSelect = container.querySelector('select[name^="variations"][name$="[size]"]');
+      const colorSelect = container.querySelector('select[name^="variations"][name$="[color]"]');
+      function checkDuplicate() {
+        const selectedSize = sizeSelect.value;
+        const selectedColor = colorSelect.value;
+        if (!selectedSize || !selectedColor) return;
+        const existingBoxes = document.querySelectorAll('.variation-box');
+        for (const box of existingBoxes) {
+          if (box === container) continue;
+          const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
+          const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
+          if (sizeSel && colorSel && sizeSel.value === selectedSize && colorSel.value === selectedColor) {
+            alert('This size and color combination already exists.');
+            // Reset the changed select
+            if (event.target === sizeSelect) sizeSelect.value = '';
+            if (event.target === colorSelect) colorSelect.value = '';
+            return;
+          }
+        }
+      }
+      sizeSelect.addEventListener('change', checkDuplicate);
+      colorSelect.addEventListener('change', checkDuplicate);
+
+      const fileInput = container.querySelector('input[type="file"]');
+      const previewBox = container.querySelector(".image-preview");
+      variationFiles[index] = [];
+
+      // Handle removal of pre-populated images (edit mode)
+      if (data.images && data.images.length) {
+        previewBox.querySelectorAll('.remove-img-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const imgIdx = parseInt(btn.getAttribute('data-img-idx'));
+            // Remove from UI
+            btn.parentElement.remove();
+            // Mark for deletion by adding a hidden input
+            const delInput = document.createElement('input');
+            delInput.type = 'hidden';
+            delInput.name = `variations[${index}][deleteImages][]`;
+            delInput.value = data.images[imgIdx];
+            container.appendChild(delInput);
+          });
+        });
+      }
+
+      fileInput.addEventListener("change", function () {
+        const files = Array.from(this.files);
+        let fileIdx = 0;
+        function cropNext() {
+          if (fileIdx < files.length) {
+            startCrop(files[fileIdx], fileInput, previewBox);
+            // After cropping, increment and check for next
+            // Use a MutationObserver to detect when modal closes
+            const modal = document.getElementById('cropperModal');
+            const observer = new MutationObserver(() => {
+              if (modal.style.display === 'none') {
+                observer.disconnect();
+                fileIdx++;
+                cropNext();
+              }
+            });
+            observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+          }
+        }
+        cropNext();
+      });
+
+      document.getElementById("variationsContainer").appendChild(container);
+      variationIndex = Math.max(variationIndex, index + 1);
+    }
+  </script>
+</body>
 </html>

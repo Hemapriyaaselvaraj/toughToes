@@ -42,6 +42,16 @@ const userSchema = new mongoose.Schema({
         required : true,
         default: false,
     },
+    isVerified: {
+         type: Boolean,
+         default: false
+    },
+    signupMethod: {
+        type: String,
+        enum: ['email', 'google'],
+        required: true,
+        default: 'email'
+    }
 },
   {
     timestamps: true,
