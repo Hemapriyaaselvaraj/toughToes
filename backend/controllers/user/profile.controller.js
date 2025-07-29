@@ -11,6 +11,7 @@ exports.getProfile = async (req, res) => {
     if (!user) return res.redirect('/login');
     // You can add more user info as needed
     res.render('user/profile', {
+      name: user.firstName,
       user,
       // Add more fields if needed
     });

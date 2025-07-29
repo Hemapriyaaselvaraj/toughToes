@@ -3,6 +3,10 @@ const path = require('path');
 const userRoutes = require('./backend/routes/user')
 const adminRoutes = require('./backend/routes/admin')
 const customerRoutes = require('./backend/routes/customer')
+const cartRoutes = require('./backend/routes/cart');
+const userWishlistRoute = require('./backend/routes/user/wishlist');
+const userProfileRoute = require('./backend/routes/user/profile');
+
 const flash = require('connect-flash');
 
 const connectDB = require('./backend/config/db');
@@ -44,14 +48,8 @@ app.set('view engine', 'ejs');
 app.use('/user',userRoutes)
 app.use('/admin',adminRoutes)
 app.use('/', customerRoutes)
-
-const cartRoutes = require('./backend/routes/cart');
 app.use('/cart', cartRoutes);
-
-const userWishlistRoute = require('./backend/routes/user/wishlist');
 app.use('/wishlist', userWishlistRoute);
-
-const userProfileRoute = require('./backend/routes/user/profile');
 app.use('/profile', userProfileRoute);
 
 const PORT = process.env.PORT || 5000;

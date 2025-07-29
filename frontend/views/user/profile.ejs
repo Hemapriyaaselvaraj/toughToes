@@ -9,29 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4">
-    <a class="navbar-brand fw-bold" href="#">ToughToes</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav mx-auto">
-        <li class="nav-item"><a class="nav-link" href="#">Men</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Women</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Kids</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Sale</a></li>
-      </ul>
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search shoes..." />
-        <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-      </form>
-      <div class="ms-4 d-flex align-items-center">
-        <i class="fas fa-user me-3"></i>
-        <i class="fas fa-heart me-3"></i>
-        <i class="fas fa-shopping-cart me-3"></i>
-        <span><%= user.firstName %> <%= user.lastName %></span>
-      </div>
-    </div>
-  </nav>
+   <%- include('../partials/user-navbar', { name: name }) %>
 
   <!-- Main Content -->
   <div class="container my-5 d-flex">
@@ -39,10 +18,8 @@
     <div class="sidebar p-3 me-4 border rounded">
       <ul class="list-unstyled">
         <li><a href="#" class="active"><i class="fas fa-user me-2"></i>Profile</a></li>
-        <li><a href="#"><i class="fas fa-box me-2"></i>Orders</a></li>
-        <li><a href="#"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
+        <li><a href="/orders"><i class="fas fa-box me-2"></i>Orders</a></li>
         <li><a href="/addresses"><i class="fas fa-map-marker-alt me-2"></i>Addresses</a></li>
-        <li><a href="#"><i class="fas fa-wallet me-2"></i>My Wallet</a></li>
         <li>
           <form id="logoutForm" method="POST" action="/user/logout" style="display:inline;">
             <button type="submit" class="btn btn-link p-0" style="color:inherit;text-decoration:none;">
@@ -51,26 +28,21 @@
           </form>
         </li>
       </ul>
-<script>
-  // Redirect to home after logout
-  const logoutForm = document.getElementById('logoutForm');
-  if (logoutForm) {
-    logoutForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      fetch('/user/logout', { method: 'POST', credentials: 'same-origin' })
-        .then(() => { window.location.href = '/'; });
-    });
-  }
-</script>
     </div>
 
     <!-- Profile Content -->
     <div class="flex-grow-1">
       <div class="profile-box border rounded p-4 mb-4">
-        <h4><%= user.firstName %> <%= user.lastName %></h4>
-        <p class="text-muted"><%= user.email %><br>
-          Member since <%= user.createdAt ? new Date(user.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }) : '' %>
-        </p>
+        <div class="d-flex align-items-center mb-3">
+          <img src="<%= user.profileImage || '/images/default-avatar.png' %>" class="rounded-circle me-3" alt="Profile Image" width="80" height="80">
+          <div>
+            <h4><%= user.firstName %> <%= user.lastName %></h4>
+            <p class="text-muted">
+              <%= user.email %><br>
+              Member since <%= user.createdAt ? new Date(user.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }) : '' %>
+            </p>
+          </div>
+        </div>
         <hr>
         <h6 class="mb-3">Personal Info</h6>
         <form method="POST" action="/profile" id="profileForm">
@@ -87,20 +59,24 @@
           <div class="row mb-3">
             <div class="col">
               <label>Email Address</label>
-              <div class="input-group">
-                <input type="email" class="form-control" name="email" id="emailInput" value="<%= user.email %>" disabled>
-              </div>
+              <input type="email" class="form-control" name="email" value="<%= user.email %>" disabled>
             </div>
             <div class="col">
               <label>Phone Number</label>
               <input type="text" class="form-control" name="phoneNumber" value="<%= user.phoneNumber %>" disabled>
             </div>
           </div>
-          <div id="profileEditBtns" style="display:none;">
-            <button class="btn btn-dark" type="submit"><i class="fas fa-save me-2"></i>Save Changes</button>
-            <button class="btn btn-link text-muted" type="button" id="cancelEditBtn">Cancel</button>
-          </div>
         </form>
+        <div class="mb-3">
+          <label>Default Address</label>
+          <% if (user.defaultAddress) { %>
+            <div class="border p-2 rounded bg-light">
+              <%= user.defaultAddress.name %>, <%= user.defaultAddress.street %>, <%= user.defaultAddress.city %>, <%= user.defaultAddress.state %> - <%= user.defaultAddress.pincode %>
+            </div>
+          <% } else { %>
+            <p class="text-muted">No default address added.</p>
+          <% } %>
+        </div>
         <a class="btn btn-outline-dark mt-2" href="/profile/edit"><i class="fas fa-edit me-2"></i>Edit Profile</a>
       </div>
 
@@ -110,178 +86,96 @@
         <p class="text-muted small">Change your account password securely.</p>
         <button class="btn btn-outline-dark" id="changePasswordBtn">Change Password</button>
       </div>
+    </div>
+  </div>
 
-      <!-- Danger Zone -->
-      <div class="danger-zone border rounded p-4 bg-light">
-        <h6>Danger Zone</h6>
-        <p class="text-muted small">These actions cannot be undone. Please proceed with caution.</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <strong>Deactivate Account</strong>
-            <p class="text-muted mb-0 small">Deactivating account will temporarily disable your login. Reach out to customer care to Re-Activate</p>
-          </div>
-          <button class="btn btn-outline-dark">Deactivate Account</button>
+  <!-- Change Password Modal -->
+  <div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Change Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="changePasswordForm">
+            <input type="hidden" id="changePasswordEmail" value="<%= user.email %>">
+            <div class="mb-2">
+              <button type="button" class="btn btn-outline-secondary" id="sendOtpBtn">Send OTP</button>
+            </div>
+            <input type="text" class="form-control mb-2" id="otpInput" placeholder="Enter OTP" disabled>
+            <input type="password" class="form-control mb-2" id="newPasswordInput" placeholder="New Password" disabled>
+            <input type="password" class="form-control mb-2" id="confirmPasswordInput" placeholder="Confirm Password" disabled>
+            <button type="submit" class="btn btn-dark w-100" id="submitChangePasswordBtn" disabled>Change Password</button>
+            <div class="text-danger mt-2" id="changePasswordError"></div>
+          </form>
         </div>
       </div>
-</div>
-
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="changePasswordForm">
-          <div class="mb-3">
-            <label for="changePasswordEmail" class="form-label">Email</label>
-            <input type="email" class="form-control" id="changePasswordEmail" value="<%= user.email %>" readonly>
-          </div>
-          <div class="mb-3">
-            <button type="button" class="btn btn-outline-secondary" id="sendOtpBtn">Send OTP</button>
-          </div>
-          <div class="mb-3">
-            <label for="otpInput" class="form-label">OTP</label>
-            <input type="text" class="form-control" id="otpInput" placeholder="Enter OTP" disabled>
-          </div>
-          <div class="mb-3">
-            <label for="newPasswordInput" class="form-label">New Password</label>
-            <input type="password" class="form-control" id="newPasswordInput" placeholder="New Password" disabled>
-          </div>
-          <div class="mb-3">
-            <label for="confirmPasswordInput" class="form-label">Confirm Password</label>
-            <input type="password" class="form-control" id="confirmPasswordInput" placeholder="Confirm Password" disabled>
-          </div>
-          <button type="submit" class="btn btn-dark" id="submitChangePasswordBtn" disabled>Change Password</button>
-        </form>
-        <div id="changePasswordError" class="text-danger mt-2"></div>
-      </div>
     </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Change Password Modal logic
-  const changePasswordBtn = document.getElementById('changePasswordBtn');
-  const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-  const sendOtpBtn = document.getElementById('sendOtpBtn');
-  const otpInput = document.getElementById('otpInput');
-  const newPasswordInput = document.getElementById('newPasswordInput');
-  const confirmPasswordInput = document.getElementById('confirmPasswordInput');
-  const submitChangePasswordBtn = document.getElementById('submitChangePasswordBtn');
-  const changePasswordError = document.getElementById('changePasswordError');
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+    const otpInput = document.getElementById('otpInput');
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+    const submitChangePasswordBtn = document.getElementById('submitChangePasswordBtn');
+    const changePasswordError = document.getElementById('changePasswordError');
 
-  changePasswordBtn.onclick = function() {
-    changePasswordModal.show();
-    otpInput.value = '';
-    newPasswordInput.value = '';
-    confirmPasswordInput.value = '';
-    otpInput.disabled = true;
-    newPasswordInput.disabled = true;
-    confirmPasswordInput.disabled = true;
-    submitChangePasswordBtn.disabled = true;
-    changePasswordError.textContent = '';
-  };
+    changePasswordBtn.onclick = () => {
+      modal.show();
+      otpInput.value = newPasswordInput.value = confirmPasswordInput.value = '';
+      otpInput.disabled = newPasswordInput.disabled = confirmPasswordInput.disabled = submitChangePasswordBtn.disabled = true;
+      changePasswordError.textContent = '';
+    };
 
-  sendOtpBtn.onclick = function() {
-    fetch('/user/login/sendOtp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: document.getElementById('changePasswordEmail').value })
-    })
-    .then(res => res.text())
-    .then(() => {
-      otpInput.disabled = false;
-      changePasswordError.textContent = 'OTP sent to your email.';
-    })
-    .catch(() => {
-      changePasswordError.textContent = 'Failed to send OTP.';
-    });
-  };
-
-  otpInput.oninput = function() {
-    if (otpInput.value.length === 6) {
-      newPasswordInput.disabled = false;
-      confirmPasswordInput.disabled = false;
-      submitChangePasswordBtn.disabled = false;
-    } else {
-      newPasswordInput.disabled = true;
-      confirmPasswordInput.disabled = true;
-      submitChangePasswordBtn.disabled = true;
-    }
-  };
-
-  document.getElementById('changePasswordForm').onsubmit = function(e) {
-    e.preventDefault();
-    fetch('/user/changePassword', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: document.getElementById('changePasswordEmail').value,
-        otp: otpInput.value,
-        password: newPasswordInput.value,
-        confirmPassword: confirmPasswordInput.value
+    document.getElementById('sendOtpBtn').onclick = () => {
+      fetch('/user/login/sendOtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: document.getElementById('changePasswordEmail').value })
       })
-    })
-    .then(res => res.text())
-    .then(response => {
-      const trimmed = response.trim();
-      if (trimmed === 'Password changed successfully!') {
-        changePasswordModal.hide();
-        alert('Password changed successfully!');
-      } else if (trimmed.includes('Invalid otp')) {
-        changePasswordError.textContent = 'Wrong OTP';
-      } else {
-        changePasswordError.textContent = trimmed;
-      }
-    })
-    .catch(() => {
-      changePasswordError.textContent = 'Failed to change password.';
-    });
-  };
-</script>
-    </div>
-  </div>
+      .then(res => res.text())
+      .then(() => {
+        otpInput.disabled = false;
+        changePasswordError.textContent = 'OTP sent to your email.';
+      })
+      .catch(() => {
+        changePasswordError.textContent = 'Failed to send OTP.';
+      });
+    };
 
-  <!-- Footer -->
-  <footer class="bg-dark text-white py-4 mt-5">
-    <div class="container d-flex justify-content-between flex-wrap">
-      <div>
-        <h5>ToughToes</h5>
-        <p>Premium shoes for every step of your journey.</p>
-      </div>
-      <div>
-        <h6>Quick Links</h6>
-        <ul class="list-unstyled">
-          <li><a href="#" class="text-white">About Us</a></li>
-          <li><a href="#" class="text-white">Contact</a></li>
-          <li><a href="#" class="text-white">Size Guide</a></li>
-          <li><a href="#" class="text-white">Returns</a></li>
-        </ul>
-      </div>
-      <div>
-        <h6>Categories</h6>
-        <ul class="list-unstyled">
-          <li><a href="#" class="text-white">Men's Shoes</a></li>
-          <li><a href="#" class="text-white">Women's Shoes</a></li>
-          <li><a href="#" class="text-white">Kids' Shoes</a></li>
-          <li><a href="#" class="text-white">Sale</a></li>
-        </ul>
-      </div>
-      <div>
-        <h6>Follow Us</h6>
-        <a href="#" class="text-white me-2"><i class="fab fa-facebook"></i></a>
-        <a href="#" class="text-white me-2"><i class="fab fa-instagram"></i></a>
-        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
-      </div>
-    </div>
-    <div class="text-center mt-3">
-      <small>© 2025 ToughToes. All rights reserved.</small>
-    </div>
-  </footer>
+    otpInput.oninput = () => {
+      const ready = otpInput.value.length === 6;
+      newPasswordInput.disabled = confirmPasswordInput.disabled = submitChangePasswordBtn.disabled = !ready;
+    };
 
+    document.getElementById('changePasswordForm').onsubmit = function(e) {
+      e.preventDefault();
+      fetch('/user/changePassword', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('changePasswordEmail').value,
+          otp: otpInput.value,
+          password: newPasswordInput.value,
+          confirmPassword: confirmPasswordInput.value
+        })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        if (msg.trim() === 'Password changed successfully!') {
+          modal.hide();
+          alert('Password changed successfully!');
+        } else {
+          changePasswordError.textContent = msg;
+        }
+      })
+      .catch(() => changePasswordError.textContent = 'Failed to change password.');
+    };
+  </script>
 </body>
 </html>
