@@ -323,94 +323,58 @@ const productList = async (req, res) => {
 const productDetail = async (req, res) => {
   try {
     const productId = req.params.id;
-
     const product = await Product.findById(productId).lean();
-    if (!product) return res.status(404).send("Product not found");
-
-    const variations = await ProductVariation.find({
-      product_id: productId,
-    }).lean();
-
-    let allImages = [];
-    variations.forEach((variation) => {
-      if (variation.images && variation.images.length > 0) {
-        allImages.push(...variation.images);
-      }
+    if (!product) return res.status(404).send('Product not found');
+    const variations = await ProductVariation.find({ product_id: productId }).lean();
+    let images = [];
+    variations.forEach(v => {
+      if (v.images && v.images.length) images.push(...v.images);
     });
-
-    allImages = [...new Set(allImages)];
-
-    const sizes = [...new Set(variations.map((v) => v.product_size))];
-
-    const colors = [...new Set(variations.map((v) => v.product_color))];
-
+    images = [...new Set(images)];
+    const sizes = [...new Set(variations.map(v => v.product_size))];
+    const colors = [...new Set(variations.map(v => v.product_color))];
     const sizeColorMap = {};
-    variations.forEach((variation) => {
-      const size = variation.product_size;
-      const color = variation.product_color;
-
-      if (!sizeColorMap[size]) {
-        sizeColorMap[size] = [];
-      }
-
-      const alreadyHasColor = sizeColorMap[size].some((c) => c.color === color);
-      if (!alreadyHasColor) {
-        sizeColorMap[size].push({
-          color: color,
-          images: variation.images,
+    if (variations && variations.length) {
+      variations.forEach(variation => {
+        const size = variation.product_size;
+        const color = variation.product_color;
+        if (!sizeColorMap[size]) sizeColorMap[size] = [];
+        if (color && !sizeColorMap[size].includes(color)) sizeColorMap[size].push( {
+          color: color, 
+          images: variation.images
         });
-      }
-    });
-
+      });
+    }
     const relatedProducts = await Product.find({
       product_category: product.product_category,
       _id: { $ne: product._id },
-      is_active: true,
-    })
-      .limit(4)
-      .lean();
-
-    const relatedIds = relatedProducts.map((p) => p._id);
-    const relatedImages = await ProductVariation.aggregate([
+      is_active: true
+    }).limit(4).lean();
+    const relatedIds = relatedProducts.map(p => p._id);
+    const relatedVariations = await ProductVariation.aggregate([
       { $match: { product_id: { $in: relatedIds } } },
-      {
-        $group: {
-          _id: "$product_id",
-          image: { $first: { $arrayElemAt: ["$images", 0] } },
-        },
-      },
+      { $group: { _id: "$product_id", image: { $first: { $arrayElemAt: ["$images", 0] } } } }
     ]);
-
-    const imageMap = {};
-    relatedImages.forEach((item) => {
-      imageMap[item._id.toString()] = item.image;
-    });
-
-    relatedProducts.forEach((product) => {
-      const id = product._id.toString();
-      product.image = imageMap[id] || null;
-    });
-
+    const relatedImageMap = {};
+    relatedVariations.forEach(v => { relatedImageMap[v._id.toString()] = v.image; });
+    relatedProducts.forEach(p => { p.image = relatedImageMap[p._id.toString()] || null; });
     let name = null;
     if (req.session && req.session.userId) {
       const user = await userModel.findById(req.session.userId).lean();
-      if (user) {
-        name = user.firstName + (user.lastName ? " " + user.lastName : "");
-      }
+      if (user) name = user.firstName + (user.lastName ? (" " + user.lastName) : "");
     }
-
-    res.render("user/productDetail", {
+    res.render('user/productDetail', {
       product,
-      images: allImages,
+      images,
       sizes,
       colors,
-      sizeColorMap,
       relatedProducts,
       name,
+      sizeColorMap,
       variations,
     });
-  } catch (error) {
-    res.status(500).send("Error loading product detail");
+  } catch (err) {
+    res.status(500).send('Error loading product detail');
   }
 };
 

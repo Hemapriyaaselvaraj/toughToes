@@ -123,8 +123,8 @@
           </button>
         </div>
         <div class="thumbnails">
-          <% if (images && images.length) { %>
-            <% images.forEach(function(img) { %>
+          <% if (images && images.length > 1) { %>
+            <% images.slice(1).forEach(function(img) { %>
               <img src="<%= img %>" />
             <% }) %>
           <% } %>
@@ -275,30 +275,18 @@
     <p class="copyright">© 2025 ToughToes. All rights reserved.</p>
   </footer>
 
- <script>
-  const sizeColorMap = JSON.parse('<%- JSON.stringify(sizeColorMap || {}) %>');
-  const variations = JSON.parse('<%- JSON.stringify(variations || []) %>');
+  <script>
+    const sizeColorMap = JSON.parse('<%- JSON.stringify(sizeColorMap || {}) %>');
+    const variations = JSON.parse('<%- JSON.stringify(variations || []) %>');
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const mainImg = document.querySelector('.main-img');
-    const thumbnails = document.querySelector('.thumbnails');
-    const sizeBtns = document.querySelectorAll('.size-btn');
-    const colorBtns = document.querySelectorAll('.color-btn');
-    const stockMessage = document.getElementById('stock-message');
-
-    
-    document.querySelectorAll('.thumbnails img').forEach(thumb => {
-      thumb.addEventListener('click', function () {
-        mainImg.src = this.src;
-      });
-    });
-
-    
-    const fullscreenViewer = document.querySelector('.fullscreen-viewer');
-    const fullscreenImage = fullscreenViewer.querySelector('.fullscreen-main img');
-    const fullscreenThumbnails = fullscreenViewer.querySelector('.fullscreen-thumbnails');
-    const expandBtn = document.querySelector('.expand-btn');
-    const closeBtn = document.querySelector('.close-fullscreen');
+    // Initialize variables after DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Fullscreen viewer functionality
+      const fullscreenViewer = document.querySelector('.fullscreen-viewer');
+      const fullscreenImage = fullscreenViewer.querySelector('.fullscreen-main img');
+      const fullscreenThumbnails = fullscreenViewer.querySelector('.fullscreen-thumbnails');
+      const expandBtn = document.querySelector('.expand-btn');
+      const closeBtn = document.querySelector('.close-fullscreen');
 
     function openFullscreen(mainImageSrc, thumbnailSrcs) {
       fullscreenImage.src = mainImageSrc;
@@ -313,9 +301,8 @@
         thumb.addEventListener('click', () => {
           fullscreenImage.src = src;
           fullscreenThumbnails.querySelectorAll('img').forEach(img => {
-            img.classList.remove('active');
+            img.classList.toggle('active', img === thumb);
           });
-          thumb.classList.add('active');
         });
 
         fullscreenThumbnails.appendChild(thumb);
@@ -330,11 +317,12 @@
       document.body.style.overflow = '';
     }
 
+    // Add click event listener for expand button
     expandBtn.addEventListener('click', () => {
       const mainImageSrc = mainImg.src;
-      const thumbImages = Array.from(document.querySelectorAll('.thumbnails img')).map(img => img.src);
-      const allImages = [mainImageSrc, ...thumbImages.filter(src => src !== mainImageSrc)];
-      openFullscreen(mainImageSrc, allImages);
+      const thumbnailSrcs = Array.from(document.querySelectorAll('.thumbnails img')).map(img => img.src);
+      thumbnailSrcs.unshift(mainImageSrc);
+      openFullscreen(mainImageSrc, thumbnailSrcs);
     });
 
     closeBtn.addEventListener('click', closeFullscreen);
@@ -350,8 +338,20 @@
         closeFullscreen();
       }
     });
+    }); // Close DOMContentLoaded
 
-    
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    const colorBtns = document.querySelectorAll('.color-btn');
+    const stockMessage = document.getElementById('stock-message');
+    const mainImg = document.querySelector('.main-img');
+    const thumbnails = document.querySelector('.thumbnails');
+
+    document.querySelectorAll('.thumbnails img').forEach(thumb => {
+      thumb.addEventListener('click', function () {
+        mainImg.src = this.src;
+      });
+    });
+
     function updateColorAvailability(selectedSize) {
       const colorDataList = sizeColorMap[selectedSize] || [];
 
