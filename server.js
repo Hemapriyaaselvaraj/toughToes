@@ -6,6 +6,7 @@ const customerRoutes = require('./backend/routes/customer')
 const cartRoutes = require('./backend/routes/cart');
 const userWishlistRoute = require('./backend/routes/user/wishlist');
 const userProfileRoute = require('./backend/routes/user/profile');
+const addressRoutes = require('./backend/routes/address');
 
 const flash = require('connect-flash');
 
@@ -51,6 +52,8 @@ app.use('/', customerRoutes)
 app.use('/cart', cartRoutes);
 app.use('/wishlist', userWishlistRoute);
 app.use('/profile', userProfileRoute);
+app.use('/addresses', addressRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
