@@ -1,27 +1,33 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const userModel = require('../models/userModel');
+const nodemailer = require('nodemailer');
+
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: '/user/auth/google/callback',
-  },
-  async (accessToken, refreshToken, profile, done) => {
+    passReqToCallback: true   
+    },
+  async (req, accessToken, refreshToken, profile, done) => {
     try {
       const email = profile.emails[0].value;
       let user = await userModel.findOne({ email });
       if (user) {
+        if (user.isBlocked) {
+          return done(null, false, { message: 'Your account has been blocked. Please contact support.' });
+        }
+        if (user.signupMethod !== 'google') {
+          return done(null, false, { message: 'Please login with email and password. This account was not created using Google.' });
+        }
         return done(null, user);
       }
-      // Create new user
-      // Generate random password
+     
       const randomPassword = Math.random().toString(36).slice(-8);
-      // Encrypt password before saving
       const bcrypt = require('bcrypt');
       const saltround = 10;
       const hashedPassword = await bcrypt.hash(randomPassword, saltround);
-      // Set placeholder phone number
       const placeholderPhone = '0000000000';
       user = new userModel({
         firstName: profile.name.givenName || '',
@@ -32,11 +38,11 @@ passport.use(new GoogleStrategy({
         role: 'user',
         isActive: true,
         isBlocked: false,
+        isVerified: true,
+        signupMethod: 'google'
       });
       await user.save();
 
-      // Send plain password to user's email
-      const nodemailer = require('nodemailer');
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {

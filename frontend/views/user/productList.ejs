@@ -12,16 +12,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
 </head>
 <body>
-  <!-- Header -->
+  
   <%- include('../partials/user-navbar', { name: name }) %>
 
-  <!-- Page Content -->
+ 
   <div class="collection-container">
     <div class="breadcrumb">Home / All Collection</div>
     <h1>All Collection</h1>
     <p>Discover our premium collection of footwear</p>
     <div class="collection-main">
-      <!-- Filters Sidebar -->
+      
       <aside class="filters">
         <form id="filterForm" method="get" action="" autocomplete="off">
           <div class="filter-header">
@@ -82,14 +82,14 @@
           function selectCategory(category) {
             const params = new URLSearchParams(window.location.search);
             params.set('category', category);
-            params.delete('page'); // reset to first page
+            params.delete('page'); 
             window.location.search = params.toString();
           }
         </script>
       </aside>
-      <!-- Product Grid -->
+      
       <section class="products-section">
-        <!-- --- Product List Pagination & Grid --- -->
+       
         <div class="products-header">
           <p>Showing <%= (totalResults === 0 ? 0 : ((currentPage - 1) * 20 + 1)) %> to <%= Math.min(currentPage * 20, totalResults) %> of <%= totalResults %> products</p>
           <form id="sortForm" method="get" style="margin:0;">
@@ -139,7 +139,7 @@
             <div>No products available.</div>
           <% } %>
         </div>
-        <!-- --- Pagination --- -->
+        
         <div class="pagination">
           <button class="page-btn" <%= currentPage === 1 ? 'disabled' : '' %> onclick="goToPage(<%= currentPage - 1 %>)">Previous</button>
           <% for(let i = 1; i <= totalPages; i++) { %>
@@ -157,7 +157,7 @@
       </section>
     </div>
   </div>
-  <!-- Footer -->
+  
   <footer class="footer">
     <div class="footer-column">
       <h3>ToughToes</h3>

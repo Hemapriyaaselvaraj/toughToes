@@ -106,7 +106,7 @@
 
   <main class="product-page">
     <div class="product-container">
-      <!-- Fullscreen Image Viewer -->
+      
       <div class="fullscreen-viewer">
         <button class="close-fullscreen" aria-label="Close fullscreen view">×</button>
         <div class="fullscreen-main">
@@ -177,7 +177,7 @@
 
         <% if (typeof name === 'string' && name.trim().length > 0) { %>
           <button class="add-to-cart" id="addToCartBtn">🛒 Add to Cart</button>
-          <button class="add-to-wishlist">♡ Add to Wishlist</button>
+          <button class="add-to-wishlist" id="addToWishlistBtn">♡ Add to Wishlist</button>
         <% } %>
 
         <div class="features">
@@ -213,7 +213,7 @@
       <div class="product-list-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 24px;">
         <% if (relatedProducts && relatedProducts.length) { %>
           <% relatedProducts.forEach(function(product) { %>
-            <a href="/products/detail/<%= product._id %>" style="text-decoration:none;color:inherit;">
+            <a href="/products/<%= product._id %>" style="text-decoration:none;color:inherit;">
               <div class="product-card enhanced-card">
                 <div class="product-image-wrapper">
                   <% if (product.image) { %>
@@ -291,23 +291,23 @@
     function openFullscreen(mainImageSrc, thumbnailSrcs) {
       fullscreenImage.src = mainImageSrc;
       fullscreenThumbnails.innerHTML = '';
-      
+
       thumbnailSrcs.forEach((src, index) => {
         const thumb = document.createElement('img');
         thumb.src = src;
         thumb.alt = 'Thumbnail ' + (index + 1);
         thumb.classList.toggle('active', src === mainImageSrc);
-        
+
         thumb.addEventListener('click', () => {
           fullscreenImage.src = src;
           fullscreenThumbnails.querySelectorAll('img').forEach(img => {
             img.classList.toggle('active', img === thumb);
           });
         });
-        
+
         fullscreenThumbnails.appendChild(thumb);
       });
-      
+
       fullscreenViewer.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
@@ -325,17 +325,14 @@
       openFullscreen(mainImageSrc, thumbnailSrcs);
     });
 
-    // Add click event listener for close button
     closeBtn.addEventListener('click', closeFullscreen);
 
-    // Add keyboard event listener for Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && fullscreenViewer.classList.contains('active')) {
         closeFullscreen();
       }
     });
 
-    // Click outside to close
     fullscreenViewer.addEventListener('click', (e) => {
       if (e.target === fullscreenViewer) {
         closeFullscreen();
@@ -443,7 +440,7 @@
         if (colorEntry?.images?.length) {
           mainImg.src = colorEntry.images[0];
           thumbnails.innerHTML = '';
-          colorEntry.images.slice(1).forEach(url => {
+          colorEntry.images.slice(0).forEach(url => {
             const img = document.createElement('img');
             img.src = url;
             img.addEventListener('click', () => mainImg.src = url);
@@ -455,6 +452,7 @@
       });
     });
 
+    
     const qtyInput = document.getElementById('qty-input');
     document.getElementById('qty-minus').onclick = () => {
       const val = parseInt(qtyInput.value);
@@ -465,16 +463,90 @@
       qtyInput.value = val + 1;
     };
 
+    
     document.getElementById('addToCartBtn').onclick = function () {
       const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
-      const quantity = qtyInput.value;
-      alert(`Added to cart:\nSize: ${selectedSize}\nColor: ${selectedColor}\nQuantity: ${quantity}`);
+      const quantity = parseInt(qtyInput.value, 10);
+      if (!selectedSize) {
+        alert('Please select a size.');
+        return;
+      }
+      if (!selectedColor) {
+        alert('Please select a color.');
+        return;
+      }
+      const match = variations.find(v => v.product_size == selectedSize && v.product_color == selectedColor);
+      if (!match) {
+        alert('Selected variation is not available.');
+        return;
+      }
+      if (quantity > match.stock_quantity) {
+        alert('Quantity exceeds available stock.');
+        return;
+      }
+      // Send AJAX to backend to add to cart and update stock
+      fetch('/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_variation_id: match._id,
+          quantity: quantity
+        })
+      })
+      .then(async res => {
+        let data;
+        try {
+          data = await res.json();
+        } catch (e) {
+          alert('Could not add to cart. (Invalid response)');
+          console.error('Add to cart response error:', e);
+          return;
+        }
+        if (data.success) {
+          alert('Added to cart!');
+          match.stock_quantity -= quantity;
+          updateStockMessage();
+        } else {
+          alert(data.message || 'Could not add to cart.');
+          console.error('Add to cart error:', data);
+        }
+      })
+      .catch(err => {
+        alert('Could not add to cart. (Network error)');
+        console.error('Add to cart network error:', err);
+      });
     };
 
-    // Initial load
+    // Add to Wishlist AJAX
+    const addToWishlistBtn = document.getElementById('addToWishlistBtn');
+    if (addToWishlistBtn) {
+      addToWishlistBtn.onclick = function() {
+        fetch('/wishlist/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ productId: '<%= product._id %>' })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(data.message || 'Added to wishlist!');
+          } else {
+            alert(data.message || 'Could not add to wishlist.');
+          }
+        })
+        .catch(() => alert('Could not add to wishlist.'));
+      };
+    }
+  </script>
+    // ✅ Auto-select first size on load
     const firstSizeBtn = document.querySelector('.size-btn');
     if (firstSizeBtn) firstSizeBtn.click();
-  </script>
+  });
+</script>
+
 </body>
 </html>

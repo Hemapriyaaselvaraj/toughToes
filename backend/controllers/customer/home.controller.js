@@ -2,61 +2,90 @@ const userModel = require("../../models/userModel");
 const Product = require("../../models/productModel");
 const ProductVariation = require("../../models/productVariationModel");
 
+
+const getFirstImage = async (productId) => {
+  try {
+    const variation = await ProductVariation.findOne({
+      product_id: productId,
+      images: { $exists: true, $not: { $size: 0 } },
+    });
+
+    return variation?.images?.[0] || null;
+  } catch (error) {
+    console.error(`Error getting image for product ${productId}:`, error);
+    return null;
+  }
+};
+
+
+const getCategoryFirstImage = async (category) => {
+  try {
+    const product = await Product.findOne({
+      is_active: true,
+      product_category: category,
+    });
+
+    if (!product) return null;
+
+    const variation = await ProductVariation.findOne({
+      product_id: product._id,
+      images: { $exists: true, $not: { $size: 0 } },
+    });
+
+    return variation?.images?.[0] || null;
+  } catch (error) {
+    console.error(`Error getting category image for ${category}:`, error);
+    return null;
+  }
+};
+
 const home = async (req, res) => {
-  let name = null;
-    if (req.session && req.session.userId) {
-        const user = await userModel.findById(req.session.userId);
-        if (user) name = user.firstName + ' ' + user.lastName;
-    }
-    const featuredProducts = await Product.aggregate([{ $match: { is_active: true } }, { $sample: { size: 4 } }]);
+  try {
     
-    const productIds = featuredProducts.map(p => p._id);
-    const variations = await ProductVariation.aggregate([
-      { $match: { product_id: { $in: productIds } } },
-      { $group: { _id: "$product_id", image: { $first: { $arrayElemAt: ["$images", 0] } } } }
-    ]);
-    const imageMap = {};
-    variations.forEach(v => { imageMap[v._id.toString()] = v.image; });
-    featuredProducts.forEach(p => { p.image = imageMap[p._id.toString()] || null; });
-
-    
-    async function getRandomCategoryImage(category) {
-      const product = await Product.aggregate([
-        { $match: { is_active: true, product_category: category } },
-        { $sample: { size: 1 } }
-      ]);
-      if (!product.length) return null;
-      const variation = await ProductVariation.aggregate([
-        { $match: { product_id: product[0]._id } },
-        { $sample: { size: 1 } }
-      ]);
-      return (variation[0] && variation[0].images && variation[0].images.length) ? variation[0].images[0] : null;
-    }
-
-    const [menImage, womenImage, kidsImage] = await Promise.all([
-      getRandomCategoryImage("Men"),
-      getRandomCategoryImage("Women"),
-      getRandomCategoryImage("Kids")
-    ]);
-
-    
-    const bannerProduct = await Product.aggregate([
-      { $match: { is_active: true } },
-      { $sample: { size: 1 } }
-    ]);
-    let bannerImage = null;
-    if (bannerProduct.length) {
-      const bannerVariation = await ProductVariation.aggregate([
-        { $match: { product_id: bannerProduct[0]._id } },
-        { $sample: { size: 1 } }
-      ]);
-      if (bannerVariation[0] && bannerVariation[0].images && bannerVariation[0].images.length) {
-        bannerImage = bannerVariation[0].images[0];
+    let name = null;
+    if (req.session?.userId) {
+      const user = await userModel.findById(req.session.userId);
+      if (user) {
+        name = `${user.firstName} ${user.lastName}`;
       }
     }
-    res.render('user/home', { name, featuredProducts, menImage, womenImage, kidsImage, bannerImage });
-}
 
-module.exports = {
-    home
-}
+    
+    const featuredProducts = await Product.aggregate([
+      { $match: { is_active: true } },
+      { $sample: { size: 4 } },
+    ]);
+
+    
+    for (let product of featuredProducts) {
+      product.image = await getFirstImage(product._id);
+    }
+
+    
+    const [menImage, womenImage, kidsImage] = await Promise.all([
+      getCategoryFirstImage("Men"),
+      getCategoryFirstImage("Women"),
+      getCategoryFirstImage("Kids"),
+    ]);
+
+    const bannerProduct = await Product.findOne({ is_active: true });
+    const bannerImage = bannerProduct ? await getFirstImage(bannerProduct._id) : null;
+
+    
+    res.render("user/home", {
+      name,
+      featuredProducts,
+      bannerProduct,
+      bannerImage,
+      menImage,
+      womenImage,
+      kidsImage,
+    });
+
+  } catch (error) {
+    console.error("Error in home route:", error);
+    res.status(500).send("Something went wrong");
+  }
+};
+
+module.exports = { home };

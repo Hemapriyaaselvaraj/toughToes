@@ -42,7 +42,7 @@
         <div class="alert alert-danger text-center"><%= error %></div>
         <% } %>
 
-      <form method="post" action="/user/login/verifyOtp" onsubmit="return collectOTP()">
+      <form method="post" action="/user/verifyOtp" onsubmit="return collectOTP()">
         <div class="otp-box">
           <input type="text" class="otp-input" maxlength="1" />
           <input type="text" class="otp-input" maxlength="1" />
@@ -55,11 +55,13 @@
          <input type="hidden" name="otp" id="otp-full" />
 
         <input type="hidden" name="email" value="<%= email %>" />
+        <input type="hidden" name="flow" value="<%= flow %>" />
+
 
         <button class="btn btn-dark w-100" type="submit">Verify Code</button>
 
         <div class="text-center mt-3">
-          <small class="text-muted"><i class="fas fa-clock me-1"></i>Code expires in <span id="timer">05:00</span></small>
+          <small class="text-muted"><i class="fas fa-clock me-1"></i>Code expires in <span id="timer"></span></small>
           <p class="small mt-1 mb-0">Didn’t receive the code?</p>
           <p class="small">
             <a href="#" id="resendOtpLink" style="pointer-events:none;opacity:0.5;">Resend OTP</a>

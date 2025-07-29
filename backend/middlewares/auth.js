@@ -1,8 +1,8 @@
-
-const isNotLogin = (req,res,next) => {
-    if(req.session.user){
-        res.redirect('/')
-    }else {
+const isNotLogin = (req, res, next) => {
+    if (req.session.user) {
+        res.redirect('/');
+    } else {
+        req.flash('error', null);
         next();
     }
 }
