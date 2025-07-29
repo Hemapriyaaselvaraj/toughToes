@@ -37,23 +37,66 @@ body {
   background-color: #fff;
 }
 
+/* Navbar */
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   display: flex;
   justify-content: space-between;
-  padding: 15px 30px;
-  border-bottom: 1px solid #ccc;
   align-items: center;
+  padding: 1rem 1.5rem; /* reduced from 2rem to 1.5rem */
+  border-bottom: 1px solid #ddd;
 }
-
-.navbar .logo {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.navbar nav a {
-  margin: 0 10px;
+.nav-links a {
+  margin: 0 1rem;
   text-decoration: none;
-  color: #333;
+  color: #000;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+  margin-right: 1.5rem; /* move nav-right a bit inward from the right edge */
+}
+.search-input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  min-width: 180px;
+}
+.logo {
+  margin-left: 0.5rem; /* add a small left margin */
+}
+
+/* Hero */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4rem 2rem;
+  background: #f8f8f8;
+}
+.hero-text h1 {
+  font-size: 2.5rem;
+}
+.hero-buttons button {
+  margin-right: 1rem;
+}
+.btn-black {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid #000;
+  padding: 0.75rem 1.5rem;
 }
 
 .icons {
@@ -77,6 +120,7 @@ body {
 .product-container {
   display: flex;
   gap: 40px;
+  margin-top: 50px;
   margin-bottom: 40px;
 }
 
