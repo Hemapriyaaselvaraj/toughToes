@@ -37,6 +37,10 @@ const addressSchema = new Schema({
   phone_number: {
     type: String
   },
+  isDefault: {
+    type: Boolean,
+    default: false
+  },
   created_at: {
     type: Date,
     default: Date.now
@@ -45,6 +49,18 @@ const addressSchema = new Schema({
     type: Date,
     default: Date.now
   }
+});
+
+// Pre-save middleware to handle single address case
+addressSchema.pre('save', async function(next) {
+  if (this.isNew) {
+    const Address = this.constructor;
+    const count = await Address.countDocuments({ user_id: this.user_id });
+    if (count === 0) {
+      this.isDefault = true;
+    }
+  }
+  next();
 });
 
 module.exports = mongoose.model('Address', addressSchema);

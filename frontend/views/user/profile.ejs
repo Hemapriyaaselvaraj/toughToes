@@ -85,6 +85,34 @@
         <a class="btn btn-outline-dark mt-2" href="/profile/edit"><i class="fas fa-edit me-2"></i>Edit Profile</a>
       </div>
 
+      <!-- Default Address Section -->
+      <div class="border rounded p-4 mb-4 bg-light">
+        <h6>Default Shipping Address</h6>
+        <% if (defaultAddress) { %>
+          <div class="card mt-2">
+            <div class="card-body">
+              <h6 class="card-title">
+                <%= defaultAddress.name %> 
+                <span class="badge bg-secondary"><%= defaultAddress.type %></span>
+              </h6>
+              <p class="card-text">
+                <%= defaultAddress.house_number %>, <%= defaultAddress.locality %><br>
+                <%= defaultAddress.city %>, <%= defaultAddress.state %> - <%= defaultAddress.pincode %><br>
+                Phone: <%= defaultAddress.phone_number %>
+              </p>
+              <a href="/addresses" class="btn btn-outline-dark btn-sm">
+                <i class="fas fa-edit me-2"></i>Change
+              </a>
+            </div>
+          </div>
+        <% } else { %>
+          <p class="text-muted mb-3">No default address set.</p>
+          <a href="/addresses" class="btn btn-outline-dark btn-sm">
+            <i class="fas fa-plus me-2"></i>Add Address
+          </a>
+        <% } %>
+      </div>
+
       <!-- Change Password Section -->
       <div class="border rounded p-4 mb-4 bg-light">
         <h6>Change Password</h6>

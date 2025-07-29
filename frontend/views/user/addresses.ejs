@@ -173,14 +173,25 @@
         <div class="row">
           <% addresses.forEach(function(address) { %>
             <div class="col-md-6 mb-4">
-              <div class="card p-3">
-                <h5><%= address.name %> <span class="badge bg-secondary"><%= address.type %></span></h5>
+              <div class="card p-3 <%= address.isDefault ? 'border-primary' : '' %>">
+                <h5>
+                  <%= address.name %> 
+                  <span class="badge bg-secondary"><%= address.type %></span>
+                  <% if (address.isDefault) { %>
+                    <span class="badge bg-primary">Default</span>
+                  <% } %>
+                </h5>
                 <div><%= address.label %></div>
                 <div><%= address.house_number %>, <%= address.locality %></div>
                 <div><%= address.city %>, <%= address.state %> - <%= address.pincode %></div>
                 <div>Phone: <%= address.phone_number %></div>
-                <div class="mt-2">
+                <div class="mt-2 d-flex gap-2">
                   <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#editAddressModal" data-id="<%= address._id %>" data-json='<%- JSON.stringify(address) %>'>Edit</button>
+                  <% if (!address.isDefault) { %>
+                    <form action="/addresses/set-default/<%= address._id %>" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-outline-primary btn-sm">Set as Default</button>
+                    </form>
+                  <% } %>
 <!-- Edit Address Modal -->
 <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel" aria-hidden="true">
   <div class="modal-dialog">

@@ -40,6 +40,44 @@ exports.postEditAddress = async (req, res) => {
 // Delete an address
 exports.deleteAddress = async (req, res) => {
   if (!req.session || !req.session.userId) return res.redirect('/login');
+  const address = await Address.findOne({ _id: req.params.id, user_id: req.session.userId });
+  const isDefault = address ? address.isDefault : false;
+  
   await Address.deleteOne({ _id: req.params.id, user_id: req.session.userId });
+  
+  // If we deleted the default address, make another address default if available
+  if (isDefault) {
+    const anotherAddress = await Address.findOne({ user_id: req.session.userId });
+    if (anotherAddress) {
+      anotherAddress.isDefault = true;
+      await anotherAddress.save();
+    }
+  }
+  
   res.redirect('/addresses');
+};
+
+// Set an address as default
+exports.setDefaultAddress = async (req, res) => {
+  if (!req.session || !req.session.userId) return res.redirect('/login');
+  
+  try {
+    // Remove default from all addresses of this user
+    await Address.updateMany(
+      { user_id: req.session.userId },
+      { $set: { isDefault: false } }
+    );
+    
+    // Set the selected address as default
+    await Address.findOneAndUpdate(
+      { _id: req.params.id, user_id: req.session.userId },
+      { $set: { isDefault: true } }
+    );
+    
+    req.flash('success', 'Default address updated successfully');
+    res.redirect('/addresses');
+  } catch (error) {
+    req.flash('error', 'Could not set default address');
+    res.redirect('/addresses');
+  }
 };

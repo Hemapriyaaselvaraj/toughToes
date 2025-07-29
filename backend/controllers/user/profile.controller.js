@@ -1,5 +1,6 @@
 // User profile controller
 const userModel = require('../../models/userModel');
+const Address = require('../../models/addressModel');
 
 // GET /profile
 exports.getProfile = async (req, res) => {
@@ -9,11 +10,17 @@ exports.getProfile = async (req, res) => {
     }
     const user = await userModel.findById(req.session.userId).lean();
     if (!user) return res.redirect('/login');
-    // You can add more user info as needed
+    
+    // Get default address
+    const defaultAddress = await Address.findOne({ 
+      user_id: req.session.userId,
+      isDefault: true 
+    }).lean();
+
     res.render('user/profile', {
       name: user.firstName,
       user,
-      // Add more fields if needed
+      defaultAddress
     });
   } catch (err) {
     res.status(500).send('Error loading profile');
