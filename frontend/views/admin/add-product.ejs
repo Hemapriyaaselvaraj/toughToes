@@ -17,6 +17,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <!-- Add SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       .image-preview img {
         width: 60px;
@@ -426,10 +428,30 @@
           body: formData,
         }).then((res) => {
           if (res.ok) {
-            window.location = "/admin/products";
+            Swal.fire({
+              icon: 'success',
+              title: '<%= mode === "edit" ? "Product Updated!" : "Product Added!" %>',
+              text: '<%= mode === "edit" ? "The product has been updated successfully." : "The new product has been added successfully." %>',
+              showConfirmButton: false,
+              timer: 1500
+            }).then(() => {
+              window.location = "/admin/products";
+            });
           } else {
-            alert("Product submission failed");
+            Swal.fire({
+              icon: 'error',
+              title: 'Submission Failed',
+              text: 'There was an error saving the product. Please try again.',
+              confirmButtonText: 'OK'
+            });
           }
+        }).catch(() => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Connection Error',
+            text: 'There was a problem connecting to the server. Please check your connection and try again.',
+            confirmButtonText: 'OK'
+          });
         });
 
         e.preventDefault();
@@ -605,7 +627,12 @@
           const sizeSel = box.querySelector('select[name^="variations"][name$="[size]"]');
           const colorSel = box.querySelector('select[name^="variations"][name$="[color]"]');
           if (sizeSel && colorSel && sizeSel.value === data.size && colorSel.value === data.color) {
-            alert('This size and color combination already exists.');
+            Swal.fire({
+              icon: 'warning',
+              title: 'Duplicate Variation',
+              text: 'This size and color combination already exists.',
+              confirmButtonText: 'OK'
+            });
             return;
           }
         }

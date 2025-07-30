@@ -44,3 +44,29 @@ exports.updateProfile = async (req, res) => {
     res.status(500).send('Error updating profile');
   }
 };
+
+// Handle profile image upload
+exports.updateProfileImage = async (req, res) => {
+  try {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // The file path where the image was saved
+    const imageUrl = `/uploads/${req.file.filename}`;
+
+    // Update user's profile image in database
+    await userModel.findByIdAndUpdate(req.session.userId, {
+      profileImage: imageUrl
+    });
+
+    res.json({ imageUrl });
+  } catch (err) {
+    console.error('Error updating profile image:', err);
+    res.status(500).json({ error: 'Failed to update profile image' });
+  }
+};

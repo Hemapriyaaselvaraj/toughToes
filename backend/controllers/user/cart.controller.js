@@ -1,5 +1,12 @@
-const User = require('../../models/userModel');
-// Render cart page
+const mongoose = require('mongoose');
+const Cart = require('../../models/cartModel');
+const Product = require('../../models/productModel');
+const ProductVariation = require('../../models/productVariationModel');
+const Wishlist = require('../../models/wishlistModel');
+
+const MAX_QUANTITY_PER_PRODUCT = 5; // Maximum quantity allowed per product
+
+// Get cart items
 exports.getCartPage = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -52,8 +59,8 @@ exports.getCartPage = async (req, res) => {
     res.status(500).send('Error loading cart');
   }
 };
-const Cart = require('../../models/cartModel');
-const ProductVariation = require('../../models/productVariationModel');
+// const Cart = require('../../models/cartModel');
+// const ProductVariation = require('../../models/productVariationModel');
 
 exports.addToCart = async (req, res) => {
   try {

@@ -100,10 +100,67 @@
       cursor: pointer;
       z-index: 1001;
     }
+    .breadcrumb-container {
+  padding: 1rem 2rem;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #e2e2e2;
+  font-size: 0.95rem;
+}
+
+.breadcrumb {
+  list-style: none;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumb li {
+  color: #555;
+}
+
+.breadcrumb a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb .current {
+  font-weight: 600;
+  color: #333;
+}
+main.product-page {
+  padding-top: 0px; /* adjust this value depending on navbar height */
+}
+
+
   </style>
 </head>
 <body>
   <%- include('../partials/user-navbar', { name: name }) %>
+
+<nav class="breadcrumb-container" style="margin-top: 70px;">
+  <ol class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li>›</li>
+    <li><a href="/products">Products</a></li>
+    <% if (product.product_category) { %>
+      <li>›</li>
+      <li><a href="/products?category=<%= encodeURIComponent(product.product_category) %>"><%= product.product_category %></a></li>
+    <% } %>
+    <% if (product.product_type) { %>
+      <li>›</li>
+      <li><a href="/products?type=<%= encodeURIComponent(product.product_type) %>"><%= product.product_type %></a></li>
+    <% } %>
+    <li>›</li>
+    <li class="current"><%= product.name %></li>
+  </ol>
+</nav>
+
 
   <main class="product-page">
     <div class="product-container">

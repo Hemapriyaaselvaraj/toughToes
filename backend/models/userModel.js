@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema({
          type: Boolean,
          default: false
     },
+    profileImage: {
+        type: String,
+        default: '/images/default-profile.png'  // Default profile image path
+    },
     signupMethod: {
         type: String,
         enum: ['email', 'google'],
