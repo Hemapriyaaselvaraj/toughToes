@@ -1,3 +1,19 @@
+const userModel = require("../../models/userModel");
+const otpVerificationModel = require("../../models/otpVerificationModel");
+require('dotenv').config();
+
+const bcrypt = require("bcrypt");
+const saltround = 10;
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 const requestEmailOtp = async (req, res) => {
   const { newEmail } = req.body;
   if (!req.session || !req.session.userId) {
@@ -35,53 +51,32 @@ const requestEmailOtp = async (req, res) => {
 
 const verifyEmailOtp = async (req, res) => {
   try {
-    // Support both AJAX (JSON) and form POST (HTML) requests
     const { newEmail, otp } = req.body;
-    const isAjax = req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1);
+
     if (!req.session || !req.session.userId || !req.session.pendingEmail) {
-      if (isAjax) return res.json({ success: false, message: 'Session expired. Please try again.' });
-      return res.render('user/verifyOtp', { error: 'Session expired. Please try again.', email: newEmail });
+      return res.json({ success: false, message: 'Session expired. Please try again.' });
     }
-    // Only allow OTP verification for the email in session (pendingEmail)
+
     if (newEmail !== req.session.pendingEmail) {
-      if (isAjax) return res.json({ success: false, message: 'Email mismatch. Please try again.' });
-      return res.render('user/verifyOtp', { error: 'Email mismatch. Please try again.', email: newEmail });
+     return res.json({ success: false, message: 'Email mismatch. Please try again.' });
     }
     const otpVerification = await otpVerificationModel.findOne({ email: newEmail });
     if (!otpVerification || otpVerification.otp !== otp || otpVerification.expiry < new Date()) {
       if (otpVerification && otpVerification.expiry < new Date()) {
         await otpVerification.deleteOne();
       }
-      if (isAjax) return res.json({ success: false, message: 'Invalid or expired OTP' });
-      return res.render('user/verifyOtp', { error: 'Invalid or expired OTP', email: newEmail });
+     return res.json({ success: false, message: 'Invalid or expired OTP' });
     }
-    // Update user's email
+
     await userModel.findByIdAndUpdate(req.session.userId, { email: newEmail });
     await otpVerification.deleteOne();
     delete req.session.pendingEmail;
-    if (isAjax) return res.json({ success: true });
-    res.redirect('/profile');
+    return res.json({ success: true });
+
   } catch (err) {
-    const isAjax = req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1);
-    if (isAjax) return res.json({ success: false, message: 'Server error. Please try again.' });
-    res.render('user/verifyOtp', { error: 'Server error. Please try again.', email: req.body.newEmail });
+     return res.json({ success: false, message: 'Server error. Please try again.' });
   }
 };
-const userModel = require("../../models/userModel");
-const otpVerificationModel = require("../../models/otpVerificationModel");
-require('dotenv').config();
-
-const bcrypt = require("bcrypt");
-const saltround = 10;
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
 
 const signup = async (req, res) => {
   const { firstName, lastName, email, phoneNumber, password } = req.body;
