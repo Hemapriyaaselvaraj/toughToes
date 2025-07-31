@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/home.css" />
   <link rel="stylesheet" href="/css/productDetail.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .main-img-container {
       position: relative;
@@ -396,8 +397,46 @@ main.product-page {
         closeFullscreen();
       }
     });
+
+    // Initialize size and color selection
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    const colorBtns = document.querySelectorAll('.color-btn');
+
+    // Function to find first available variation with stock
+    function findFirstAvailableVariation() {
+      for (const size of Object.keys(sizeColorMap)) {
+        const colorList = sizeColorMap[size] || [];
+        for (const colorData of colorList) {
+          const variation = variations.find(v => 
+            v.product_size == size && 
+            v.product_color == colorData.color && 
+            v.stock_quantity > 0
+          );
+          if (variation) {
+            return { size, color: colorData.color };
+          }
+        }
+      }
+      return null;
+    }
+
+    // Select first available size and color
+    const firstAvailable = findFirstAvailableVariation();
+    if (firstAvailable) {
+      const sizeBtn = [...sizeBtns].find(btn => btn.dataset.size === firstAvailable.size);
+      if (sizeBtn) {
+        sizeBtn.click();
+        setTimeout(() => {
+          const colorBtn = [...colorBtns].find(btn => btn.dataset.color === firstAvailable.color);
+          if (colorBtn) {
+            colorBtn.click();
+          }
+        }, 0);
+      }
+    }
     }); // Close DOMContentLoaded
 
+    // Move these outside DOMContentLoaded since they're used by other functions
     const sizeBtns = document.querySelectorAll('.size-btn');
     const colorBtns = document.querySelectorAll('.color-btn');
     const stockMessage = document.getElementById('stock-message');
@@ -527,20 +566,36 @@ main.product-page {
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
       const quantity = parseInt(qtyInput.value, 10);
       if (!selectedSize) {
-        alert('Please select a size.');
+        Swal.fire({
+          title: 'Size Required',
+          text: 'Please select a size.',
+          icon: 'warning'
+        });
         return;
       }
       if (!selectedColor) {
-        alert('Please select a color.');
+        Swal.fire({
+          title: 'Color Required',
+          text: 'Please select a color.',
+          icon: 'warning'
+        });
         return;
       }
       const match = variations.find(v => v.product_size == selectedSize && v.product_color == selectedColor);
       if (!match) {
-        alert('Selected variation is not available.');
+        Swal.fire({
+          title: 'Not Available',
+          text: 'Selected variation is not available.',
+          icon: 'error'
+        });
         return;
       }
       if (quantity > match.stock_quantity) {
-        alert('Quantity exceeds available stock.');
+        Swal.fire({
+          title: 'Insufficient Stock',
+          text: 'Quantity exceeds available stock.',
+          icon: 'error'
+        });
         return;
       }
       // Send AJAX to backend to add to cart and update stock
@@ -562,16 +617,30 @@ main.product-page {
           return;
         }
         if (data.success) {
-          alert('Added to cart!');
+          Swal.fire({
+            title: 'Success!',
+            text: 'Added to cart!',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
           match.stock_quantity -= quantity;
           updateStockMessage();
         } else {
-          alert(data.message || 'Could not add to cart.');
+          Swal.fire({
+            title: 'Error',
+            text: data.message || 'Could not add to cart.',
+            icon: 'error'
+          });
           console.error('Add to cart error:', data);
         }
       })
       .catch(err => {
-        alert('Could not add to cart. (Network error)');
+        Swal.fire({
+          title: 'Network Error',
+          text: 'Could not add to cart. Please try again.',
+          icon: 'error'
+        });
         console.error('Add to cart network error:', err);
       });
     };
@@ -591,20 +660,31 @@ main.product-page {
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            alert(data.message || 'Added to wishlist!');
+            Swal.fire({
+              title: 'Success!',
+              text: data.message || 'Added to wishlist!',
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false
+            });
           } else {
-            alert(data.message || 'Could not add to wishlist.');
+            Swal.fire({
+              title: 'Error',
+              text: data.message || 'Could not add to wishlist.',
+              icon: 'error'
+            });
           }
         })
-        .catch(() => alert('Could not add to wishlist.'));
+        .catch(() => {
+          Swal.fire({
+            title: 'Network Error',
+            text: 'Could not add to wishlist. Please try again.',
+            icon: 'error'
+          });
+        });
       };
     }
   </script>
-    // ✅ Auto-select first size on load
-    const firstSizeBtn = document.querySelector('.size-btn');
-    if (firstSizeBtn) firstSizeBtn.click();
-  });
-</script>
 
 </body>
 </html>

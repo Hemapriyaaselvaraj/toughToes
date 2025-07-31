@@ -11,7 +11,7 @@ Address Management
 Cart management (Add to cart, list products in cart, remove products from cart)
 -> Implement Add to Cart 
 -> Ensure that if a product or its category is blocked or unlisted, the product cannot be added to the cart, even if the user is on the product detail page.
--> If the product is already in cart increase its quantity
+-> ~~ If the product is already in cart increase its quantity ~~
 -> If a product is added to the cart, ensure it is removed from the wishlist if it exists there.
 -> Implement increment and decrement functionality for quantity. Ensure validation based on the stock left in inventory.
 -> Handle the maximum quantity a person can add to the cart for a single product
