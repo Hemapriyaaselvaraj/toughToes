@@ -7,6 +7,7 @@ const cartRoutes = require('./backend/routes/cart');
 const userWishlistRoute = require('./backend/routes/user/wishlist');
 const userProfileRoute = require('./backend/routes/user/profile');
 const addressRoutes = require('./backend/routes/address');
+const checkoutRoutes = require('./backend/routes/user/checkout')
 
 const flash = require('connect-flash');
 
@@ -53,6 +54,7 @@ app.use('/cart', cartRoutes);
 app.use('/wishlist', userWishlistRoute);
 app.use('/profile', userProfileRoute);
 app.use('/addresses', addressRoutes);
+app.use('/', checkoutRoutes);
 
 
 const PORT = process.env.PORT || 5000;

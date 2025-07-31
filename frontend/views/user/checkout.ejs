@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - ToughToes</title>
+  <link rel="stylesheet" href="/css/checkout.css">
+</head>
+<body>
+  <%- include('../partials/user-navbar', { name }) %>
+
+  <main class="checkout-page">
+    <section class="address-section">
+      <h2>Select Delivery Address</h2>
+      <div class="address-list">
+        <% addresses.forEach(address => { %>
+          <div class="address-card <%= address.default ? 'default' : '' %>">
+            <input type="radio" name="selectedAddress" value="<%= address._id %>" <%= address.default ? 'checked' : '' %>>
+            <div>
+              <p><strong><%= address.name %></strong> - <%= address.phone %></p>
+              <p><%= address.street %>, <%= address.city %>, <%= address.state %> - <%= address.pincode %></p>
+            </div>
+            <button class="edit-address" data-id="<%= address._id %>">Edit</button>
+          </div>
+        <% }) %>
+        <button class="add-address">+ Add New Address</button>
+      </div>
+    </section>
+
+    <section class="product-summary">
+      <h2>Order Summary</h2>
+      <% products.forEach(product => { %>
+        <div class="product-item">
+          <img src="<%= product.image %>" alt="<%= product.name %>">
+          <div class="info">
+            <p><%= product.name %></p>
+            <p>Qty: <%= product.quantity %></p>
+            <p>Item Total: Rs. <%= (product.quantity * product.price).toFixed(2) %></p>
+          </div>
+        </div>
+      <% }) %>
+
+      <div class="price-breakdown">
+        <p>Subtotal: Rs. <%= subtotal.toFixed(2) %></p>
+        <p>Tax: Rs. <%= tax.toFixed(2) %></p>
+        <p>Discount: -Rs. <%= discount.toFixed(2) %></p>
+        <p>Shipping: Rs. <%= shipping.toFixed(2) %></p>
+        <hr>
+        <h3>Total: Rs. <%= total.toFixed(2) %></h3>
+      </div>
+
+      <button id="placeOrder">Place Order (Cash on Delivery)</button>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    document.getElementById('placeOrder').addEventListener('click', () => {
+      const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+      if (!selectedAddress) return alert('Please select a delivery address.');
+
+      fetch('/checkout/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ addressId: selectedAddress.value })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = `/order-success?orderId=${data.orderId}`;
+        } else {
+          alert(data.message || 'Failed to place order');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
