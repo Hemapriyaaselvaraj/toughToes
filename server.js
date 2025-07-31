@@ -2,12 +2,13 @@ const express = require('express');
 const path = require('path');
 const userRoutes = require('./backend/routes/user')
 const adminRoutes = require('./backend/routes/admin')
-const customerRoutes = require('./backend/routes/customer')
-const cartRoutes = require('./backend/routes/cart');
-const userWishlistRoute = require('./backend/routes/user/wishlist');
-const userProfileRoute = require('./backend/routes/user/profile');
-const addressRoutes = require('./backend/routes/address');
-const checkoutRoutes = require('./backend/routes/user/checkout')
+const productRoutes = require('./backend/routes/customer/product')
+const homeRoutes = require('./backend/routes/customer/home')
+const cartRoutes = require('./backend/routes/customer/cart');
+const userWishlistRoute = require('./backend/routes/customer/wishlist');
+const userProfileRoute = require('./backend/routes/customer/profile');
+const addressRoutes = require('./backend/routes/customer/address');
+const checkoutRoutes = require('./backend/routes/customer/checkout')
 
 const flash = require('connect-flash');
 
@@ -49,7 +50,9 @@ app.set('view engine', 'ejs');
 
 app.use('/user',userRoutes)
 app.use('/admin',adminRoutes)
-app.use('/', customerRoutes)
+
+app.use('/', homeRoutes)
+app.use('/products', productRoutes)
 app.use('/cart', cartRoutes);
 app.use('/wishlist', userWishlistRoute);
 app.use('/profile', userProfileRoute);

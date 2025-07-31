@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const checkoutController = require('../../controllers/user/checkout.controller');
+const checkoutController = require('../../controllers/customer/checkout.controller');
 const { checkout } = require('./profile');
 
 

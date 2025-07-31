@@ -1,3 +1,9 @@
+const Wishlist = require('../../models/wishlistModel');
+const ProductVariation = require('../../models/productVariationModel');
+const User = require('../../models/userModel');
+
+
+
 // POST /wishlist/remove
 exports.removeFromWishlist = async (req, res) => {
   try {
@@ -14,6 +20,7 @@ exports.removeFromWishlist = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error removing from wishlist' });
   }
 };
+
 // POST /wishlist/add
 exports.addToWishlist = async (req, res) => {
   try {
@@ -38,10 +45,6 @@ exports.addToWishlist = async (req, res) => {
 };
 
 
-const Wishlist = require('../../models/wishlistModel');
-const Product = require('../../models/productModel');
-const ProductVariation = require('../../models/productVariationModel');
-
 // GET /wishlist
 exports.getWishlist = async (req, res) => {
   try {
@@ -53,7 +56,6 @@ exports.getWishlist = async (req, res) => {
     const wishlistEntries = await Wishlist.find({ user_id: req.session.userId }).populate('product_id');
 
     // Fetch user name
-    const User = require('../../models/userModel');
     const user = await User.findById(req.session.userId);
     const displayName = user ? (user.firstName + ' ' + user.lastName) : '';
 
@@ -74,7 +76,7 @@ exports.getWishlist = async (req, res) => {
     res.render('user/wishlist', {
       items,
       itemCount: items.length,
-      displayName
+      name: displayName
     });
   } catch (err) {
     res.status(500).send('Error loading wishlist');

@@ -1,8 +1,6 @@
-const mongoose = require('mongoose');
 const Cart = require('../../models/cartModel');
-const Product = require('../../models/productModel');
 const ProductVariation = require('../../models/productVariationModel');
-const Wishlist = require('../../models/wishlistModel');
+const User = require('../../models/userModel');
 
 const MAX_QUANTITY_PER_PRODUCT = 5; // Maximum quantity allowed per product
 
@@ -11,7 +9,10 @@ exports.getCartPage = async (req, res) => {
   try {
     const userId = req.session.userId;
     if (!userId) return res.redirect('/user/login');
-    // Get all cart items for user, populate product_variation_id and product_id
+
+    const user = await User.findById(req.session.userId);
+    const displayName = user ? (user.firstName + ' ' + user.lastName) : '';
+
     const cartItems = await Cart.find({ user_id: userId })
       .populate({
         path: 'product_variation_id',
@@ -52,7 +53,7 @@ exports.getCartPage = async (req, res) => {
       tax,
       taxPercent,
       total,
-      name: req.session.name || ''
+      name: displayName
     });
   } catch (err) {
     console.error('Cart page error:', err);

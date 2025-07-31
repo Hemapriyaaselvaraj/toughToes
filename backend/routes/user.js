@@ -1,12 +1,15 @@
 const express = require('express')
 const router = express.Router();
+const userController = require('../controllers/user/user.controller');
+const editProfileController = require('../controllers/customer/editProfile.controller');
+
+
 // GET verifyotp page for email change
 router.get('/verifyotp', (req, res) => {
   const email = req.query.email || '';
   res.render('user/verifyOtp', { error: null, email });
 });
-const userController = require('../controllers/user/user.controller');
-const editProfileController = require('../controllers/user/editProfile.controller');
+
 // Profile edit routes
 router.get('/profile/edit', editProfileController.getEditProfile);
 router.post('/profile/edit', editProfileController.postEditProfile);

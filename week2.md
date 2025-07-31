@@ -1,12 +1,12 @@
 User side : 
--> User profile(Show user details, show address, show orders, edit profile, cancel orders, forgot password).
--> Show user details including profile image and address - done
--> Implement Edit profile (edit profile and profile page should not be the same) - done
-Note : When editing email need to verify the emails via OTP or Token
--> Implement an option to change password followed by its functionality. - done
+User profile(Show user details, show address, show orders, edit profile, cancel orders, forgot password).
+-> ~~ Show user details including profile image and address ~~
+-> ~~ Implement Edit profile (edit profile and profile page should not be the same) ~~
+~~ Note : When editing email need to verify the emails via OTP or Token ~~ 
+-> ~~ Implement an option to change password followed by its functionality ~~
  
 Address Management 
--> Implement Add,Edit and Delete. - done
+-> ~~ Implement Add,Edit and Delete ~~
 
 Cart management (Add to cart, list products in cart, remove products from cart)
 -> Implement Add to Cart 

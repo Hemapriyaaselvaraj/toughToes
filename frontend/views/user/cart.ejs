@@ -11,33 +11,8 @@
 </head>
 <body>
   <!-- Original Navbar -->
-  <nav class="navbar navbar-light bg-white border-bottom px-4" style="display: flex; justify-content: space-between; align-items: center;">
-    <div style="display: flex; align-items: center;">
-      <a class="navbar-brand fw-bold" href="#">ToughToes</a>
-      <ul class="navbar-nav flex-row ms-4" style="display: flex; flex-direction: row; list-style: none; margin-bottom: 0;">
-        <li class="nav-item me-3" style="margin-right: 1rem;"><a class="nav-link" href="#">Men</a></li>
-        <li class="nav-item me-3" style="margin-right: 1rem;"><a class="nav-link" href="#">Women</a></li>
-        <li class="nav-item me-3" style="margin-right: 1rem;"><a class="nav-link" href="#">Kids</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Sale</a></li>
-      </ul>
-    </div>
-    <form class="d-flex mx-4" style="margin-left: 2rem; margin-right: 2rem;">
-      <input class="form-control me-2" type="search" placeholder="Search shoes..." />
-      <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-    </form>
-    <div style="display: flex; align-items: center;">
-      <i class="fas fa-user me-3" style="margin-right: 1rem;"></i>
-      <i class="fas fa-heart me-3" style="margin-right: 1rem;"></i>
-      <i class="fas fa-shopping-cart me-3" style="margin-right: 1rem;"></i>
-      <span style="font-weight: 600; color: #222;">
-        <% if (typeof user !== 'undefined' && user && user.firstName) { %>
-          <%= user.firstName %> <%= user.lastName %>
-        <% } else if (typeof name !== 'undefined' && name) { %>
-          <%= name %>
-        <% } %>
-      </span>
-    </div>
-  </nav>
+    <%- include('../partials/user-navbar', { name: name }) %>
+
 
   <!-- Main Content -->
   <main class="cart-container">

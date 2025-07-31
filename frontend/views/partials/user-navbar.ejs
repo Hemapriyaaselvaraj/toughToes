@@ -9,6 +9,7 @@
     <input type="text" placeholder="Search shoes..." class="search-input" id="navbarSearchInput" />
     <i class="fas fa-search" id="navbarSearchIcon" style="cursor:pointer;"></i>
     <i class="fas fa-shopping-cart" onclick="window.location.href='/cart'" style="cursor:pointer;"></i>
+    <i class="fas fa-heart" onclick="window.location.href='/wishlist'" style="cursor:pointer;"></i>
     <i class="fas fa-user" id="profileIcon" style="cursor:pointer;"></i>
     <% if (typeof name === 'string' && name.trim().length > 0) { %>
       <span><%= name %></span>

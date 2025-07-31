@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const profileController = require('../../controllers/user/profile.controller');
-const editProfileController = require('../../controllers/user/editProfile.controller');
+const profileController = require('../../controllers/customer/profile.controller');
+const editProfileController = require('../../controllers/customer/editProfile.controller');
 
 // Configure multer for image upload
 const storage = multer.diskStorage({
