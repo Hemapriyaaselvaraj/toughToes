@@ -57,7 +57,7 @@ app.use('/cart', cartRoutes);
 app.use('/wishlist', userWishlistRoute);
 app.use('/profile', userProfileRoute);
 app.use('/addresses', addressRoutes);
-app.use('/', checkoutRoutes);
+app.use('/checkout', checkoutRoutes);
 
 
 const PORT = process.env.PORT || 5000;

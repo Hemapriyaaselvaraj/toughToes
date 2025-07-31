@@ -6,7 +6,7 @@ const { isCustomerAccessible } = require('../../middlewares/auth');
 
 
 
-router.get('/checkout', isCustomerAccessible, checkoutController.checkout)
-router.post('/checkout/place-order', isCustomerAccessible, checkoutController.placeOrder)
+router.get('/', isCustomerAccessible, checkoutController.checkout)
+router.post('/place-order', isCustomerAccessible, checkoutController.placeOrder)
 
 module.exports = router;

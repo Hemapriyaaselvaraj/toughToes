@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Management</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/adminOrder.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    .admin-layout {
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 240px;
+      background-color: #1e1e1e;
+      color: white;
+    }
+    .sidebar ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .sidebar ul li {
+      margin: 0;
+      padding: 10px 20px;
+      line-height: 1.2;
+    }
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      display: block;
+    }
+    .sidebar ul li a:hover {
+      background-color: #2a2a2a;
+    }
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+      background-color: #f5f6fa;
+      overflow-y: auto;
+    }
+    .form-control, .form-select {
+      min-width: 200px;
+    }
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .filter-group input,
+    .filter-group select,
+    .filter-group button {
+      flex: 1 1 auto;
+      max-width: 200px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <%- include('../partials/sidebar') %>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <%- include('../partials/navbar', { pageTitle: 'Order Management', name: name }) %>
+
+      <div class="container-fluid py-2">
+        <h2 class="mb-4">Orders</h2>
+
+        <!-- Filter/Search Bar -->
+        <div class="filter-group mb-3">
+          <input type="text" id="searchInput" placeholder="Search orders..." class="form-control" value="<%= search || '' %>">
+
+          <select id="statusFilter" class="form-select">
+            <option value="">All Status</option>
+            <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
+            <option value="Shipped" <%= status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+            <option value="Delivered" <%= status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+            <option value="Cancelled" <%= status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+          </select>
+
+          <select id="sortOrder" class="form-select">
+            <option value="desc" <%= sort === 'desc' ? 'selected' : '' %>>Latest First</option>
+            <option value="asc" <%= sort === 'asc' ? 'selected' : '' %>>Oldest First</option>
+          </select>
+
+          <button class="btn btn-primary" onclick="applyFilters()">Search</button>
+          <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+        </div>
+
+        <!-- Order Table -->
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Order ID</th>
+                <th>User</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (orders && orders.length > 0) { %>
+                <% orders.forEach(order => { %>
+                  <tr>
+                    <td><%= order.orderId %></td>
+                    <td><%= order.user?.name %> (<%= order.user?.email %>)</td>
+                    <td>
+                      <span class="status <%= order.status.toLowerCase() %>"><%= order.status %></span>
+                    </td>
+                    <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                    <td>Rs. <%= order.total %></td>
+                    <td class="order-actions">
+                      <a href="/admin/orders/<%= order._id %>" class="view-btn">View</a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="text-center">No orders found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav>
+          <ul class="pagination">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>&status=<%= status || '' %>&sort=<%= sort || 'desc' %>"><%= i %></a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value;
+      const status = document.getElementById('statusFilter').value;
+      const sort = document.getElementById('sortOrder').value;
+      const url = `?search=${encodeURIComponent(search)}&status=${status}&sort=${sort}`;
+      window.location.href = url;
+    }
+
+    function clearFilters() {
+      window.location.href = '?';
+    }
+  </script>
+</body>
+</html>

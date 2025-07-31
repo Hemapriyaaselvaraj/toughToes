@@ -1,82 +1,209 @@
-.checkout-page {
-  display: flex;
-  padding: 20px;
-  gap: 40px;
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
 }
 
+.checkout-page {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: 40px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+
+
+/* --------------------- Address Section --------------------- */
+
 .address-section, .product-summary {
-  flex: 1;
   background: #fff;
-  padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
+  padding: 24px;
+  flex: 1 1 48%;
+  min-width: 320px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.address-section h2,
+.product-summary h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .address-card {
+  padding: 12px;
   border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 12px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-radius: 5px;
+  gap: 16px;
+  justify-content: space-between;
 }
 
 .address-card.default {
-  border-color: #007bff;
-  background-color: #f0f8ff;
+  border-color: #28a745;
+  background-color: #e9f9ec;
 }
+
+.address-card input[type="radio"] {
+  margin-right: 12px;
+  transform: scale(1.2);
+}
+
+.edit-address {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.edit-address:hover {
+  background-color: #0056b3;
+}
+
+.add-address {
+  margin-top: 12px;
+  padding: 10px 16px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.add-address:hover {
+  opacity: 0.9;
+}
+
+/* --------------------- Product Summary --------------------- */
+
+
 
 .product-item {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
   margin-bottom: 16px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 12px;
 }
 
 .product-item img {
   width: 80px;
-  height: auto;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
-.price-breakdown {
-  margin-top: 24px;
+.product-item .info p {
+  margin: 4px 0;
 }
+
+.price-breakdown p {
+  margin: 6px 0;
+  font-size: 1rem;
+  color: #444;
+}
+
+.price-breakdown h3 {
+  margin-top: 16px;
+  color: #000;
+}
+
+/* --------------------- Order Button --------------------- */
 
 #placeOrder {
   margin-top: 20px;
-  padding: 10px 20px;
-  background-color: black;
+  width: 100%;
+  background-color: #000;
   color: white;
-  border: none;
-  cursor: pointer;
+  padding: 14px 20px;
   font-size: 1rem;
-  border-radius: 5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
-.success-container {
-  text-align: center;
-  padding: 60px 20px;
+#placeOrder:hover {
+  opacity: 0.95;
 }
 
-.success-illustration {
-  max-width: 250px;
-  margin-bottom: 20px;
+footer {
+  background: #111;
+  color: #fff;
+  padding: 40px;
 }
 
-.success-buttons {
-  margin-top: 20px;
+.footer-section {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
-.btn {
-  padding: 10px 20px;
-  margin: 0 10px;
+.footer-left {
+  max-width: 200px;
+}
+
+.footer-links div {
+  margin-right: 40px;
+}
+
+.footer-links h5 {
+  margin-bottom: 10px;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links a {
+  color: #ccc;
   text-decoration: none;
-  background-color: black;
-  color: white;
-  border-radius: 5px;
+  display: block;
+  margin: 5px 0;
 }
 
-.btn.secondary {
-  background-color: #ddd;
-  color: #333;
+.social-icons i {
+  margin-right: 10px;
+}
+
+footer p {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+
+/* --------------------- Responsive --------------------- */
+
+@media (max-width: 768px) {
+  .checkout-page {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .address-section, .product-summary {
+    flex: 1 1 100%;
+  }
 }

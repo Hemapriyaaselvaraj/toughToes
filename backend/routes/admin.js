@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/admin/dashboard.controller');
 const customerController = require('../controllers/admin/customer-management.controller');
 const productController = require('../controllers/admin/product.controller');
+const adminOrderController = require('../controllers/admin/order-management.controller');
 const upload = require('../utils/imageUploader');
 const { isAdminAccessible } = require('../middlewares/auth');
 
@@ -37,6 +38,9 @@ router.delete('/products/size/:id', productController.deleteSize);
 router.post('/products/color', productController.createColor);
 router.put('/products/color/:id', productController.updateColor);
 router.delete('/products/color/:id', productController.deleteColor);
+
+router.get('/orders', adminOrderController.getOrderList);
+
 
 
 module.exports = router;

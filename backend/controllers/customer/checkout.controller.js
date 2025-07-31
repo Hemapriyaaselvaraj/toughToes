@@ -1,10 +1,13 @@
 const userModel = require('../../models/userModel');
 const Product = require('../../models/productModel');
 const ProductVariation = require('../../models/productVariationModel');
+const Address = require('../../models/addressModel')
+const Cart = require('../../models/cartModel')
 
 
 const checkout = async (req, res) => {
   const userId = req.session.userId;
+  const user = await userModel.findById(userId); 
   const addresses = await Address.find({ user: userId });
   const cartItems = await Cart.find({ user: userId }).populate('product');
 
@@ -21,7 +24,7 @@ const checkout = async (req, res) => {
   const shipping = subtotal > 1000 ? 0 : 50;
   const total = subtotal + tax - discount + shipping;
 
-  res.render('checkout', { name: req.user.name, addresses, products, subtotal, tax, discount, shipping, total });
+  res.render('user/checkout', {name: user.firstName, addresses, products, subtotal, tax, discount, shipping, total });
 };
 
 
