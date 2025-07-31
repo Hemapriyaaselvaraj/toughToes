@@ -649,13 +649,46 @@ main.product-page {
     const addToWishlistBtn = document.getElementById('addToWishlistBtn');
     if (addToWishlistBtn) {
       addToWishlistBtn.onclick = function() {
+        const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
+        const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
+
+        // Verify if size and color are selected
+        if (!selectedSize || !selectedColor) {
+          Swal.fire({
+            title: 'Selection Required',
+            text: 'Please select both size and color before adding to wishlist.',
+            icon: 'warning'
+          });
+          return;
+        }
+
+        // Find the variation that matches the selected size and color
+        const variation = variations.find(v => 
+          v.product_size == selectedSize && 
+          v.product_color == selectedColor
+        );
+
+        if (!variation) {
+          Swal.fire({
+            title: 'Error',
+            text: 'Selected combination is not available.',
+            icon: 'error'
+          });
+          return;
+        }
+
         fetch('/wishlist/add', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          body: JSON.stringify({ productId: '<%= product._id %>' })
+          body: JSON.stringify({ 
+            productId: '<%= product._id %>',
+            size: selectedSize,
+            color: selectedColor,
+            variationId: variation._id
+          })
         })
         .then(res => res.json())
         .then(data => {

@@ -4,7 +4,7 @@ const ProductVariation = require('../../models/productVariationModel');
 
 
 const checkout = async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.session.userId;
   const addresses = await Address.find({ user: userId });
   const cartItems = await Cart.find({ user: userId }).populate('product');
 

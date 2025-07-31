@@ -2,7 +2,46 @@ const Wishlist = require('../../models/wishlistModel');
 const ProductVariation = require('../../models/productVariationModel');
 const User = require('../../models/userModel');
 
+// GET /wishlist
+exports.getWishlist = async (req, res) => {
+  try {
+    if (!req.session || !req.session.userId) {
+      return res.redirect('/login');
+    }
 
+    // Find all wishlist entries for this user and populate both product and variation details
+    const wishlistEntries = await Wishlist.find({ user_id: req.session.userId })
+      .populate('product_id')
+      .populate('variation_id');
+
+    // Fetch user name
+    const user = await User.findById(req.session.userId);
+    const displayName = user ? (user.firstName + ' ' + user.lastName) : '';
+
+    // Process each wishlist item with its specific variation
+    const items = wishlistEntries.map(entry => ({
+      name: entry.product_id.name,
+      category: entry.product_id.product_category,
+      price: entry.product_id.price,
+      image: (entry.variation_id?.images?.length > 0) 
+        ? entry.variation_id.images[0] 
+        : '/images/default-shoe.png',
+      _id: entry.product_id._id,
+      size: entry.selected_size,
+      color: entry.selected_color,
+      variationId: entry.variation_id._id
+    }));
+
+    res.render('user/wishlist', {
+      name: displayName,
+      items: items
+    });
+
+  } catch (err) {
+    console.error('Error fetching wishlist:', err);
+    res.status(500).render('error', { message: 'Error loading wishlist' });
+  }
+};
 
 // POST /wishlist/remove
 exports.removeFromWishlist = async (req, res) => {
@@ -10,11 +49,15 @@ exports.removeFromWishlist = async (req, res) => {
     if (!req.session || !req.session.userId) {
       return res.status(401).json({ success: false, message: 'Not logged in' });
     }
-    const { productId } = req.body;
-    if (!productId) {
-      return res.status(400).json({ success: false, message: 'No product specified' });
+    const { productId, variationId } = req.body;
+    if (!productId || !variationId) {
+      return res.status(400).json({ success: false, message: 'Product ID and variation ID are required' });
     }
-    await Wishlist.deleteOne({ user_id: req.session.userId, product_id: productId });
+    await Wishlist.deleteOne({ 
+      user_id: req.session.userId, 
+      product_id: productId,
+      variation_id: variationId 
+    });
     res.status(200).json({ success: true, message: 'Removed from wishlist' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error removing from wishlist' });
@@ -27,17 +70,45 @@ exports.addToWishlist = async (req, res) => {
     if (!req.session || !req.session.userId) {
       return res.status(401).json({ success: false, message: 'Not logged in' });
     }
-    const { productId } = req.body;
-    if (!productId) {
-      return res.status(400).json({ success: false, message: 'No product specified' });
+    const { productId, variationId, size, color } = req.body;
+    
+    // Validate required fields
+    if (!productId || !variationId || !size || !color) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields. Product ID, variation ID, size, and color are required.' 
+      });
     }
-    // Check if already in wishlist
-    const exists = await Wishlist.findOne({ user_id: req.session.userId, product_id: productId });
+
+    // Check if already in wishlist (checking both product and variation)
+    const exists = await Wishlist.findOne({ 
+      user_id: req.session.userId, 
+      product_id: productId,
+      variation_id: variationId 
+    });
+
     if (exists) {
       return res.status(200).json({ success: true, message: 'Already in wishlist' });
     }
-    // Add to wishlist
-    await Wishlist.create({ user_id: req.session.userId, product_id: productId });
+
+    // Verify that the variation exists and matches the size and color
+    const variation = await ProductVariation.findById(variationId);
+    if (!variation || variation.product_size !== size || variation.product_color !== color) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid product variation' 
+      });
+    }
+
+    // Add to wishlist with all details
+    await Wishlist.create({ 
+      user_id: req.session.userId, 
+      product_id: productId,
+      variation_id: variationId,
+      selected_size: size,
+      selected_color: color
+    });
+    
     res.status(200).json({ success: true, message: 'Added to wishlist' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error adding to wishlist' });
@@ -52,25 +123,27 @@ exports.getWishlist = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Find all wishlist entries for this user
-    const wishlistEntries = await Wishlist.find({ user_id: req.session.userId }).populate('product_id');
+    // Find all wishlist entries for this user and populate both product and variation details
+    const wishlistEntries = await Wishlist.find({ user_id: req.session.userId })
+      .populate('product_id')
+      .populate('variation_id');
 
     // Fetch user name
     const user = await User.findById(req.session.userId);
     const displayName = user ? (user.firstName + ' ' + user.lastName) : '';
 
-    // For each wishlist product, fetch the first image from product variations
-    const items = await Promise.all(wishlistEntries.map(async entry => {
-      const product = entry.product_id;
-      // Find a variation for this product (any color/size)
-      const variation = await ProductVariation.findOne({ product_id: product._id, images: { $exists: true, $ne: [] } });
-      return {
-        name: product.name,
-        category: product.product_category,
-        price: product.price,
-        image: (variation && variation.images && variation.images.length > 0) ? variation.images[0] : '/images/default-shoe.png',
-        _id: product._id
-      };
+    // Process each wishlist item with its specific variation
+    const items = wishlistEntries.map(entry => ({
+      name: entry.product_id.name,
+      category: entry.product_id.product_category,
+      price: entry.product_id.price,
+      image: (entry.variation_id?.images?.length > 0) 
+        ? entry.variation_id.images[0] 
+        : '/images/default-shoe.png',
+      _id: entry.product_id._id,
+      size: entry.selected_size,
+      color: entry.selected_color,
+      variationId: entry.variation_id._id
     }));
 
     res.render('user/wishlist', {

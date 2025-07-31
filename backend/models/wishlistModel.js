@@ -12,6 +12,19 @@ const wishlistSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'product',
     required: true
+  },
+  variation_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'productVariation',
+    required: true
+  },
+  selected_size: {
+    type: String,
+    required: true
+  },
+  selected_color: {
+    type: String,
+    required: true
   }
 }, { timestamps: true });
 

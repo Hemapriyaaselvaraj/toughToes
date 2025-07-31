@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const checkoutController = require('../../controllers/customer/checkout.controller');
 const { checkout } = require('./profile');
+const { isCustomerAccessible } = require('../../middlewares/auth');
 
 
-router.get('/checkout', checkoutController.checkout)
-router.post('/checkout/place-order', checkoutController.placeOrder)
+
+router.get('/checkout', isCustomerAccessible, checkoutController.checkout)
+router.post('/checkout/place-order', isCustomerAccessible, checkoutController.placeOrder)
 
 module.exports = router;
