@@ -148,13 +148,20 @@ exports.addToCart = async (req, res) => {
     }
     // Check if cart item exists for this user and variation
     let cartItem = await Cart.findOne({ user_id: userId, product_variation_id });
+    const MAX_QTY = 5;
+    let newQty = quantity;
     if (cartItem) {
-      // Update quantity
-      cartItem.quantity += quantity;
+      newQty = cartItem.quantity + quantity;
+      if (newQty > MAX_QTY) {
+        return res.status(400).json({ success: false, message: 'You cannot add more than 5 of this product to your cart.' });
+      }
+      cartItem.quantity = newQty;
       cartItem.updated_at = Date.now();
       await cartItem.save();
     } else {
-      // Create new cart item
+      if (quantity > MAX_QTY) {
+        return res.status(400).json({ success: false, message: 'You cannot add more than 5 of this product to your cart.' });
+      }
       await Cart.create({ user_id: userId, product_variation_id, quantity });
     }
     // Reduce stock
@@ -164,5 +171,58 @@ exports.addToCart = async (req, res) => {
   } catch (err) {
     console.error('Add to cart error:', err);
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+  }
+};
+
+// Pass current cart quantity for this variation to the frontend
+exports.prepareCartPageData = async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    const cartItems = userId ? await Cart.find({ user_id: userId }).populate('product_variation_id') : [];
+    res.locals.currentCartQuantities = {};
+    // For each cart item, if it has a product_variation_id, add its quantity to res.locals
+    if (cartItems && cartItems.length) {
+      cartItems.forEach(item => {
+        if (item.product_variation_id && item.product_variation_id._id) {
+          // Use a map if you want to support multiple variations on the page
+          if (!res.locals.currentCartQuantities) res.locals.currentCartQuantities = {};
+          res.locals.currentCartQuantities[item.product_variation_id._id] = item.quantity;
+        }
+      });
+    }
+    next();
+  } catch (err) {
+    console.error('Prepare cart page data error:', err);
+    next();
+  }
+};
+
+// For single product detail page, pass the quantity for the selected variation (if any)
+exports.prepareSingleProductData = async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    const { selectedVariationId } = req.query;
+    const cartItems = userId ? await Cart.find({ user_id: userId }).populate('product_variation_id') : [];
+    // Pass current cart quantity for this variation to the frontend
+    let currentCartQuantity = 0;
+    if (cartItems && cartItems.length) {
+      cartItems.forEach(item => {
+        if (item.product_variation_id && item.product_variation_id._id) {
+          // Use a map if you want to support multiple variations on the page
+          if (!res.locals.currentCartQuantities) res.locals.currentCartQuantities = {};
+          res.locals.currentCartQuantities[item.product_variation_id._id] = item.quantity;
+        }
+      });
+    }
+    // For single product detail page, pass the quantity for the selected variation (if any)
+    res.locals.currentCartQuantity = 0;
+    if (cartItems && cartItems.length && typeof selectedVariationId !== 'undefined') {
+      const found = cartItems.find(item => String(item.product_variation_id._id) === String(selectedVariationId));
+      if (found) res.locals.currentCartQuantity = found.quantity;
+    }
+    next();
+  } catch (err) {
+    console.error('Prepare single product data error:', err);
+    next();
   }
 };

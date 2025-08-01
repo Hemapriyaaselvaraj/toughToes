@@ -232,6 +232,8 @@ main.product-page {
             <input type="text" id="qty-input" value="1" min="1" readonly style="width: 32px; text-align: center;" />
             <button type="button" id="qty-plus">+</button>
           </div>
+          <div id="qty-limit-message" style="color: #d9534f; font-size: 0.97em; margin-top: 4px; min-height: 18px;"></div>
+          <input type="hidden" id="currentCartQuantity" value="<%= typeof currentCartQuantity !== 'undefined' && currentCartQuantity !== null ? Number(currentCartQuantity) : 0 %>">
         </div>
 
         <% if (typeof name === 'string' && name.trim().length > 0) { %>
@@ -561,11 +563,27 @@ main.product-page {
       return match ? match.stock_quantity : 0;
     }
 
+    function getCurrentCartQuantity() {
+      // Read from hidden input to avoid EJS/JSX parsing issues
+      return Number(document.getElementById('currentCartQuantity').value) || 0;
+    }
+
     function updateQtyButtons() {
       const stock = getCurrentStock();
       const val = parseInt(qtyInput.value);
-      qtyPlus.disabled = val >= stock || stock === 0;
+      const cartQty = getCurrentCartQuantity();
+      const qtyLimitMsg = document.getElementById('qty-limit-message');
+      let msg = '';
+      if (stock === 0) {
+        msg = 'Out of stock.';
+      } else if (cartQty >= 5 || (val + cartQty) >= 5) {
+        msg = 'You cannot add more than 5 of this product to your cart.';
+      } else if (val >= stock) {
+        msg = 'You have reached the available stock.';
+      }
+      qtyPlus.disabled = val >= stock || stock === 0 || (val + cartQty) >= 5;
       qtyMinus.disabled = val <= 1;
+      qtyLimitMsg.textContent = msg;
     }
 
     qtyMinus.onclick = () => {
@@ -591,6 +609,7 @@ main.product-page {
       const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
       const quantity = parseInt(qtyInput.value, 10);
+      const cartQty = getCurrentCartQuantity();
       if (!selectedSize) {
         Swal.fire({
           title: 'Size Required',
@@ -624,6 +643,14 @@ main.product-page {
         });
         return;
       }
+      if ((quantity + cartQty) > 5) {
+        Swal.fire({
+          title: 'Limit Exceeded',
+          text: 'You cannot add more than 5 of this product to your cart.',
+          icon: 'error'
+        });
+        return;
+      }
       // Send AJAX to backend to add to cart and update stock
       fetch('/cart/add', {
         method: 'POST',
@@ -652,6 +679,13 @@ main.product-page {
           });
           match.stock_quantity -= quantity;
           updateStockMessage();
+          // Reset quantity input after adding to cart
+          if (match.stock_quantity === 0) {
+            qtyInput.value = 0;
+          } else {
+            qtyInput.value = 1;
+          }
+          updateQtyButtons();
         } else {
           Swal.fire({
             title: 'Error',
@@ -743,6 +777,8 @@ main.product-page {
         });
       };
     }
+
+    // (currentCartQuantity is now set via hidden input)
   </script>
 
 </body>

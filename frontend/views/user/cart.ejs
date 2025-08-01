@@ -54,21 +54,40 @@
                   <div class="price" style="font-weight:600; opacity:0.5;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
                   <button class="btn btn-outline-danger btn-sm delete-icon-active" data-cart-item-id="<%= item._id %>" style="font-size:1.1rem; font-weight:600; margin-left:12px;">Remove</button>
                 <% } else { %>
-                  <div class="quantity" style="display:flex; align-items:center; gap:6px;">
-                    <button class="decrement-btn" data-cart-item-id="<%= item._id %>">-</button>
-                    <span class="cart-quantity" data-cart-item-id="<%= item._id %>"><%= item.quantity %></span>
-                    <button class="increment-btn" data-cart-item-id="<%= item._id %>">+</button>
+                  <div class="quantity" style="display:flex; align-items:center; gap:6px; flex-direction:column; align-items:flex-start;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button class="decrement-btn" data-cart-item-id="<%= item._id %>" <%= item.quantity <= 1 ? 'disabled' : '' %>>-</button>
+                      <span class="cart-quantity" data-cart-item-id="<%= item._id %>" data-stock="<%= item.stock %>"><%= item.quantity %></span>
+                      <button class="increment-btn" data-cart-item-id="<%= item._id %>" <%= item.quantity >= 5 || item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
+                    </div>
+                    <div class="cart-qty-limit-message" id="cart-qty-limit-message-<%= item._id %>" style="
+                      display: none;
+                      color: #b94a48;
+                      background: #f8d7da;
+                      border: 1px solid #f5c2c7;
+                      border-radius: 6px;
+                      font-size: 0.97em;
+                      margin-top: 8px;
+                      padding: 6px 14px 6px 12px;
+                      line-height: 1.4;
+                      max-width: 340px;
+                      min-width: 180px;
+                      min-height: 0;
+                    "></div>
                   </div>
                   <div class="price" style="font-weight:600;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
                   <i class="fa-solid fa-trash delete-icon" data-cart-item-id="<%= item._id %>" style="cursor:pointer; color:#d9534f; font-size:1.2rem;"></i>
                 <% } %>
 <script>
-  // Increment quantity
-
-  // Only enable increment/decrement for active items
-  document.querySelectorAll('.increment-btn:not([disabled])').forEach(btn => {
+  document.querySelectorAll('.increment-btn').forEach(btn => {
+    const cartItemId = btn.getAttribute('data-cart-item-id');
+    const qtySpan = document.querySelector('.cart-quantity[data-cart-item-id="' + cartItemId + '"]');
+    const limitMsg = document.getElementById('cart-qty-limit-message-' + cartItemId);
+    // Do not show any message by default
+    limitMsg.textContent = '';
+    limitMsg.style.display = 'none';
     btn.addEventListener('click', function() {
-      const cartItemId = this.getAttribute('data-cart-item-id');
+      if (btn.disabled) return;
       fetch('/cart/update-quantity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -78,18 +97,31 @@
       .then(data => {
         if (data.success) {
           document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
-          location.reload(); // reload to update totals
+          limitMsg.textContent = '';
+          limitMsg.style.display = 'none';
+          location.reload();
         } else {
-          alert(data.message || 'Could not increase quantity.');
+          let msg = '';
+          if (data.message && (data.message.includes('5') || data.message.includes('maximum'))) {
+            msg = 'You cannot add more than 5 of this product to your cart.';
+          } else if (data.message && (data.message.toLowerCase().includes('stock') || data.message.toLowerCase().includes('out of stock'))) {
+            msg = 'Out of stock.';
+          } else {
+            msg = data.message || 'Could not increase quantity.';
+          }
+          limitMsg.textContent = msg;
+          limitMsg.style.display = msg ? 'block' : 'none';
         }
       })
-      .catch(() => alert('Could not increase quantity.'));
+      .catch(() => { limitMsg.textContent = 'Could not increase quantity.'; limitMsg.style.display = 'block'; });
     });
   });
 
-  document.querySelectorAll('.decrement-btn:not([disabled])').forEach(btn => {
+  document.querySelectorAll('.decrement-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const cartItemId = this.getAttribute('data-cart-item-id');
+      const qtySpan = document.querySelector('.cart-quantity[data-cart-item-id="' + cartItemId + '"]');
+      const limitMsg = document.getElementById('cart-qty-limit-message-' + cartItemId);
       fetch('/cart/update-quantity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -99,12 +131,23 @@
       .then(data => {
         if (data.success) {
           document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
+          limitMsg.textContent = '';
+          limitMsg.style.display = 'none';
           location.reload();
         } else {
-          alert(data.message || 'Could not decrease quantity.');
+          let msg = '';
+          if (data.message && (data.message.includes('5') || data.message.includes('maximum'))) {
+            msg = 'You cannot add more than 5 of this product to your cart.';
+          } else if (data.message && (data.message.toLowerCase().includes('stock') || data.message.toLowerCase().includes('out of stock'))) {
+            msg = 'Out of stock.';
+          } else {
+            msg = data.message || 'Could not decrease quantity.';
+          }
+          limitMsg.textContent = msg;
+          limitMsg.style.display = msg ? 'block' : 'none';
         }
       })
-      .catch(() => alert('Could not decrease quantity.'));
+      .catch(() => { limitMsg.textContent = 'Could not decrease quantity.'; limitMsg.style.display = 'block'; });
     });
   });
 
