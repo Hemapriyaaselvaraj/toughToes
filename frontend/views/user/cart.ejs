@@ -105,7 +105,7 @@
           if (data.message && (data.message.includes('5') || data.message.includes('maximum'))) {
             msg = 'You cannot add more than 5 of this product to your cart.';
           } else if (data.message && (data.message.toLowerCase().includes('stock') || data.message.toLowerCase().includes('out of stock'))) {
-            msg = 'Out of stock.';
+            msg = 'Sorry, this product is currently out of stock and cannot be increased further.';
           } else {
             msg = data.message || 'Could not increase quantity.';
           }

@@ -480,8 +480,13 @@ main.product-page {
     function updateStockMessage() {
       const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
+      const addToCartBtn = document.getElementById('addToCartBtn');
       if (!selectedSize || !selectedColor) {
         stockMessage.textContent = '';
+        if (addToCartBtn) {
+          addToCartBtn.disabled = false;
+          addToCartBtn.textContent = '🛒 Add to Cart';
+        }
         return;
       }
 
@@ -489,6 +494,10 @@ main.product-page {
       if (!match) {
         stockMessage.textContent = 'Sold out';
         stockMessage.style.color = 'red';
+        if (addToCartBtn) {
+          addToCartBtn.disabled = true;
+          addToCartBtn.textContent = 'Out of Stock';
+        }
         return;
       }
 
@@ -496,12 +505,24 @@ main.product-page {
       if (stock === 0) {
         stockMessage.textContent = 'Sold out';
         stockMessage.style.color = 'red';
+        if (addToCartBtn) {
+          addToCartBtn.disabled = true;
+          addToCartBtn.textContent = 'Out of Stock';
+        }
       } else if (stock < 10) {
         stockMessage.textContent = `Few stocks left (${stock})`;
         stockMessage.style.color = 'orange';
+        if (addToCartBtn) {
+          addToCartBtn.disabled = false;
+          addToCartBtn.textContent = '🛒 Add to Cart';
+        }
       } else {
         stockMessage.textContent = `In stock (${stock})`;
         stockMessage.style.color = 'green';
+        if (addToCartBtn) {
+          addToCartBtn.disabled = false;
+          addToCartBtn.textContent = '🛒 Add to Cart';
+        }
       }
     }
 
@@ -631,6 +652,14 @@ main.product-page {
         Swal.fire({
           title: 'Not Available',
           text: 'Selected variation is not available.',
+          icon: 'error'
+        });
+        return;
+      }
+      if (match.stock_quantity === 0) {
+        Swal.fire({
+          title: 'Out of Stock',
+          text: 'Sorry, this product is currently out of stock and cannot be added to your cart.',
           icon: 'error'
         });
         return;
