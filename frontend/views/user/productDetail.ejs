@@ -551,16 +551,42 @@ main.product-page {
 
     
     const qtyInput = document.getElementById('qty-input');
-    document.getElementById('qty-minus').onclick = () => {
+    const qtyMinus = document.getElementById('qty-minus');
+    const qtyPlus = document.getElementById('qty-plus');
+
+    function getCurrentStock() {
+      const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
+      const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
+      const match = variations.find(v => v.product_size == selectedSize && v.product_color == selectedColor);
+      return match ? match.stock_quantity : 0;
+    }
+
+    function updateQtyButtons() {
+      const stock = getCurrentStock();
+      const val = parseInt(qtyInput.value);
+      qtyPlus.disabled = val >= stock || stock === 0;
+      qtyMinus.disabled = val <= 1;
+    }
+
+    qtyMinus.onclick = () => {
       const val = parseInt(qtyInput.value);
       if (val > 1) qtyInput.value = val - 1;
+      updateQtyButtons();
     };
-    document.getElementById('qty-plus').onclick = () => {
+    qtyPlus.onclick = () => {
       const val = parseInt(qtyInput.value);
-      qtyInput.value = val + 1;
+      const stock = getCurrentStock();
+      if (val < stock) qtyInput.value = val + 1;
+      updateQtyButtons();
     };
 
-    
+    // Update buttons on size/color change
+    sizeBtns.forEach(btn => btn.addEventListener('click', updateQtyButtons));
+    colorBtns.forEach(btn => btn.addEventListener('click', updateQtyButtons));
+
+    // Also update on page load
+    updateQtyButtons();
+
     document.getElementById('addToCartBtn').onclick = function () {
       const selectedSize = document.querySelector('.size-btn.selected')?.dataset.size;
       const selectedColor = document.querySelector('.color-btn.selected')?.dataset.color;
