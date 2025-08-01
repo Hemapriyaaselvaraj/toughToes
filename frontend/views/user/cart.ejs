@@ -41,12 +41,79 @@
               </div>
               <div style="display:flex; align-items:center; gap:24px;">
                 <div class="quantity" style="display:flex; align-items:center; gap:6px;">
-                  <button>-</button>
-                  <span><%= item.quantity %></span>
-                  <button>+</button>
+                  <button class="decrement-btn" data-cart-item-id="<%= item._id %>">-</button>
+                  <span class="cart-quantity" data-cart-item-id="<%= item._id %>"><%= item.quantity %></span>
+                  <button class="increment-btn" data-cart-item-id="<%= item._id %>">+</button>
                 </div>
                 <div class="price" style="font-weight:600;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
-                <i class="fa-solid fa-trash delete-icon" style="cursor:pointer; color:#d9534f; font-size:1.2rem;"></i>
+                <i class="fa-solid fa-trash delete-icon" data-cart-item-id="<%= item._id %>" style="cursor:pointer; color:#d9534f; font-size:1.2rem;"></i>
+<script>
+  // Increment quantity
+  document.querySelectorAll('.increment-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const cartItemId = this.getAttribute('data-cart-item-id');
+      fetch('/cart/update-quantity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ cartItemId, action: 'increment' })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
+          location.reload(); // reload to update totals
+        } else {
+          alert(data.message || 'Could not increase quantity.');
+        }
+      })
+      .catch(() => alert('Could not increase quantity.'));
+    });
+  });
+
+  // Decrement quantity
+  document.querySelectorAll('.decrement-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const cartItemId = this.getAttribute('data-cart-item-id');
+      fetch('/cart/update-quantity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ cartItemId, action: 'decrement' })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
+          location.reload();
+        } else {
+          alert(data.message || 'Could not decrease quantity.');
+        }
+      })
+      .catch(() => alert('Could not decrease quantity.'));
+    });
+  });
+
+  // Remove from cart
+  document.querySelectorAll('.delete-icon').forEach(icon => {
+    icon.addEventListener('click', function() {
+      const cartItemId = this.getAttribute('data-cart-item-id');
+      fetch('/cart/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ cartItemId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          this.closest('.cart-item').remove();
+          location.reload();
+        } else {
+          alert(data.message || 'Could not remove item.');
+        }
+      })
+      .catch(() => alert('Could not remove item.'));
+    });
+  });
+</script>
               </div>
             </div>
           <% }) %>
