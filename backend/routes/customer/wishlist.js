@@ -5,6 +5,7 @@ const wishlistController = require('../../controllers/customer/wishlist.controll
 // GET wishlist page
 router.get('/', wishlistController.getWishlist);
 
+router.post('/move-to-cart', wishlistController.moveToCart);
 
 // POST /wishlist/add
 router.post('/add', wishlistController.addToWishlist);
