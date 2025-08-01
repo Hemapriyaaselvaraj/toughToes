@@ -28,7 +28,19 @@
           <a href="/admin/orders/<%= order._id %>/invoice" class="btn btn-outline-primary btn-sm">Download Invoice</a>
         </div>
 
-        <!-- Products -->
+        <!-- Change Order Status -->
+        <form action="/admin/orders/<%= order._id %>/status" method="POST" class="mb-4">
+          <label for="status" class="me-2"><strong>Change Status:</strong></label>
+          <select name="status" class="form-select d-inline w-auto" onchange="this.form.submit()">
+            <option <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+            <option <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+            <option <%= order.status === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
+            <option <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+            <option <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+          </select>
+        </form>
+
+        <!-- Products Table -->
         <h5>Products</h5>
         <table class="table table-bordered">
           <thead>
@@ -60,6 +72,30 @@
         <!-- Cancel full order -->
         <% if (order.status === 'Placed' || order.status === 'Processing') { %>
           <button class="btn btn-danger mt-3" onclick="openCancelModal('full')">Cancel Full Order</button>
+        <% } %>
+
+        <!-- Return Requests Section -->
+        <% if (order.returns && order.returns.length > 0) { %>
+          <div class="mt-5">
+            <h5>Return Requests</h5>
+            <ul class="list-group">
+              <% order.returns.forEach(ret => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong><%= ret.product.name %></strong> - <%= ret.reason %><br/>
+                    <small>Status: <%= ret.status %></small>
+                  </div>
+                  <% if (ret.status === 'Requested') { %>
+                    <form method="POST" action="/admin/orders/<%= order._id %>/return/verify" class="d-flex gap-2">
+                      <input type="hidden" name="productId" value="<%= ret.product._id %>">
+                      <button class="btn btn-success btn-sm" name="action" value="approve">Approve</button>
+                      <button class="btn btn-danger btn-sm" name="action" value="reject">Reject</button>
+                    </form>
+                  <% } %>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
         <% } %>
 
         <!-- Modals -->
@@ -112,6 +148,7 @@
       document.getElementById('cancelProductId').value = productId;
       new bootstrap.Modal(document.getElementById('cancelModal')).show();
     }
+
     function openReturnModal(productId) {
       document.getElementById('returnProductId').value = productId;
       new bootstrap.Modal(document.getElementById('returnModal')).show();
