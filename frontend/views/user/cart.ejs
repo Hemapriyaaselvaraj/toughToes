@@ -24,7 +24,7 @@
       <div class="cart-items">
         <% if (items.length) { %>
           <% items.forEach(function(item) { %>
-            <div class="cart-item" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+            <div class="cart-item" style="display:flex; align-items:center; justify-content:space-between; gap:16px;<%= item.isActive === false ? ' background:#f8d7da; border:1.5px solid #f5c2c7; box-shadow:0 2px 8px #f8d7da;' : '' %>">
               <div style="display:flex; align-items:center; gap:16px;">
                 <img src="<%= item.image %>" alt="<%= item.name %>" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">
                 <div class="item-info">
@@ -37,19 +37,36 @@
                       <span style="color:#e67e22; margin-left:8px;">(<%= item.discount %>% OFF)</span>
                     <% } %>
                   </div>
+                  <% if (item.isActive === false) { %>
+                    <div style="color:#842029; background:#f8d7da; border-radius:4px; padding:4px 8px; margin-top:8px; font-size:0.95em;">
+                      This product is inactive and cannot be purchased. Please remove it from your cart.
+                    </div>
+                  <% } %>
                 </div>
               </div>
               <div style="display:flex; align-items:center; gap:24px;">
-                <div class="quantity" style="display:flex; align-items:center; gap:6px;">
-                  <button class="decrement-btn" data-cart-item-id="<%= item._id %>">-</button>
-                  <span class="cart-quantity" data-cart-item-id="<%= item._id %>"><%= item.quantity %></span>
-                  <button class="increment-btn" data-cart-item-id="<%= item._id %>">+</button>
-                </div>
-                <div class="price" style="font-weight:600;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
-                <i class="fa-solid fa-trash delete-icon" data-cart-item-id="<%= item._id %>" style="cursor:pointer; color:#d9534f; font-size:1.2rem;"></i>
+                <% if (item.isActive === false) { %>
+                  <div class="quantity" style="display:flex; align-items:center; gap:6px; opacity:0.5; pointer-events:none;">
+                    <button class="decrement-btn" disabled>-</button>
+                    <span class="cart-quantity"><%= item.quantity %></span>
+                    <button class="increment-btn" disabled>+</button>
+                  </div>
+                  <div class="price" style="font-weight:600; opacity:0.5;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
+                  <button class="btn btn-outline-danger btn-sm delete-icon-active" data-cart-item-id="<%= item._id %>" style="font-size:1.1rem; font-weight:600; margin-left:12px;">Remove</button>
+                <% } else { %>
+                  <div class="quantity" style="display:flex; align-items:center; gap:6px;">
+                    <button class="decrement-btn" data-cart-item-id="<%= item._id %>">-</button>
+                    <span class="cart-quantity" data-cart-item-id="<%= item._id %>"><%= item.quantity %></span>
+                    <button class="increment-btn" data-cart-item-id="<%= item._id %>">+</button>
+                  </div>
+                  <div class="price" style="font-weight:600;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
+                  <i class="fa-solid fa-trash delete-icon" data-cart-item-id="<%= item._id %>" style="cursor:pointer; color:#d9534f; font-size:1.2rem;"></i>
+                <% } %>
 <script>
   // Increment quantity
-  document.querySelectorAll('.increment-btn').forEach(btn => {
+
+  // Only enable increment/decrement for active items
+  document.querySelectorAll('.increment-btn:not([disabled])').forEach(btn => {
     btn.addEventListener('click', function() {
       const cartItemId = this.getAttribute('data-cart-item-id');
       fetch('/cart/update-quantity', {
@@ -70,8 +87,7 @@
     });
   });
 
-  // Decrement quantity
-  document.querySelectorAll('.decrement-btn').forEach(btn => {
+  document.querySelectorAll('.decrement-btn:not([disabled])').forEach(btn => {
     btn.addEventListener('click', function() {
       const cartItemId = this.getAttribute('data-cart-item-id');
       fetch('/cart/update-quantity', {
@@ -92,8 +108,8 @@
     });
   });
 
-  // Remove from cart
-  document.querySelectorAll('.delete-icon').forEach(icon => {
+  // Remove from cart (for both active and inactive)
+  document.querySelectorAll('.delete-icon, .delete-icon-active').forEach(icon => {
     icon.addEventListener('click', function() {
       const cartItemId = this.getAttribute('data-cart-item-id');
       fetch('/cart/remove', {

@@ -13,8 +13,13 @@ exports.updateCartQuantity = async (req, res) => {
     if (!userId) return res.status(401).json({ success: false, message: 'Not logged in' });
     const cartItem = await Cart.findOne({ _id: cartItemId, user_id: userId });
     if (!cartItem) return res.status(404).json({ success: false, message: 'Cart item not found' });
-    const variation = await ProductVariation.findById(cartItem.product_variation_id);
+    const variation = await ProductVariation.findById(cartItem.product_variation_id).populate('product_id');
     if (!variation) return res.status(404).json({ success: false, message: 'Variation not found' });
+    const product = variation.product_id;
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+    if (product.is_active === false) {
+      return res.status(403).json({ success: false, message: 'Product is blocked or unlisted.' });
+    }
     if (action === 'increment') {
       if (variation.stock_quantity < 1) {
         return res.status(400).json({ success: false, message: 'Out of stock' });
@@ -95,7 +100,8 @@ exports.getCartPage = async (req, res) => {
         priceBefore: Math.round(priceBefore),
         priceAfter: Math.round(priceAfter),
         discount,
-        total: Math.round(priceAfter * item.quantity)
+        total: Math.round(priceAfter * item.quantity),
+        isActive: p.is_active,
       };
     });
     // Calculate summary
@@ -129,8 +135,14 @@ exports.addToCart = async (req, res) => {
     if (!product_variation_id || !quantity || quantity < 1) {
       return res.status(400).json({ success: false, message: 'Invalid request' });
     }
-    const variation = await ProductVariation.findById(product_variation_id);
+    // Fetch variation and product
+    const variation = await ProductVariation.findById(product_variation_id).populate('product_id');
     if (!variation) return res.status(404).json({ success: false, message: 'Variation not found' });
+    const product = variation.product_id;
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+    if (product.is_active === false) {
+      return res.status(403).json({ success: false, message: 'Product is not available' });
+    }
     if (quantity > variation.stock_quantity) {
       return res.status(400).json({ success: false, message: 'Quantity exceeds stock' });
     }
