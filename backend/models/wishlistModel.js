@@ -15,7 +15,7 @@ const wishlistSchema = new Schema({
   },
   variation_id: {
     type: Schema.Types.ObjectId,
-    ref: 'productVariation',
+    ref: 'product_variation',
     required: true
   },
   selected_size: {

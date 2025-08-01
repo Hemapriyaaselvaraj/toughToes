@@ -26,7 +26,7 @@ exports.getWishlist = async (req, res) => {
       image: (entry.variation_id?.images?.length > 0) 
         ? entry.variation_id.images[0] 
         : '/images/default-shoe.png',
-      _id: entry.product_id._id,
+      _id: entry._id,
       size: entry.selected_size,
       color: entry.selected_color,
       variationId: entry.variation_id._id
@@ -34,7 +34,9 @@ exports.getWishlist = async (req, res) => {
 
     res.render('user/wishlist', {
       name: displayName,
-      items: items
+      items: items,
+      itemCount: items.length,
+
     });
 
   } catch (err) {
@@ -49,14 +51,11 @@ exports.removeFromWishlist = async (req, res) => {
     if (!req.session || !req.session.userId) {
       return res.status(401).json({ success: false, message: 'Not logged in' });
     }
-    const { productId, variationId } = req.body;
-    if (!productId || !variationId) {
-      return res.status(400).json({ success: false, message: 'Product ID and variation ID are required' });
-    }
+    const { wishlistId } = req.body;
+    
     await Wishlist.deleteOne({ 
       user_id: req.session.userId, 
-      product_id: productId,
-      variation_id: variationId 
+      _id: wishlistId,
     });
     res.status(200).json({ success: true, message: 'Removed from wishlist' });
   } catch (err) {
@@ -115,43 +114,3 @@ exports.addToWishlist = async (req, res) => {
   }
 };
 
-
-// GET /wishlist
-exports.getWishlist = async (req, res) => {
-  try {
-    if (!req.session || !req.session.userId) {
-      return res.redirect('/login');
-    }
-
-    // Find all wishlist entries for this user and populate both product and variation details
-    const wishlistEntries = await Wishlist.find({ user_id: req.session.userId })
-      .populate('product_id')
-      .populate('variation_id');
-
-    // Fetch user name
-    const user = await User.findById(req.session.userId);
-    const displayName = user ? (user.firstName + ' ' + user.lastName) : '';
-
-    // Process each wishlist item with its specific variation
-    const items = wishlistEntries.map(entry => ({
-      name: entry.product_id.name,
-      category: entry.product_id.product_category,
-      price: entry.product_id.price,
-      image: (entry.variation_id?.images?.length > 0) 
-        ? entry.variation_id.images[0] 
-        : '/images/default-shoe.png',
-      _id: entry.product_id._id,
-      size: entry.selected_size,
-      color: entry.selected_color,
-      variationId: entry.variation_id._id
-    }));
-
-    res.render('user/wishlist', {
-      items,
-      itemCount: items.length,
-      name: displayName
-    });
-  } catch (err) {
-    res.status(500).send('Error loading wishlist');
-  }
-};

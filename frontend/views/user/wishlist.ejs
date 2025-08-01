@@ -34,18 +34,18 @@
                   <strong>$<%= item.price ? item.price.toFixed(2) : 'N/A' %></strong>
                 </div>
                 <button class="btn btn-dark mb-2">Add to Cart</button>
-                <button class="btn btn-outline-secondary remove-wishlist-btn" data-product-id="<%= item._id %>">Remove from Wishlist</button>
+                <button class="btn btn-outline-secondary remove-wishlist-btn" wishlist-entry-id="<%= item._id %>">Remove from Wishlist</button>
 <script>
   document.querySelectorAll('.remove-wishlist-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      const productId = this.getAttribute('data-product-id');
+      const wishlistId = this.getAttribute('wishlist-entry-id');
       fetch('/wishlist/remove', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ productId })
+        body: JSON.stringify({ wishlistId })
       })
       .then(res => res.json())
       .then(data => {
