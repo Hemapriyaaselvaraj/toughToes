@@ -1,0 +1,72 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  background-color: #f4f6f9;
+  color: #333;
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 30px;
+}
+
+.container h2 {
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.table {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.table th {
+  background-color: #f8f9fa;
+  font-weight: 500;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.875rem;
+}
+
+.btn-outline-primary {
+  font-weight: 500;
+}
+
+.modal-content {
+  border-radius: 10px;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+}
+
+.btn-danger,
+.btn-warning {
+  font-weight: 500;
+}
+
+.mt-3 {
+  margin-top: 1rem !important;
+}

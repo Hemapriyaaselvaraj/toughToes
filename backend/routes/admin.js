@@ -40,6 +40,8 @@ router.put('/products/color/:id', productController.updateColor);
 router.delete('/products/color/:id', productController.deleteColor);
 
 router.get('/orders', adminOrderController.getOrderList);
+router.get('/orders', adminOrderController.getOrderList);
+
 
 
 
