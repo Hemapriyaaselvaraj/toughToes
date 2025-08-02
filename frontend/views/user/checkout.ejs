@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <style>
+    #addressModal input,
+    #addressModal select {
+      pointer-events: auto !important;
+      background: #fff !important;
+      color: #212529 !important;
+      opacity: 1 !important;
+      border: 1px solid #ced4da !important;
+      box-shadow: none !important;
+    }
+    #addressModal input[readonly],
+    #addressModal input[disabled],
+    #addressModal select[disabled] {
+      pointer-events: auto !important;
+      background: #fff !important;
+      color: #212529 !important;
+      opacity: 1 !important;
+    }
+  </style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout - ToughToes</title>
@@ -148,9 +167,9 @@
           <input type="text" class="form-control" id="addressHouseNumber" name="house_number">
         </div>
         <div class="mb-3">
-        <label for="addressLocality" class="form-label">Locality</label>
-        <input type="text" class="form-control" id="addressLocality" name="locality">
-      </div>
+          <label for="addressLocality" class="form-label">Locality</label>
+          <input type="text" class="form-control" id="addressLocality" name="locality">
+        </div>
         <div class="mb-3">
           <label for="addressCity" class="form-label">City</label>
           <input type="text" class="form-control" id="addressCity" name="city" required>
@@ -235,6 +254,8 @@
         if (el) {
           el.readOnly = false;
           el.disabled = false;
+          el.removeAttribute('readonly');
+          el.removeAttribute('disabled');
         }
       });
     };
@@ -245,7 +266,10 @@
         document.getElementById('addressId').value = btn.getAttribute('data-address-id');
         document.getElementById('addressName').value = btn.getAttribute('data-address-name') || '';
         document.getElementById('addressLabel').value = btn.getAttribute('data-address-label') || '';
-        document.getElementById('addressType').value = btn.getAttribute('data-address-type') || 'Home';
+        // Set addressType robustly
+        const typeVal = btn.getAttribute('data-address-type');
+        const allowedTypes = ['Home', 'Work', 'Other'];
+        document.getElementById('addressType').value = allowedTypes.includes(typeVal) ? typeVal : 'Home';
         document.getElementById('addressHouseNumber').value = btn.getAttribute('data-address-housenumber') || '';
         document.getElementById('addressLocality').value = btn.getAttribute('data-address-locality') || '';
         document.getElementById('addressCity').value = btn.getAttribute('data-address-city') || '';
@@ -262,6 +286,8 @@
           if (el) {
             el.readOnly = false;
             el.disabled = false;
+            el.removeAttribute('readonly');
+            el.removeAttribute('disabled');
           }
         });
         addressModal.style.display = 'flex';
@@ -277,8 +303,10 @@
     // Save address (add/edit)
     addressForm.onsubmit = function(e) {
       e.preventDefault();
+      console.log('Address form submit handler called');
       const formData = new FormData(addressForm);
       const data = Object.fromEntries(formData.entries());
+      console.log('Form data:', data);
       const url = data.addressId ? '/customer/address/edit' : '/customer/address/add';
       fetch(url, {
         method: 'POST',
@@ -287,6 +315,7 @@
       })
       .then(res => res.json())
       .then(resp => {
+        console.log('API response:', resp);
         if (resp.success) {
           addressModal.style.display = 'none';
           location.reload();
