@@ -21,6 +21,9 @@
 </header>
 
 <script>
+  function selectCategory(category) {
+    window.location.href = '/products?category=' + encodeURIComponent(category);
+  }
   const searchInput = document.getElementById('navbarSearchInput');
   const searchIcon = document.getElementById('navbarSearchIcon');
   function submitSearch() {

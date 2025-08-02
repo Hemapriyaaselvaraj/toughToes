@@ -198,7 +198,7 @@
         <div class="summary-line total">
           <span>Total</span><span>₹<%= total %></span>
         </div>
-        <button class="checkout-btn">Proceed to Checkout</button>
+        <button class="checkout-btn" id="proceedToCheckoutBtn">Proceed to Checkout</button>
         <p class="secure-checkout"><i class="fa-solid fa-lock"></i> Secure Checkout</p>
         <!-- Payment methods removed as requested -->
       </div>
@@ -241,4 +241,9 @@
       <small>© 2025 ToughToes. All rights reserved.</small>
     </div>
   </footer>
+  <script>
+    document.getElementById('proceedToCheckoutBtn')?.addEventListener('click', function() {
+      window.location.href = '/checkout';
+    });
+  </script>
             <li><a href="#">Sale</a></li>

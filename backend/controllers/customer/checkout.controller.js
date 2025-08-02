@@ -11,6 +11,8 @@ const checkout = async (req, res) => {
   const addresses = await Address.find({ user: userId });
   const cartItems = await Cart.find({ user: userId }).populate('product');
 
+      const displayName = user ? (user.firstName + ' ' + user.lastName) : '';
+
   const products = cartItems.map(item => ({
     name: item.product.name,
     image: item.product.image,
@@ -24,7 +26,7 @@ const checkout = async (req, res) => {
   const shipping = subtotal > 1000 ? 0 : 50;
   const total = subtotal + tax - discount + shipping;
 
-  res.render('user/checkout', {name: user.firstName, addresses, products, subtotal, tax, discount, shipping, total });
+  res.render('user/checkout', {name: displayName, addresses, products, subtotal, tax, discount, shipping, total });
 };
 
 

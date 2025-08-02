@@ -12,6 +12,8 @@ body {
   padding: 40px;
   max-width: 1200px;
   margin: auto;
+      margin-top: 50px;
+
 }
 
 
@@ -95,6 +97,41 @@ body {
 /* --------------------- Product Summary --------------------- */
 
 
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem; /* reduced from 2rem to 1.5rem */
+  border-bottom: 1px solid #ddd;
+}
+.nav-links a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: #000;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+  margin-right: 1.5rem; /* move nav-right a bit inward from the right edge */
+}
+.search-input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  min-width: 180px;
+}
+.logo {
+  margin-left: 0.5rem; /* add a small left margin */
+}
 
 .product-item {
   display: flex;
@@ -201,6 +238,7 @@ footer p {
   .checkout-page {
     flex-direction: column;
     padding: 20px;
+    margin-top: 50px;
   }
 
   .address-section, .product-summary {

@@ -4,18 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout - ToughToes</title>
+
   <!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
-<!-- Your global styles -->
-<link rel="stylesheet" href="/css/style.css">
+  <!-- FontAwesome for icons (same as home.ejs) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Your page-specific styles -->
-<link rel="stylesheet" href="/css/checkout.css">
+  <!-- Your global styles -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Your page-specific styles -->
+  <link rel="stylesheet" href="/css/checkout.css">
+  <link rel="stylesheet" href="/css/home.css">
+
 
 </head>
 <body>
-      <%- include('../partials/user-navbar', { name: name }) %>
+  <%- include('../partials/user-navbar', { name: name }) %>
 
 
   <main class="checkout-page">
@@ -43,7 +49,7 @@
           <% }) %>
         <% } %>
 
-        <button class="add-address" onclick="window.location.href='/user/addresses'">+ Add New Address</button>
+        <button class="add-address" onclick="window.location.href='/customer/address'">+ Add New Address</button>
       </div>
     </section>
 
@@ -124,7 +130,7 @@
       const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
       if (!selectedAddress) return alert('Please select a delivery address.');
 
-      fetch('/checkout/place-order', {
+      fetch('/customer/checkout/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ addressId: selectedAddress.value })
