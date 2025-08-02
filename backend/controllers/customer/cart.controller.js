@@ -95,10 +95,14 @@ exports.getCartPage = async (req, res) => {
         discount,
         total: Math.round(priceAfter * item.quantity),
         isActive: p.is_active,
+        stock: v.stock_quantity,
       };
     });
     // Calculate summary
-    const subtotal = items.reduce((sum, i) => sum + i.total, 0);
+    
+    const filteredItems = items.filter(item => item.isActive && item.stock > 0);
+
+    const subtotal = filteredItems.reduce((sum, i) => sum + i.total, 0);
     const shipping = subtotal > 1000 ? 0 : 50;
     const taxPercent = 8;
     const tax = Math.round(subtotal * taxPercent / 100);

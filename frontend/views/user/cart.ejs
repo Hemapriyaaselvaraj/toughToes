@@ -24,7 +24,7 @@
       <div class="cart-items">
         <% if (items.length) { %>
           <% items.forEach(function(item) { %>
-            <div class="cart-item" style="display:flex; align-items:center; justify-content:space-between; gap:16px;<%= item.isActive === false ? ' background:#f8d7da; border:1.5px solid #f5c2c7; box-shadow:0 2px 8px #f8d7da;' : '' %>">
+            <div class="cart-item" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
               <div style="display:flex; align-items:center; gap:16px;">
                 <img src="<%= item.image %>" alt="<%= item.name %>" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">
                 <div class="item-info">
@@ -38,21 +38,25 @@
                     <% } %>
                   </div>
                   <% if (item.isActive === false) { %>
-                    <div style="color:#842029; background:#f8d7da; border-radius:4px; padding:4px 8px; margin-top:8px; font-size:0.95em;">
+                    <div style="color:#842029; background:#f8d7da; border:1px solid #f5c2c7; border-radius:4px; padding:4px 8px; margin-top:8px; font-size:0.95em; display:inline-block;">
                       This product is inactive and cannot be purchased. Please remove it from your cart.
+                    </div>
+                  <% } else if (item.stock === 0) { %>
+                    <div style="color:#842029; background:#f8d7da; border:1px solid #f5c2c7; border-radius:4px; padding:4px 8px; margin-top:8px; font-size:0.95em; display:inline-block;">
+                      This product is out of stock and cannot be purchased. Please remove it from your cart.
                     </div>
                   <% } %>
                 </div>
               </div>
               <div style="display:flex; align-items:center; gap:24px;">
-                <% if (item.isActive === false) { %>
+                <% if (item.isActive === false || item.stock == 0) { %>
                   <div class="quantity" style="display:flex; align-items:center; gap:6px; opacity:0.5; pointer-events:none;">
                     <button class="decrement-btn" disabled>-</button>
                     <span class="cart-quantity"><%= item.quantity %></span>
                     <button class="increment-btn" disabled>+</button>
                   </div>
                   <div class="price" style="font-weight:600; opacity:0.5;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
-                  <button class="btn btn-outline-danger btn-sm delete-icon-active" data-cart-item-id="<%= item._id %>" style="font-size:1.1rem; font-weight:600; margin-left:12px;">Remove</button>
+                  <i class="fa-solid fa-trash delete-icon" data-cart-item-id="<%= item._id %>" style="cursor:pointer; color:#d9534f; font-size:1.2rem;"></i>
                 <% } else { %>
                   <div class="quantity" style="display:flex; align-items:center; gap:6px; flex-direction:column; align-items:flex-start;">
                     <div style="display:flex; align-items:center; gap:6px;">
@@ -78,101 +82,7 @@
                   <div class="price" style="font-weight:600;">₹<%= item.total %> <small style="font-weight:400;">₹<%= item.priceAfter %> each</small></div>
                   <i class="fa-solid fa-trash delete-icon" data-cart-item-id="<%= item._id %>" style="cursor:pointer; color:#d9534f; font-size:1.2rem;"></i>
                 <% } %>
-<script>
-  document.querySelectorAll('.increment-btn').forEach(btn => {
-    const cartItemId = btn.getAttribute('data-cart-item-id');
-    const qtySpan = document.querySelector('.cart-quantity[data-cart-item-id="' + cartItemId + '"]');
-    const limitMsg = document.getElementById('cart-qty-limit-message-' + cartItemId);
-    // Do not show any message by default
-    limitMsg.textContent = '';
-    limitMsg.style.display = 'none';
-    btn.addEventListener('click', function() {
-      if (btn.disabled) return;
-      fetch('/cart/update-quantity', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ cartItemId, action: 'increment' })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
-          limitMsg.textContent = '';
-          limitMsg.style.display = 'none';
-          location.reload();
-        } else {
-          let msg = '';
-          if (data.message && (data.message.includes('5') || data.message.includes('maximum'))) {
-            msg = 'You cannot add more than 5 of this product to your cart.';
-          } else if (data.message && (data.message.toLowerCase().includes('stock') || data.message.toLowerCase().includes('out of stock'))) {
-            msg = 'Sorry, this product is currently out of stock and cannot be increased further.';
-          } else {
-            msg = data.message || 'Could not increase quantity.';
-          }
-          limitMsg.textContent = msg;
-          limitMsg.style.display = msg ? 'block' : 'none';
-        }
-      })
-      .catch(() => { limitMsg.textContent = 'Could not increase quantity.'; limitMsg.style.display = 'block'; });
-    });
-  });
-
-  document.querySelectorAll('.decrement-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const cartItemId = this.getAttribute('data-cart-item-id');
-      const qtySpan = document.querySelector('.cart-quantity[data-cart-item-id="' + cartItemId + '"]');
-      const limitMsg = document.getElementById('cart-qty-limit-message-' + cartItemId);
-      fetch('/cart/update-quantity', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ cartItemId, action: 'decrement' })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
-          limitMsg.textContent = '';
-          limitMsg.style.display = 'none';
-          location.reload();
-        } else {
-          let msg = '';
-          if (data.message && (data.message.includes('5') || data.message.includes('maximum'))) {
-            msg = 'You cannot add more than 5 of this product to your cart.';
-          } else if (data.message && (data.message.toLowerCase().includes('stock') || data.message.toLowerCase().includes('out of stock'))) {
-            msg = 'Out of stock.';
-          } else {
-            msg = data.message || 'Could not decrease quantity.';
-          }
-          limitMsg.textContent = msg;
-          limitMsg.style.display = msg ? 'block' : 'none';
-        }
-      })
-      .catch(() => { limitMsg.textContent = 'Could not decrease quantity.'; limitMsg.style.display = 'block'; });
-    });
-  });
-
-  // Remove from cart (for both active and inactive)
-  document.querySelectorAll('.delete-icon, .delete-icon-active').forEach(icon => {
-    icon.addEventListener('click', function() {
-      const cartItemId = this.getAttribute('data-cart-item-id');
-      fetch('/cart/remove', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ cartItemId })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          this.closest('.cart-item').remove();
-          location.reload();
-        } else {
-          alert(data.message || 'Could not remove item.');
-        }
-      })
-      .catch(() => alert('Could not remove item.'));
-    });
-  });
-</script>
+<!-- Cart action scripts moved to end of file -->
               </div>
             </div>
           <% }) %>
@@ -244,6 +154,110 @@
   <script>
     document.getElementById('proceedToCheckoutBtn')?.addEventListener('click', function() {
       window.location.href = '/checkout';
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.increment-btn').forEach(btn => {
+        const cartItemId = btn.getAttribute('data-cart-item-id');
+        const qtySpan = document.querySelector('.cart-quantity[data-cart-item-id="' + cartItemId + '"]');
+        const limitMsg = document.getElementById('cart-qty-limit-message-' + cartItemId);
+        if (limitMsg) {
+          limitMsg.textContent = '';
+          limitMsg.style.display = 'none';
+        }
+        btn.addEventListener('click', function() {
+          if (btn.disabled) return;
+          fetch('/cart/update-quantity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ cartItemId, action: 'increment' })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
+              if (limitMsg) {
+                limitMsg.textContent = '';
+                limitMsg.style.display = 'none';
+              }
+              location.reload();
+            } else {
+              let msg = '';
+              if (data.message && (data.message.includes('5') || data.message.includes('maximum'))) {
+                msg = 'You cannot add more than 5 of this product to your cart.';
+              } else if (data.message && (data.message.toLowerCase().includes('stock') || data.message.toLowerCase().includes('out of stock'))) {
+                msg = 'Sorry, this product is currently out of stock and cannot be increased further.';
+              } else {
+                msg = data.message || 'Could not increase quantity.';
+              }
+              if (limitMsg) {
+                limitMsg.textContent = msg;
+                limitMsg.style.display = msg ? 'block' : 'none';
+              }
+            }
+          })
+          .catch(() => { if (limitMsg) { limitMsg.textContent = 'Could not increase quantity.'; limitMsg.style.display = 'block'; } });
+        });
+      });
+
+      document.querySelectorAll('.decrement-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const cartItemId = this.getAttribute('data-cart-item-id');
+          const qtySpan = document.querySelector('.cart-quantity[data-cart-item-id="' + cartItemId + '"]');
+          const limitMsg = document.getElementById('cart-qty-limit-message-' + cartItemId);
+          fetch('/cart/update-quantity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ cartItemId, action: 'decrement' })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              document.querySelectorAll('.cart-quantity[data-cart-item-id="' + cartItemId + '"]').forEach(q => q.textContent = data.quantity);
+              if (limitMsg) {
+                limitMsg.textContent = '';
+                limitMsg.style.display = 'none';
+              }
+              location.reload();
+            } else {
+              let msg = '';
+              if (data.message && (data.message.includes('5') || data.message.includes('maximum'))) {
+                msg = 'You cannot add more than 5 of this product to your cart.';
+              } else if (data.message && (data.message.toLowerCase().includes('stock') || data.message.toLowerCase().includes('out of stock'))) {
+                msg = 'Out of stock.';
+              } else {
+                msg = data.message || 'Could not decrease quantity.';
+              }
+              if (limitMsg) {
+                limitMsg.textContent = msg;
+                limitMsg.style.display = msg ? 'block' : 'none';
+              }
+            }
+          })
+          .catch(() => { if (limitMsg) { limitMsg.textContent = 'Could not decrease quantity.'; limitMsg.style.display = 'block'; } });
+        });
+      });
+
+      // Remove from cart (for both active and inactive)
+      document.querySelectorAll('.delete-icon, .delete-icon-active').forEach(icon => {
+        icon.addEventListener('click', function() {
+          const cartItemId = this.getAttribute('data-cart-item-id');
+          fetch('/cart/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ cartItemId })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              this.closest('.cart-item').remove();
+              location.reload();
+            } else {
+              alert(data.message || 'Could not remove item.');
+            }
+          })
+          .catch(() => alert('Could not remove item.'));
+        });
+      });
     });
   </script>
             <li><a href="#">Sale</a></li>
