@@ -44,14 +44,30 @@
                   <%= address.isDefault ? 'checked' : '' %>
                 >
                 <div>
-                  <p><strong><%= address.name %></strong> - <%= address.phone %></p>
-                  <p><%= address.street %>, <%= address.city %>, <%= address.state %> - <%= address.pincode %></p>
+                  <p><strong><%= address.name %></strong> <span style="color:#888; font-size:0.97em; margin-left:8px;">[<%= address.label || '' %>]</span> <span style="color:#888; font-size:0.97em; margin-left:8px;">[<%= address.type || '' %>]</span></p>
+                  <p style="margin-bottom:2px;"><%= address.house_number ? address.house_number + ', ' : '' %><%= address.locality ? address.locality + ', ' : '' %><%= address.street %></p>
+                  <p style="margin-bottom:2px;">City: <%= address.city %></p>
+                  <p style="margin-bottom:2px;">State: <%= address.state %></p>
+                  <p style="margin-bottom:2px;">Pincode: <%= address.pincode %></p>
+                  <p style="margin-bottom:2px;">Phone: <%= address.phone_number %></p>
                 </div>
-                <button class="edit-address" onclick="editAddress('<%= address._id %>')">Edit</button>
+                <button class="edit-address" 
+                  data-address-id="<%= address._id %>" 
+                  data-address-name="<%= address.name %>" 
+                  data-address-label="<%= address.label || '' %>"
+                  data-address-type="<%= address.type || '' %>"
+                  data-address-housenumber="<%= address.house_number || '' %>"
+                  data-address-locality="<%= address.locality || '' %>"
+                  data-address-street="<%= address.street %>"
+                  data-address-city="<%= address.city %>"
+                  data-address-state="<%= address.state %>"
+                  data-address-pincode="<%= address.pincode %>"
+                  data-address-phone="<%= address.phone_number %>"
+                >Edit</button>
               </div>
             <% }) %>
           <% } %>
-          <button class="add-address" onclick="window.location.href='/customer/address'">+ Add New Address</button>
+          <button class="add-address" id="openAddAddressModal">+ Add New Address</button>
         </div>
       </section>
       <!-- Payment Method Section (full width, below address) -->
@@ -104,6 +120,58 @@
       </div>
       <button id="placeOrder">Place Order</button>
     </section>
+  <!-- Address Modal (shared for add/edit) -->
+  <div id="addressModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); align-items:center; justify-content:center;">
+    <div class="modal-dialog" style="background:#fff; border-radius:10px; max-width:420px; width:95vw; margin:auto; padding:32px 28px 24px 28px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+      <button id="closeAddressModal" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5em; color:#888; cursor:pointer;">&times;</button>
+      <h3 id="addressModalTitle" style="margin-bottom:18px;">Add Address</h3>
+      <form id="addressForm">
+        <input type="hidden" name="addressId" id="addressId">
+        <div class="mb-3">
+          <label for="addressName" class="form-label">Name</label>
+          <input type="text" class="form-control" id="addressName" name="name" required>
+        </div>
+        <div class="mb-3">
+          <label for="addressLabel" class="form-label">Label</label>
+          <input type="text" class="form-control" id="addressLabel" name="label">
+        </div>
+        <div class="mb-3">
+          <label for="addressType" class="form-label">Type</label>
+          <select class="form-control" id="addressType" name="type">
+            <option value="Home">Home</option>
+            <option value="Work">Work</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="addressHouseNumber" class="form-label">House Number</label>
+          <input type="text" class="form-control" id="addressHouseNumber" name="house_number">
+        </div>
+        <div class="mb-3">
+        <label for="addressLocality" class="form-label">Locality</label>
+        <input type="text" class="form-control" id="addressLocality" name="locality">
+      </div>
+        <div class="mb-3">
+          <label for="addressCity" class="form-label">City</label>
+          <input type="text" class="form-control" id="addressCity" name="city" required>
+        </div>
+        <div class="mb-3">
+          <label for="addressState" class="form-label">State</label>
+          <input type="text" class="form-control" id="addressState" name="state" required>
+        </div>
+        <div class="mb-3">
+          <label for="addressPincode" class="form-label">Pincode</label>
+          <input type="text" class="form-control" id="addressPincode" name="pincode" required pattern="[0-9]{6}">
+        </div>
+        <div class="mb-3">
+          <label for="addressPhone" class="form-label">Phone</label>
+          <input type="text" class="form-control" id="addressPhone" name="phone_number" required pattern="[0-9]{10}">
+        </div>
+        <button type="submit" class="btn btn-dark w-100" id="saveAddressBtn">Save Address</button>
+      </form>
+    </div>
+  </div>
+
   </main>
 
   <!-- Footer -->
@@ -143,14 +211,95 @@
     </div>
   </footer>
   <script>
-    function editAddress(addressId) {
-      window.location.href = '/user/edit-address/' + addressId;
-    }
+    // Modal open/close logic
+    const addressModal = document.getElementById('addressModal');
+    const closeAddressModal = document.getElementById('closeAddressModal');
+    const addressForm = document.getElementById('addressForm');
+    const addressModalTitle = document.getElementById('addressModalTitle');
+    const saveAddressBtn = document.getElementById('saveAddressBtn');
+    // Open Add Address
+    document.getElementById('openAddAddressModal').onclick = function() {
+      addressModalTitle.textContent = 'Add Address';
+      addressForm.reset();
+      document.getElementById('addressId').value = '';
+      addressModal.style.display = 'flex';
+      // Set default type to Home
+      document.getElementById('addressType').value = 'Home';
+      // Ensure all fields are editable
+      [
+        'addressName', 'addressLabel', 'addressType', 'addressHouseNumber',
+        'addressLocality', 'addressCity', 'addressState',
+        'addressPincode', 'addressPhone'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.readOnly = false;
+          el.disabled = false;
+        }
+      });
+    };
+    // Open Edit Address
+    document.querySelectorAll('.edit-address').forEach(btn => {
+      btn.onclick = function() {
+        addressModalTitle.textContent = 'Edit Address';
+        document.getElementById('addressId').value = btn.getAttribute('data-address-id');
+        document.getElementById('addressName').value = btn.getAttribute('data-address-name') || '';
+        document.getElementById('addressLabel').value = btn.getAttribute('data-address-label') || '';
+        document.getElementById('addressType').value = btn.getAttribute('data-address-type') || 'Home';
+        document.getElementById('addressHouseNumber').value = btn.getAttribute('data-address-housenumber') || '';
+        document.getElementById('addressLocality').value = btn.getAttribute('data-address-locality') || '';
+        document.getElementById('addressCity').value = btn.getAttribute('data-address-city') || '';
+        document.getElementById('addressState').value = btn.getAttribute('data-address-state') || '';
+        document.getElementById('addressPincode').value = btn.getAttribute('data-address-pincode') || '';
+        document.getElementById('addressPhone').value = btn.getAttribute('data-address-phone') || '';
+        // Ensure all fields are editable
+        [
+          'addressName', 'addressLabel', 'addressType', 'addressHouseNumber',
+          'addressLocality', 'addressCity', 'addressState',
+          'addressPincode', 'addressPhone'
+        ].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.readOnly = false;
+            el.disabled = false;
+          }
+        });
+        addressModal.style.display = 'flex';
+      };
+    });
+    // Close modal
+    closeAddressModal.onclick = function() {
+      addressModal.style.display = 'none';
+    };
+    window.onclick = function(e) {
+      if (e.target === addressModal) addressModal.style.display = 'none';
+    };
+    // Save address (add/edit)
+    addressForm.onsubmit = function(e) {
+      e.preventDefault();
+      const formData = new FormData(addressForm);
+      const data = Object.fromEntries(formData.entries());
+      const url = data.addressId ? '/customer/address/edit' : '/customer/address/add';
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.success) {
+          addressModal.style.display = 'none';
+          location.reload();
+        } else {
+          alert(resp.message || 'Failed to save address');
+        }
+      });
+    };
 
+    // Place order logic
     document.getElementById('placeOrder').addEventListener('click', () => {
       const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
       if (!selectedAddress) return alert('Please select a delivery address.');
-
       fetch('/customer/checkout/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
