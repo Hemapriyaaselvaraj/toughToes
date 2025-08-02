@@ -21,23 +21,20 @@ exports.updateCartQuantity = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Product is blocked or unlisted.' });
     }
     if (action === 'increment') {
-      if (variation.stock_quantity < 1) {
-        return res.status(400).json({ success: false, message: 'Out of stock' });
+      if (cartItem.quantity + 1 > variation.stock_quantity) {
+        return res.status(400).json({ success: false, message: 'Quantity exceeds available stock' });
       }
       cartItem.quantity += 1;
-      variation.stock_quantity -= 1;
     } else if (action === 'decrement') {
       if (cartItem.quantity <= 1) {
         return res.status(400).json({ success: false, message: 'Minimum quantity is 1' });
       }
       cartItem.quantity -= 1;
-      variation.stock_quantity += 1;
     } else {
       return res.status(400).json({ success: false, message: 'Invalid action' });
     }
     cartItem.updated_at = Date.now();
     await cartItem.save();
-    await variation.save();
     res.json({ success: true, quantity: cartItem.quantity });
   } catch (err) {
     console.error('Update cart quantity error:', err);
@@ -53,11 +50,7 @@ exports.removeFromCart = async (req, res) => {
     if (!userId) return res.status(401).json({ success: false, message: 'Not logged in' });
     const cartItem = await Cart.findOne({ _id: cartItemId, user_id: userId });
     if (!cartItem) return res.status(404).json({ success: false, message: 'Cart item not found' });
-    const variation = await ProductVariation.findById(cartItem.product_variation_id);
-    if (variation) {
-      variation.stock_quantity += cartItem.quantity;
-      await variation.save();
-    }
+    // No stock update here
     await Cart.deleteOne({ _id: cartItemId, user_id: userId });
     res.json({ success: true });
   } catch (err) {
@@ -106,7 +99,7 @@ exports.getCartPage = async (req, res) => {
     });
     // Calculate summary
     const subtotal = items.reduce((sum, i) => sum + i.total, 0);
-    const shipping = items.length ? 9.99 : 0;
+    const shipping = subtotal > 1000 ? 0 : 50;
     const taxPercent = 8;
     const tax = Math.round(subtotal * taxPercent / 100);
     const total = subtotal + shipping + tax;
@@ -144,7 +137,7 @@ exports.addToCart = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Product is not available' });
     }
     if (quantity > variation.stock_quantity) {
-      return res.status(400).json({ success: false, message: 'Quantity exceeds stock' });
+      return res.status(400).json({ success: false, message: 'Quantity exceeds available stock' });
     }
     // Check if cart item exists for this user and variation
     let cartItem = await Cart.findOne({ user_id: userId, product_variation_id });
@@ -155,6 +148,9 @@ exports.addToCart = async (req, res) => {
       if (newQty > MAX_QTY) {
         return res.status(400).json({ success: false, message: 'You cannot add more than 5 of this product to your cart.' });
       }
+      if (newQty > variation.stock_quantity) {
+        return res.status(400).json({ success: false, message: 'Quantity exceeds available stock' });
+      }
       cartItem.quantity = newQty;
       cartItem.updated_at = Date.now();
       await cartItem.save();
@@ -164,9 +160,6 @@ exports.addToCart = async (req, res) => {
       }
       await Cart.create({ user_id: userId, product_variation_id, quantity });
     }
-    // Reduce stock
-    variation.stock_quantity -= quantity;
-    await variation.save();
     res.json({ success: true, message: 'Added to cart' });
   } catch (err) {
     console.error('Add to cart error:', err);
