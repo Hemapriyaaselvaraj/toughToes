@@ -7,6 +7,49 @@ const Order = require("../../models/orderModel");
 const mongoose = require('mongoose');
 const { generateOrderNumber } = require('../../utils/orderNumberGenerator');
 
+// Get all orders for a user
+const getUserOrders = async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const user = await userModel.findById(userId);
+        
+        const orders = await Order.find({ user_id: userId })
+            .sort({ createdAt: -1 }) // Sort by newest first
+            .populate({
+                path: 'products.variation',
+                populate: {
+                    path: 'product_id',
+                    select: 'name price'
+                }
+            })
+            .lean();
+
+        const formattedOrders = orders.map(order => ({
+            _id: order._id,
+            orderNumber: order.order_number,
+            status: order.status,
+            createdAt: order.createdAt,
+            totalAmount: Math.round(order.total),
+            items: order.products.map(item => ({
+                name: item.name,
+                image: item.images[0],
+                price: Math.round(item.price),
+                quantity: item.quantity,
+                size: item.size,
+                color: item.color
+            }))
+        }));
+
+        res.render('user/orders', {
+            orders: formattedOrders,
+            user: user
+        });
+    } catch (error) {
+        console.error('Error fetching user orders:', error);
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+};
+
 
 const placeOrder = async (req, res) => {
   try {
@@ -236,6 +279,7 @@ const getOrderSuccess = async (req, res) => {
 };
 
 module.exports = {
-  placeOrder,
-  getOrderSuccess,
+    placeOrder,
+    getUserOrders,
+    getOrderSuccess
 };

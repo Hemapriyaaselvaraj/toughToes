@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-  <%- include('../partials/user-navbar', { name: user.firstName + ' ' + user.lastName }) %>
+  <%- include('../partials/user-navbar', { name: user ? user.firstName + ' ' + user.lastName : '' }) %>
 
   <!-- Main Content -->
   <div class="container my-5 d-flex">
@@ -33,7 +33,7 @@
     <div class="sidebar p-3 me-4 border rounded">
       <ul class="list-unstyled">
         <li><a href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-        <li><a href="#"><i class="fas fa-box me-2"></i>Orders</a></li>
+        <li><a href="/order/my-orders"><i class="fas fa-box me-2"></i>Orders</a></li>
         <li><a href="#"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
         <li><a href="/addresses" class="active"><i class="fas fa-map-marker-alt me-2"></i>Addresses</a></li>
         <li><a href="#"><i class="fas fa-wallet me-2"></i>My Wallet</a></li>

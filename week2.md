@@ -19,17 +19,17 @@ Cart management (Add to cart, list products in cart, remove products from cart)
 
 -> Checkout page
 -> ~~Display user-added addresses.~~
--> Provide an option to add a new address and edit existing addresses.
+-> ~~ Provide an option to add a new address and edit existing addresses. ~~
 -> ~~Ensure one address is selected as the default.~~
--> Display products moved to checkout with:
-	- Product image
-	- Quantity
-	- Item total (price based on quantity)
-	- Taxes (optional)
-	- Applicable discount
-	- Final price summary (including taxes, discounts, and shipping)
--> Place order with Cash on Delivery
--> Order successful page with thanking statement and illustration and should contain buttons to redirect user to order detail page and continue shopping page.
+-> ~~Display products moved to checkout with:~~
+    ~~Product image~~
+    ~~Quantity~~
+    ~~Item total (price based on quantity)~~
+    ~~Taxes (optional)~~
+    ~~Applicable discount~~
+    ~~Final price summary (including taxes, discounts, and shipping)~~
+-> ~~Place order with Cash on Delivery~~
+-> ~~Order successful page with thanking statement and illustration and should contain buttons to redirect user to order detail page and continue shopping page.~~
 
 Order Management 
 -> Implement an order listing page where each order has a unique, consistent orderID (not _id in DBS).
