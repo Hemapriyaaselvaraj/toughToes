@@ -25,28 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4">
-    <a class="navbar-brand fw-bold" href="#">ToughToes</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav mx-auto">
-        <li class="nav-item"><a class="nav-link" href="#">Men</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Women</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Kids</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Sale</a></li>
-      </ul>
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search shoes..." />
-        <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-      </form>
-      <div class="ms-4 d-flex align-items-center">
-        <i class="fas fa-user me-3"></i>
-        <i class="fas fa-heart me-3"></i>
-        <i class="fas fa-shopping-cart me-3"></i>
-        <span><%= user.firstName %> <%= user.lastName %></span>
-      </div>
-    </div>
-  </nav>
+  <%- include('../partials/user-navbar', { name: user.firstName + ' ' + user.lastName }) %>
 
   <!-- Main Content -->
   <div class="container my-5 d-flex">

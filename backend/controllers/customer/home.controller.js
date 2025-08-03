@@ -63,9 +63,9 @@ const home = async (req, res) => {
 
     
     const [menImage, womenImage, kidsImage] = await Promise.all([
-      getCategoryFirstImage("Men"),
-      getCategoryFirstImage("Women"),
-      getCategoryFirstImage("Kids"),
+      getCategoryFirstImage("MEN"),
+      getCategoryFirstImage("WOMEN"),
+      getCategoryFirstImage("KIDS"),
     ]);
 
     const bannerProduct = await Product.findOne({ is_active: true });
