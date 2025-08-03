@@ -420,6 +420,7 @@ const requestReturn = async (req, res) => {
       comments: comments,
       requested_at: new Date(),
       status: 'PENDING',
+      refundAmount: item.price * item.quantity
     };
 
     await order.save();

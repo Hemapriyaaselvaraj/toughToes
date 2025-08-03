@@ -29,8 +29,19 @@ const orderSchema = new Schema({
       images: [String],
       status: {
         type: String,
-    enum: ['ORDERED', 'SHIPPED', 'OUT_FOR_DELIVERY' , 'DELIVERED', 'RETURNED', 'CANCELLED'],
-    default: 'ORDERED'
+        enum: ['ORDERED', 'SHIPPED', 'OUT_FOR_DELIVERY' , 'DELIVERED', 'RETURNED', 'CANCELLED', 'RETURN_REQUESTED'],
+        default: 'ORDERED'
+      },
+      return_details: {
+        reason: String,
+        comments: String,
+        requested_at: Date,
+        status: {
+          type: String,
+          enum: ['PENDING', 'APPROVED', 'REJECTED'],
+          default: 'PENDING'
+        },
+        refundAmount: Number
       }
     }
   ],
@@ -48,7 +59,7 @@ const orderSchema = new Schema({
       reason: String,
       status: {
         type: String,
-        enum: ['Requested', 'Approved', 'Rejected'],
+        enum: ['REQUESTED', 'APPROVED', 'REJECTED'],
         default: 'Requested'
       },
       refundAmount: Number

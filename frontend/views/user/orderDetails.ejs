@@ -94,12 +94,14 @@
                         </span>
                       </td>
                       <td>
-                        <% if ((order.status === 'DELIVERED' || order.status === 'Delivered')) { %>
+                        <% if (item.status === 'RETURN_REQUESTED') { %>
+                          <span class="text-muted">Return Pending Approval</span>
+                        <% } else if (item.status === 'RETURNED') { %>
+                          <span class="text-muted">Returned</span>
+                        <% } else if (order.status === 'DELIVERED' || order.status === 'Delivered') { %>
                           <button class="btn btn-warning btn-sm" onclick="requestReturn('<%= order._id %>', '<%= item._id %>')">
                             Request Return
                           </button>
-                        <% } else if (item.status === 'RETURN_REQUESTED' || item.status === 'RETURNED') { %>
-                          <span class="text-muted"><%= item.status === 'RETURN_REQUESTED' ? 'Return Pending Approval' : 'Returned' %></span>
                         <% } %>
                       </td>
                     </tr>

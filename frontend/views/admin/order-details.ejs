@@ -35,6 +35,7 @@
             <option value="SHIPPED" <%= order.status === 'SHIPPED' ? 'selected' : '' %>>Shipped</option>
             <option value="OUT_FOR_DELIVERY" <%= order.status === 'OUT_FOR_DELIVERY' ? 'selected' : '' %>>Out for Delivery</option>
             <option value="DELIVERED" <%= order.status === 'DELIVERED' ? 'selected' : '' %>>Delivered</option>
+            <option value="RETURNED" <%= order.status === 'RETURNED' ? 'selected' : '' %>>Returned</option>
             <option value="CANCELLED" <%= order.status === 'CANCELLED' ? 'selected' : '' %>>Cancelled</option>
           </select>
         </form>
@@ -47,7 +48,8 @@
               <th>Product</th>
               <th>Quantity</th>
               <th>Price</th>
-              <th>Action</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -57,45 +59,47 @@
                 <td><%= p.quantity %></td>
                 <td>₹ <%= p.price %></td>
                 <td>
-                  <% if (order.status === 'Placed' || order.status === 'Processing') { %>
-                    <button class="btn btn-danger btn-sm" onclick="openCancelModal('<%= p._id %>')">Cancel</button>
-                  <% } else if (order.status === 'Delivered') { %>
-                    <button class="btn btn-warning btn-sm" onclick="openReturnModal('<%= p._id %>')">Return</button>
+                  <% if (p.status === 'RETURN_REQUESTED') { %>
+                    <span class="badge bg-warning">Return Requested</span>
+                  <% } else if (p.status === 'RETURNED') { %>
+                    <span class="badge bg-info">Returned</span>
+                  <% } else { %>
+                    <span class="badge bg-<%= p.status === 'DELIVERED' ? 'success' : 'primary' %>">
+                      <%= p.status %>
+                    </span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (p.status === 'RETURN_REQUESTED' || p.status === 'RETURNED' || (p.return_details && p.return_details.status === 'REJECTED')) { %>
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-sm btn-info" 
+                              data-bs-toggle="popover" 
+                              data-bs-title="Return Request Details"
+                              data-bs-content="Reason: <%= p.return_details.reason %><br>Comments: <%= p.return_details.comments || 'No comments' %><br>Requested on: <%= new Date(p.return_details.requested_at).toLocaleDateString() %><br>Refund Amount: ₹<%= p.return_details.refundAmount %><br>Status: <%= p.return_details.status %>">
+                        <i class="fas fa-info-circle"></i>
+                      </button>
+                      <% if (p.status === 'RETURN_REQUESTED') { %>
+                        <form method="POST" action="/admin/orders/<%= order._id %>/return/verify" class="d-flex gap-2">
+                          <input type="hidden" name="productId" value="<%= p._id %>">
+                          <button class="btn btn-success btn-sm" name="action" value="approve" title="Approve Return">
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button class="btn btn-danger btn-sm" name="action" value="reject" title="Reject Return">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </form>
+                      <% } else if (p.status === 'RETURNED') { %>
+                        <span class="badge bg-success">Approved & Refunded</span>
+                      <% } else if (p.return_details.status === 'REJECTED') { %>
+                        <span class="badge bg-danger">Return Rejected</span>
+                      <% } %>
+                    </div>
                   <% } %>
                 </td>
               </tr>
             <% }) %>
           </tbody>
         </table>
-
-        <!-- Cancel full order -->
-        <% if (order.status === 'Placed' || order.status === 'Processing') { %>
-          <button class="btn btn-danger mt-3" onclick="openCancelModal('full')">Cancel Full Order</button>
-        <% } %>
-
-        <!-- Return Requests Section -->
-        <% if (order.returns && order.returns.length > 0) { %>
-          <div class="mt-5">
-            <h5>Return Requests</h5>
-            <ul class="list-group">
-              <% order.returns.forEach(ret => { %>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong><%= ret.product.name %></strong> - <%= ret.reason %><br/>
-                    <small>Status: <%= ret.status %></small>
-                  </div>
-                  <% if (ret.status === 'Requested') { %>
-                    <form method="POST" action="/admin/orders/<%= order._id %>/return/verify" class="d-flex gap-2">
-                      <input type="hidden" name="productId" value="<%= ret.product._id %>">
-                      <button class="btn btn-success btn-sm" name="action" value="approve">Approve</button>
-                      <button class="btn btn-danger btn-sm" name="action" value="reject">Reject</button>
-                    </form>
-                  <% } %>
-                </li>
-              <% }) %>
-            </ul>
-          </div>
-        <% } %>
 
         <!-- Modals -->
         <!-- Cancel Modal -->
@@ -142,6 +146,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function openCancelModal(productId) {
       document.getElementById('cancelProductId').value = productId;
@@ -152,6 +157,15 @@
       document.getElementById('returnProductId').value = productId;
       new bootstrap.Modal(document.getElementById('returnModal')).show();
     }
+
+    // Initialize all popovers
+    document.addEventListener('DOMContentLoaded', function() {
+      const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+      const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, {
+        html: true,
+        placement: 'left'
+      }));
+    });
   </script>
 </body>
 </html>

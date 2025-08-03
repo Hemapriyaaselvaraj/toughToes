@@ -168,19 +168,57 @@ exports.updateOrderStatus = async (req, res) => {
 
 // POST verify return request
 exports.verifyReturn = async (req, res) => {
-  const { productId, action } = req.body;
-  const order = await Order.findById(req.params.id).populate('user_id');
+  try {
+    const { productId, action } = req.body;
+    const orderId = req.params.id;
 
-  const ret = order.returns.find(r => r.product.toString() === productId);
-  if (ret) {
-    ret.status = action === 'approve' ? 'Approved' : 'Rejected';
+    const order = await Order.findById(orderId)
+      .populate('user_id')
+      .populate('products.variation');
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    // Find the specific product in order
+    const product = order.products.id(productId);
+    if (!product) {
+      throw new Error('Product not found in order');
+    }
 
     if (action === 'approve') {
-      order.user_id.wallet = (order.user_id.wallet || 0) + ret.refundAmount;
-      await order.user_id.save();
-    }
-  }
+      // Update product status
+      product.status = 'RETURNED';
+      product.return_details.status = 'APPROVED';
 
-  await order.save();
-  res.redirect('/admin/orders/' + req.params.id);
+      // Add refund amount to user wallet
+      order.user_id.wallet = (order.user_id.wallet || 0) + product.return_details.refundAmount;
+      await order.user_id.save();
+
+      // Increase product stock
+      await ProductVariation.findByIdAndUpdate(
+        product.variation._id,
+        { $inc: { stock_quantity: product.quantity } }
+      );
+
+      // Check if all products are returned
+      const allProductsReturned = order.products.every(p => p.status === 'RETURNED');
+      if (allProductsReturned) {
+        order.status = 'RETURNED';
+      }
+    } else if (action === 'reject') {
+      // If rejected, reset the product status and clear return details
+      product.status = 'DELIVERED';
+      product.return_details.status = 'REJECTED';
+    }
+
+    await order.save();
+
+    req.flash('success', `Return request ${action === 'approve' ? 'approved' : 'rejected'} successfully`);
+    res.redirect('/admin/orders/' + orderId);
+  } catch (error) {
+    console.error('Error processing return request:', error);
+    req.flash('error', error.message || 'Failed to process return request');
+    res.redirect('/admin/orders/' + req.params.id);
+  }
 };
