@@ -10,6 +10,7 @@ const userProfileRoute = require('./backend/routes/customer/profile');
 const addressRoutes = require('./backend/routes/customer/address');
 const checkoutRoutes = require('./backend/routes/customer/checkout');
 const orderRoutes = require('./backend/routes/customer/order');
+const walletRoutes = require('./backend/routes/customer/wallet');
 
 const flash = require('connect-flash');
 
@@ -60,6 +61,7 @@ app.use('/profile', userProfileRoute);
 app.use('/addresses', addressRoutes);
 app.use('/checkout', checkoutRoutes);
 app.use('/order', orderRoutes);
+app.use('/wallet', walletRoutes);
 
 
 const PORT = process.env.PORT || 5000;
