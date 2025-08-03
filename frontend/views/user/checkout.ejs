@@ -142,7 +142,7 @@
   <!-- Address Modal (shared for add/edit) -->
   <div id="addressModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); align-items:center; justify-content:center;">
     <div class="modal-dialog" style="background:#fff; border-radius:10px; max-width:420px; width:95vw; margin:auto; padding:32px 28px 24px 28px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
-      <button id="closeAddressModal" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5em; color:#888; cursor:pointer;">&times;</button>
+      <button type="button" id="closeAddressModal" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5em; color:#888; cursor:pointer;">&times;</button>
       <h3 id="addressModalTitle" style="margin-bottom:18px;">Add Address</h3>
       <form id="addressForm">
         <input type="hidden" name="addressId" id="addressId">
@@ -186,7 +186,7 @@
           <label for="addressPhone" class="form-label">Phone</label>
           <input type="text" class="form-control" id="addressPhone" name="phone_number" required pattern="[0-9]{10}">
         </div>
-        <button type="submit" class="btn btn-dark w-100" id="saveAddressBtn">Save Address</button>
+        <button type="button" class="btn btn-dark w-100" id="saveAddressBtn">Save Address</button>
       </form>
     </div>
   </div>
@@ -266,10 +266,11 @@
         document.getElementById('addressId').value = btn.getAttribute('data-address-id');
         document.getElementById('addressName').value = btn.getAttribute('data-address-name') || '';
         document.getElementById('addressLabel').value = btn.getAttribute('data-address-label') || '';
-        // Set addressType robustly
+        // Set addressType robustly and always to a valid value
         const typeVal = btn.getAttribute('data-address-type');
         const allowedTypes = ['Home', 'Work', 'Other'];
-        document.getElementById('addressType').value = allowedTypes.includes(typeVal) ? typeVal : 'Home';
+        let typeToSet = allowedTypes.includes(typeVal) ? typeVal : 'Home';
+        document.getElementById('addressType').value = typeToSet;
         document.getElementById('addressHouseNumber').value = btn.getAttribute('data-address-housenumber') || '';
         document.getElementById('addressLocality').value = btn.getAttribute('data-address-locality') || '';
         document.getElementById('addressCity').value = btn.getAttribute('data-address-city') || '';
@@ -290,6 +291,7 @@
             el.removeAttribute('disabled');
           }
         });
+        // Only show modal after all fields are set
         addressModal.style.display = 'flex';
       };
     });
@@ -300,36 +302,58 @@
     window.onclick = function(e) {
       if (e.target === addressModal) addressModal.style.display = 'none';
     };
-    // Save address (add/edit)
+    // Handle address save
+    document.querySelector('#saveAddressBtn').onclick = function(e) {
+        e.preventDefault();
+        alert('Save button clicked - if you see this, click handler is working');
+        
+        const form = document.querySelector('#addressForm');
+        const data = {
+            addressId: form.querySelector('#addressId').value,
+            name: form.querySelector('#addressName').value,
+            label: form.querySelector('#addressLabel').value,
+            type: form.querySelector('#addressType').value,
+            house_number: form.querySelector('#addressHouseNumber').value,
+            locality: form.querySelector('#addressLocality').value,
+            street: form.querySelector('#addressLocality').value,
+            city: form.querySelector('#addressCity').value,
+            state: form.querySelector('#addressState').value,
+            pincode: form.querySelector('#addressPincode').value,
+            phone_number: form.querySelector('#addressPhone').value
+        };
+
+        alert('About to send data: ' + JSON.stringify(data));
+
+        const url = data.addressId ? '/customer/address/edit' : '/customer/address/add';
+        
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                alert('Success! Reloading page...');
+                location.reload();
+            } else {
+                alert('Error: ' + (result.message || 'Failed to save'));
+            }
+        })
+        .catch(err => alert('Error: ' + err.message));
+    };
+    
+    // Prevent form from submitting normally
     addressForm.onsubmit = function(e) {
-      e.preventDefault();
-      console.log('Address form submit handler called');
-      const formData = new FormData(addressForm);
-      const data = Object.fromEntries(formData.entries());
-      console.log('Form data:', data);
-      const url = data.addressId ? '/customer/address/edit' : '/customer/address/add';
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      .then(res => res.json())
-      .then(resp => {
-        console.log('API response:', resp);
-        if (resp.success) {
-          addressModal.style.display = 'none';
-          location.reload();
-        } else {
-          alert(resp.message || 'Failed to save address');
-        }
-      });
+        e.preventDefault();
+        return false;
     };
 
     // Place order logic
     document.getElementById('placeOrder').addEventListener('click', () => {
       const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
       if (!selectedAddress) return alert('Please select a delivery address.');
-      fetch('/customer/checkout/place-order', {
+      fetch('/order/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ addressId: selectedAddress.value })
@@ -337,7 +361,7 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          window.location.href = `/order-success?orderId=${data.orderId}`;
+          window.location.href = `/order/order-success/${data.orderId}`;
         } else {
           alert(data.message || 'Failed to place order');
         }

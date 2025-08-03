@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
+  order_number: {
+    type: String,
+    unique: true,
+    required: true
+  },
   user_id: {
     type: Schema.Types.ObjectId,
     ref: 'user',
@@ -17,6 +22,11 @@ const orderSchema = new Schema({
       name: String,
       quantity: Number,
       price: Number,
+      original_price: Number,
+      discount_percentage: Number,
+      color: String,
+      size: String,
+      images: [String],
       status: {
         type: String,
         enum: ['Ordered', 'Cancelled'],
@@ -56,7 +66,41 @@ const orderSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  delivered_at: Date
+  delivered_at: Date,
+  subtotal: {
+    type: Number,
+    required: true
+  },
+  tax: {
+    type: Number,
+    required: true
+  },
+  shipping_address: new Schema({
+    name: { type: String, required: true },
+    label: { type: String },
+    type: { type: String, enum: ['HOME', 'WORK', 'OTHER'] },
+    house_number: { type: String },
+    street: { type: String },
+    locality: { type: String },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    pincode: { type: String, required: true },
+    phone_number: { type: String, required: true }
+  }, { _id: false }),
+  payment_method: {
+    type: String,
+    enum: ['UPI', 'DEBIT', 'CREDIT', 'COD', 'WALLET'],
+    required: true
+  },
+  payment_status: {
+    type: String,
+    enum: ['PENDING', 'COMPLETED', 'FAILED'],
+    default: 'PENDING'
+  },
+  transaction_id: String,
+  estimated_delivery_date: Date,
+  shipping_tracking_number: String,
+  notes: String
 }, {
   timestamps: true
 });

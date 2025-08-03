@@ -1,8 +1,7 @@
 const userModel = require("../../models/userModel");
-const Product = require("../../models/productModel");
-const ProductVariation = require("../../models/productVariationModel");
 const Address = require("../../models/addressModel");
 const Cart = require("../../models/cartModel");
+
 
 const checkout = async (req, res) => {
   const userId = req.session.userId;
@@ -59,70 +58,7 @@ const checkout = async (req, res) => {
   });
 };
 
-const placeOrder = async (req, res) => {
-  const { addressId } = req.body;
-  const userId = req.user._id;
-
-  // Get cart items with product_variation_id
-  const cartItems = await Cart.find({ user: userId }).populate(
-    "product_variation_id"
-  );
-  const decrementedVariations = [];
-  // Try to atomically decrement stock for each item
-  for (const item of cartItems) {
-    const variation = item.product_variation_id;
-    if (!variation) {
-      // Rollback any previous decrements
-      for (const rollback of decrementedVariations) {
-        await ProductVariation.findByIdAndUpdate(rollback.variationId, {
-          $inc: { stock_quantity: rollback.qty },
-        });
-      }
-      return res.json({
-        success: false,
-        message: "Product variation not found.",
-      });
-    }
-    const updated = await ProductVariation.findOneAndUpdate(
-      { _id: variation._id, stock_quantity: { $gte: item.quantity } },
-      { $inc: { stock_quantity: -item.quantity } },
-      { new: true }
-    );
-    if (!updated) {
-      // Rollback any previous decrements
-      for (const rollback of decrementedVariations) {
-        await ProductVariation.findByIdAndUpdate(rollback.variationId, {
-          $inc: { stock_quantity: rollback.qty },
-        });
-      }
-      return res.json({
-        success: false,
-        message: `Insufficient stock for ${variation.product_id.name}`,
-      });
-    }
-    decrementedVariations.push({
-      variationId: variation._id,
-      qty: item.quantity,
-    });
-  }
-  // Prepare order items
-  const orderItems = cartItems.map((item) => ({
-    product: item.product_variation_id.product_id._id,
-    quantity: item.quantity,
-    price: item.product_variation_id.product_id.price,
-  }));
-  const order = new Order({
-    user: userId,
-    address: addressId,
-    items: orderItems,
-    paymentMethod: "COD",
-  });
-  await order.save();
-  await Cart.deleteMany({ user: userId });
-  res.json({ success: true, orderId: order._id });
-};
 
 module.exports = {
   checkout,
-  placeOrder,
 };

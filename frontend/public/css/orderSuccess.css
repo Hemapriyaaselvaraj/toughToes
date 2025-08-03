@@ -1,0 +1,268 @@
+.success-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    margin-top: 80px;
+}
+
+.success-icon {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.success-icon svg {
+    width: 64px;
+    height: 64px;
+    color: #4CAF50;
+}
+
+.success-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.success-message {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+}
+
+.order-details {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.order-number {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.order-items {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.order-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.order-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-right: 20px;
+    border-radius: 4px;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-details h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+}
+
+.item-details p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.item-price {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.order-summary {
+    padding-top: 20px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.summary-row.total {
+    font-weight: bold;
+    font-size: 18px;
+    color: #000;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.shipping-payment-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.shipping-info, .payment-info {
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.shipping-info h3, .payment-info h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+}
+
+.shipping-info p, .payment-info p {
+    margin: 0 0 8px 0;
+    color: #666;
+}
+
+.delivery-estimate {
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.delivery-estimate h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+}
+
+.delivery-estimate p {
+    margin: 0;
+    color: #666;
+}
+
+.delivery-note {
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    justify-content: center;
+}
+
+.primary-button, .secondary-button {
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.primary-button {
+    background: #000;
+    color: #fff;
+}
+
+.secondary-button {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+}
+
+.support-section {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.support-section p {
+    margin: 0 0 8px 0;
+    color: #666;
+}
+
+.support-links {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    align-items: center;
+}
+
+.support-links a {
+    color: #000;
+    text-decoration: none;
+}
+
+.support-links a:hover {
+    text-decoration: underline;
+}
+
+.separator {
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .shipping-payment-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .order-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .order-item img {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .support-links {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .separator {
+        display: none;
+    }
+}
+
+@media print {
+    .navbar,
+    .action-buttons,
+    .support-section {
+        display: none !important;
+    }
+    
+    .success-container {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0;
+    }
+    
+    .order-details,
+    .shipping-payment-info > div,
+    .delivery-estimate {
+        box-shadow: none;
+        border: 1px solid #eee;
+    }
+}

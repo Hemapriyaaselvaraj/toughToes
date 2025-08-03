@@ -18,9 +18,9 @@ Cart management (Add to cart, list products in cart, remove products from cart)
 -> ~~Out-of-stock products should be displayed as disabled and ensure they cannot be moved to checkout upon proceeding.~~
 
 -> Checkout page
--> Display user-added addresses.
+-> ~~Display user-added addresses.~~
 -> Provide an option to add a new address and edit existing addresses.
--> Ensure one address is selected as the default.
+-> ~~Ensure one address is selected as the default.~~
 -> Display products moved to checkout with:
 	- Product image
 	- Quantity
