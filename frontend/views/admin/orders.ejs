@@ -81,7 +81,7 @@
                           <span class="status <%= order.status.toLowerCase() %>"><%= order.status %></span>
                         </td>
                         <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
-                        <td>Rs. <%= order.total %></td>
+                        <td>₹ <%= order.total %></td>
                         <td class="order-actions">
                           <a href="/admin/orders/<%= order._id %>" class="view-btn">View</a>
                         </td>

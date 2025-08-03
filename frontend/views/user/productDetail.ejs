@@ -193,9 +193,9 @@ main.product-page {
       <div class="product-info">
         <h1><%= product.name %></h1>
         <p class="category"><%= product.product_category %> | <%= product.product_type %></p>
-        <p class="price">Rs. <%= (product.price * (1 - (product.discount_percentage || 0) / 100)).toLocaleString() %></p>
+        <p class="price">₹ <%= (product.price * (1 - (product.discount_percentage || 0) / 100)).toLocaleString() %></p>
         <% if (product.discount_percentage && product.discount_percentage > 0) { %>
-          <span class="product-original-price">Rs. <%= product.price.toLocaleString() %></span>
+          <span class="product-original-price">₹ <%= product.price.toLocaleString() %></span>
           <span class="product-discount">(<%= Math.round(product.discount_percentage) %>% OFF)</span>
         <% } %>
 
@@ -242,7 +242,7 @@ main.product-page {
         <% } %>
 
         <div class="features">
-          <p>🚚 Free shipping on orders over Rs. 1000</p>
+          <p>🚚 Free shipping on orders over ₹ 1000</p>
           <p>↩️ 30-day return policy</p>
           <p>🛡️ 1-year warranty</p>
         </div>
@@ -288,11 +288,11 @@ main.product-page {
                   <div class="product-meta"><%= product.product_type %></div>
                   <div class="product-price-row" style="align-items:center; gap:6px; flex-wrap:wrap;">
                     <% if (product.discount_percentage && product.discount_percentage > 0) { %>
-                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= (product.price * (1 - product.discount_percentage / 100)).toLocaleString() %></span>
-                      <span class="product-original-price" style="font-size:0.93rem;">Rs. <%= product.price.toLocaleString() %></span>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">₹ <%= (product.price * (1 - product.discount_percentage / 100)).toLocaleString() %></span>
+                      <span class="product-original-price" style="font-size:0.93rem;">₹ <%= product.price.toLocaleString() %></span>
                       <span class="product-discount" style="font-size:0.93rem;">(<%= Math.round(product.discount_percentage) %>% OFF)</span>
                     <% } else { %>
-                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= product.price.toLocaleString() %></span>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">₹ <%= product.price.toLocaleString() %></span>
                     <% } %>
                   </div>
                 </div>

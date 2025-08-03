@@ -24,7 +24,7 @@
         <div class="mb-4">
           <p><strong>Status:</strong> <%= order.status %></p>
           <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
-          <p><strong>Total:</strong> Rs. <%= order.total %></p>
+          <p><strong>Total:</strong> ₹ <%= order.total %></p>
           <a href="/admin/orders/<%= order._id %>/invoice" class="btn btn-outline-primary btn-sm">Download Invoice</a>
         </div>
 
@@ -56,7 +56,7 @@
               <tr>
                 <td><%= p.name %></td>
                 <td><%= p.quantity %></td>
-                <td>Rs. <%= p.price %></td>
+                <td>₹ <%= p.price %></td>
                 <td>
                   <% if (order.status === 'Placed' || order.status === 'Processing') { %>
                     <button class="btn btn-danger btn-sm" onclick="openCancelModal('<%= p._id %>')">Cancel</button>

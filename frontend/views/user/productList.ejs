@@ -125,11 +125,11 @@
                   <div class="product-meta"><%= product.product_type %></div>
                   <div class="product-price-row" style="align-items:center; gap:6px; flex-wrap:wrap;">
                     <% if (product.discount_percentage && product.discount_percentage > 0) { %>
-                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= (product.price * (1 - product.discount_percentage / 100)).toLocaleString() %></span>
-                      <span class="product-original-price" style="font-size:0.93rem;">Rs. <%= product.price.toLocaleString() %></span>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">₹ <%= (product.price * (1 - product.discount_percentage / 100)).toLocaleString() %></span>
+                      <span class="product-original-price" style="font-size:0.93rem;">₹ <%= product.price.toLocaleString() %></span>
                       <span class="product-discount" style="font-size:0.93rem;">(<%= Math.round(product.discount_percentage) %>% OFF)</span>
                     <% } else { %>
-                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">Rs. <%= product.price.toLocaleString() %></span>
+                      <span class="product-price" style="font-size:0.98rem; font-weight:600;">₹ <%= product.price.toLocaleString() %></span>
                     <% } %>
                   </div>
                 </div>

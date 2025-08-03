@@ -32,7 +32,7 @@
             <div class="wishlist-item-details">
               <h3 class="wishlist-item-name"><%= item.name %></h3>
               <p class="wishlist-item-info">Category: <%= item.category %></p>
-              <div class="wishlist-item-price">$<%= item.price ? item.price.toFixed(2) : 'N/A' %></div>
+              <div class="wishlist-item-price">₹<%= item.price ? item.price.toFixed(2) : 'N/A' %></div>
               <div class="wishlist-item-actions">
                 <% if (item.stock === 0) { %>
                   <button class="add-to-cart-btn" wishlist-entry-id="<%= item._id %>" disabled>Out of Stock</button>

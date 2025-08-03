@@ -128,10 +128,10 @@ exports.downloadInvoice = async (req, res) => {
 
   doc.moveDown();
   order.products.forEach(p => {
-    doc.text(`${p.name} x ${p.quantity} - Rs. ${p.price}`);
+    doc.text(`${p.name} x ${p.quantity} - ₹ ${p.price}`);
   });
 
-  doc.text(`\nTotal: Rs. ${order.total}`);
+  doc.text(`\nTotal: ₹ ${order.total}`);
   doc.end();
 };
 

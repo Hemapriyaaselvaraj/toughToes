@@ -36,7 +36,7 @@
                             <p>Size: <%= item.size %> | Color: <%= item.color %></p>
                             <p>Quantity: <%= item.quantity %></p>
                         </div>
-                        <div class="item-price">$<%= item.price.toFixed(2) %></div>
+                        <div class="item-price">₹<%= item.price.toFixed(2) %></div>
                     </div>
                 <% }); %>
             </div>
@@ -44,19 +44,19 @@
             <div class="order-summary">
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span>$<%= order.subtotal.toFixed(2) %></span>
+                    <span>₹<%= order.subtotal.toFixed(2) %></span>
                 </div>
                 <div class="summary-row">
                     <span>Shipping</span>
-                    <span>$<%= order.shipping.toFixed(2) %></span>
+                    <span>₹<%= order.shipping.toFixed(2) %></span>
                 </div>
                 <div class="summary-row">
                     <span>Tax</span>
-                    <span>$<%= order.tax.toFixed(2) %></span>
+                    <span>₹<%= order.tax.toFixed(2) %></span>
                 </div>
                 <div class="summary-row total">
                     <span>Total</span>
-                    <span>$<%= order.total.toFixed(2) %></span>
+                    <span>₹<%= order.total.toFixed(2) %></span>
                 </div>
             </div>
         </div>
@@ -76,7 +76,7 @@
             <div class="payment-info">
                 <h3>Payment Method</h3>
                 <p>Visa ending in <%= order.paymentDetails.last4 %></p>
-                <p>Charged: $<%= order.total.toFixed(2) %></p>
+                <p>Charged: ₹<%= order.total.toFixed(2) %></p>
             </div>
         </div>
 
