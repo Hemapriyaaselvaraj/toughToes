@@ -29,14 +29,14 @@ const orderSchema = new Schema({
       images: [String],
       status: {
         type: String,
-        enum: ['Ordered', 'Cancelled'],
-        default: 'Ordered'
+    enum: ['ORDERED', 'SHIPPED', 'OUT_FOR_DELIVERY' , 'DELIVERED', 'RETURNED', 'CANCELLED'],
+    default: 'ORDERED'
       }
     }
   ],
   status: {
     type: String,
-    enum: ['ORDERED', 'SHIPPED', 'DELIVERED', 'RETURNED', 'CANCELLED'],
+    enum: ['ORDERED', 'SHIPPED', 'OUT_FOR_DELIVERY' , 'DELIVERED', 'RETURNED', 'CANCELLED'],
     default: 'ORDERED'
   },
   returns: [

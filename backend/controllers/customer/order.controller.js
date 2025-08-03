@@ -122,7 +122,7 @@ const placeOrder = async (req, res) => {
         color: variation.product_color,
         size: variation.product_size,
         images: variation.images,
-        status: 'Ordered'
+        status: 'ORDERED'
       });
 
       // Prepare stock update
@@ -278,8 +278,164 @@ const getOrderSuccess = async (req, res) => {
   }
 };
 
+const getOrderDetails = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const userId = req.session.userId;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      user_id: userId
+    }).lean();
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const user = await userModel.findById(userId);
+
+    // Format the order data for the template
+    const formattedOrder = {
+      _id: order._id,
+      orderNumber: order.order_number,
+      status: order.status,
+      createdAt: order.createdAt,
+      estimatedDelivery: order.estimated_delivery_date,
+      paymentMethod: order.payment_method,
+      paymentStatus: order.payment_status,
+      shippingAddress: order.shipping_address,
+      items: order.products.map(item => ({
+        _id: item._id,
+        name: item.name,
+        image: item.images[0],
+        price: Math.round(item.price),
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        status: item.status || order.status, // Use order status if item status is not set
+        return_details: item.return_details
+      })),
+      subtotal: Math.round(order.subtotal),
+      shipping_charge: order.shipping_charge,
+      tax: Math.round(order.tax),
+      total: Math.round(order.total)
+    };
+
+
+    res.render('user/orderDetails', {
+      order: formattedOrder,
+      user: user
+    });
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    res.status(500).json({ error: 'Failed to fetch order details' });
+  }
+};
+
+const cancelOrder = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const userId = req.session.userId;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      user_id: userId
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'].includes(order.status)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Order cannot be cancelled in its current status' 
+      });
+    }
+
+    // Update order status and all products status
+    order.status = 'CANCELLED';
+    
+    // Update status for all products in the order
+    order.products.forEach(item => {
+      item.status = 'CANCELLED';
+    });
+
+    // Return items to inventory
+    const stockUpdates = order.products.map(item => ({
+      updateOne: {
+        filter: { _id: item.variation },
+        update: { $inc: { stock_quantity: item.quantity } }
+      }
+    }));
+
+    await ProductVariation.bulkWrite(stockUpdates);
+    await order.save();
+
+    res.json({ success: true, message: 'Order cancelled successfully' });
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel order' });
+  }
+};
+
+const requestReturn = async (req, res) => {
+  try {
+    const { orderId, itemId, reason, comments } = req.body;
+    const userId = req.session.userId;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      user_id: userId
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (order.status !== 'DELIVERED') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Return can only be requested for delivered orders' 
+      });
+    }
+
+    // Find the specific item in the order
+    const item = order.products.id(itemId);
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Item not found in order' });
+    }
+
+    if (item.status === 'RETURN_REQUESTED' || item.status === 'RETURNED') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Return already requested or processed for this item' 
+      });
+    }
+
+    // Update item status and add return details
+    item.status = 'RETURN_REQUESTED';
+    item.return_details = {
+      reason: reason,
+      comments: comments,
+      requested_at: new Date(),
+      status: 'PENDING',
+    };
+
+    await order.save();
+
+    res.json({ success: true, message: 'Return request submitted successfully' });
+  } catch (error) {
+    console.error('Error requesting return:', error);
+    res.status(500).json({ success: false, message: 'Failed to request return' });
+  }
+};
+
 module.exports = {
     placeOrder,
     getUserOrders,
-    getOrderSuccess
+    getOrderSuccess,
+    getOrderDetails,
+    cancelOrder,
+    requestReturn
 };

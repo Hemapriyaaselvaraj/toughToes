@@ -43,11 +43,11 @@
 
               <select id="statusFilter" class="form-select">
                 <option value="">All Status</option>
-                <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                <option value="Shipped" <%= status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                <option value="Out for Delivery" <%= status === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
-                <option value="Delivered" <%= status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                <option value="Cancelled" <%= status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                <option value="ORDERED" <%= status === 'ORDERED' ? 'selected' : '' %>>Ordered</option>
+                <option value="SHIPPED" <%= status === 'SHIPPED' ? 'selected' : '' %>>Shipped</option>
+                <option value="OUT_FOR_DELIVERY" <%= status === 'OUT_FOR_DELIVERY' ? 'selected' : '' %>>Out for Delivery</option>
+                <option value="DELIVERED" <%= status === 'DELIVERED' ? 'selected' : '' %>>Delivered</option>
+                <option value="CANCELLED" <%= status === 'CANCELLED' ? 'selected' : '' %>>Cancelled</option>
               </select>
 
               <select id="sortOrder" class="form-select">

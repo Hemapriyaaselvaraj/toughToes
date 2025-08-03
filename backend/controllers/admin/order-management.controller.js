@@ -78,7 +78,7 @@ exports.cancelOrder = async (req, res) => {
       const variation = await ProductVariation.findById(item.variation._id);
       variation.stock_quantity += item.quantity;
       await variation.save();
-      item.status = 'Cancelled';
+      item.status = 'CANCELLED';
     }
   } else {
     const item = order.products.find(p => p._id.toString() === productId);
@@ -86,7 +86,7 @@ exports.cancelOrder = async (req, res) => {
       const variation = await ProductVariation.findById(item.variation);
       variation.stock_quantity += item.quantity;
       await variation.save();
-      item.status = 'Cancelled';
+      item.status = 'CANCELLED';
     }
   }
 
@@ -143,9 +143,27 @@ exports.downloadInvoice = async (req, res) => {
 
 // POST update order status
 exports.updateOrderStatus = async (req, res) => {
-  const { status } = req.body;
-  await Order.findByIdAndUpdate(req.params.id, { status });
-  res.redirect('/admin/orders/' + req.params.id);
+  try {
+    const { status } = req.body;
+    const orderId = req.params.id;
+
+    // Update both order status and all products status
+    await Order.findByIdAndUpdate(
+      orderId,
+      {
+        $set: {
+          status: status,
+          'products.$[].status': status // This updates status for all products in the array
+        }
+      },
+      { new: true } // Return the updated document
+    );
+
+    res.redirect('/admin/orders/' + orderId);
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ success: false, message: 'Failed to update order status' });
+  }
 };
 
 // POST verify return request
