@@ -3,7 +3,6 @@ const Order = require('../../models/orderModel');
 const PDFDocument = require('pdfkit');
 const ProductVariation = require('../../models/productVariationModel');
 
-
 const ITEMS_PER_PAGE = 5;
 
 exports.getOrderList = async (req, res) => {
@@ -15,25 +14,28 @@ exports.getOrderList = async (req, res) => {
     const filter = {};
 
     if (search) {
-      filter._id = { $regex: search, $options: 'i' };
+      filter.order_number = { $regex: search, $options: 'i' };
     }
 
     if (status) {
       filter.status = status;
     }
 
-    console.log('Filter:', filter);
-
     const totalOrders = await Order.countDocuments(filter);
-    console.log('Total Orders:', totalOrders);
 
-    const orders = await Order.find(filter)
+    let orders = await Order.find(filter)
       .populate('user_id')
-      .sort({ created_at: sort === 'asc' ? 1 : -1 })
+      .sort({ ordered_at: sort === 'asc' ? 1 : -1 })
       .skip((page - 1) * ITEMS_PER_PAGE)
       .limit(ITEMS_PER_PAGE);
 
-    console.log('Orders:', orders.length);
+    orders = orders.map(order => {
+      order.total = Math.round(order.total);
+      order.subtotal = Math.round(order.subtotal);
+
+      return order;
+    });
+
 
     res.render('admin/orders', {
       orders,
@@ -47,18 +49,22 @@ exports.getOrderList = async (req, res) => {
 
   } catch (err) {
     console.error('Error loading orders:', err);
-res.status(500).send('Server error: ' + err.message);
+    res.status(500).send('Server error: ' + err.message);
   }
 };
 
 
 // GET order detail page
 exports.getOrderDetail = async (req, res) => {
+  const user = await User.findById(req.session.userId);
+  const displayName = user ? user.firstName + " " + user.lastName : "";
+  
   const order = await Order.findById(req.params.id)
     .populate('products.variation')
     .populate('returns.product')
     .populate('user_id');
-  res.render('admin/orderDetail', { order, name: req.admin.name });
+
+  res.render('admin/order-details', { order, name: displayName });
 };
 
 // POST cancel full order or specific product

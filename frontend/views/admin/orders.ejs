@@ -45,6 +45,7 @@
                 <option value="">All Status</option>
                 <option value="Pending" <%= status === 'Pending' ? 'selected' : '' %>>Pending</option>
                 <option value="Shipped" <%= status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                <option value="Out for Delivery" <%= status === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
                 <option value="Delivered" <%= status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                 <option value="Cancelled" <%= status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
               </select>
@@ -75,8 +76,8 @@
                   <% if (orders && orders.length > 0) { %>
                     <% orders.forEach(order => { %>
                       <tr>
-                        <td><%= order.orderId %></td>
-                        <td><%= order.user ? order.user.name : 'N/A' %> (<%= order.user ? order.user.email : 'N/A' %>)</td>
+                        <td><%= order.order_number %></td>
+                        <td><%= order.user_id ? order.user_id.firstName : 'N/A' %> (<%= order.user_id ? order.user_id.email : 'N/A' %>)</td>
                         <td>
                           <span class="status <%= order.status.toLowerCase() %>"><%= order.status %></span>
                         </td>
