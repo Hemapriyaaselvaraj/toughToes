@@ -76,8 +76,8 @@ const placeOrder = async (req, res) => {
         price: price,
         original_price: original_price,
         discount_percentage: discount_percentage,
-        color: variation.color,
-        size: variation.size,
+        color: variation.product_color,
+        size: variation.product_size,
         images: variation.images,
         status: 'Ordered'
       });
@@ -223,6 +223,7 @@ const getOrderSuccess = async (req, res) => {
         year: 'numeric'
       })
     };
+
 
     res.render('user/orderSuccess', { 
       order: orderData,
