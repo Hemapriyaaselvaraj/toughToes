@@ -10,14 +10,14 @@
   <link rel="stylesheet" href="/css/home.css">
   <link rel="stylesheet" href="/css/wishlist.css">
 
-  <!-- SweetAlert2 -->
+  
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
   <%- include('../partials/user-navbar', { name: name }) %>
 
 
-  <!-- Wishlist Section -->
+  
   <div class="wishlist-container">
     <div class="wishlist-header">
       <h1>My Wishlist</h1>
@@ -53,7 +53,7 @@
   </div>
 
   <script>
-    // Remove from Wishlist
+    
     document.querySelectorAll('.remove-wishlist-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         const wishlistId = this.getAttribute('wishlist-entry-id');
@@ -87,7 +87,7 @@
       });
     });
 
-    // Add to Cart from Wishlist
+    
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         if (this.disabled) return;
@@ -157,7 +157,7 @@
     </div>
   </div>
 
-  <!-- Footer -->
+  
   <footer class="bg-dark text-white py-4 mt-5">
     <div class="container d-flex justify-content-between flex-wrap">
       <div>

@@ -40,26 +40,12 @@ router.put('/products/color/:id', productController.updateColor);
 router.delete('/products/color/:id', productController.deleteColor);
 
 router.get('/orders', adminOrderController.getOrderList);
-
-// GET order detail page
 router.get('/orders/:id', adminOrderController.getOrderDetail);
-
-// POST cancel full order or specific product
 router.post('/orders/:id/cancel', adminOrderController.cancelOrder);
-
-// POST return a product
 router.post('/orders/:id/return', adminOrderController.returnProduct);
-
-// GET download invoice as PDF
 router.get('/orders/:id/invoice', adminOrderController.downloadInvoice);
-
-// POST change order status
 router.post('/orders/:id/status', adminOrderController.updateOrderStatus);
-
-// POST verify return request (approve or reject)
 router.post('/orders/:id/return/verify', adminOrderController.verifyReturn);
-
-
 
 
 

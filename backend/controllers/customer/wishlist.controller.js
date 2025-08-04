@@ -1,5 +1,8 @@
 const Cart = require('../../models/cartModel');
-// POST /wishlist/move-to-cart
+const Wishlist = require('../../models/wishlistModel');
+const ProductVariation = require('../../models/productVariationModel');
+const User = require('../../models/userModel');
+
 exports.moveToCart = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
@@ -9,7 +12,7 @@ exports.moveToCart = async (req, res) => {
     if (!wishlistId) {
       return res.status(400).json({ success: false, message: 'Missing wishlistId' });
     }
-    // Find wishlist entry
+    
     const entry = await Wishlist.findOne({ _id: wishlistId, user_id: req.session.userId }).populate('variation_id');
     if (!entry) {
       return res.status(404).json({ success: false, message: 'Wishlist item not found' });
@@ -18,11 +21,11 @@ exports.moveToCart = async (req, res) => {
     if (!variation) {
       return res.status(404).json({ success: false, message: 'Product variation not found' });
     }
-    // Check stock
+    
     if (variation.stock_quantity < 1) {
       return res.status(400).json({ success: false, message: 'Out of stock' });
     }
-    // Add to cart (if not already in cart, else increment)
+    
     let cartItem = await Cart.findOne({ user_id: req.session.userId, product_variation_id: variation._id });
     if (cartItem) {
       cartItem.quantity += 1;
@@ -31,10 +34,10 @@ exports.moveToCart = async (req, res) => {
     } else {
       await Cart.create({ user_id: req.session.userId, product_variation_id: variation._id, quantity: 1 });
     }
-    // Decrement stock
+    
     variation.stock_quantity -= 1;
     await variation.save();
-    // Remove from wishlist
+    
     await Wishlist.deleteOne({ _id: wishlistId, user_id: req.session.userId });
     res.status(200).json({ success: true, message: 'Moved to cart' });
   } catch (err) {
@@ -42,27 +45,24 @@ exports.moveToCart = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
-const Wishlist = require('../../models/wishlistModel');
-const ProductVariation = require('../../models/productVariationModel');
-const User = require('../../models/userModel');
 
-// GET /wishlist
+
 exports.getWishlist = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
       return res.redirect('/login');
     }
 
-    // Find all wishlist entries for this user and populate both product and variation details
+    
     const wishlistEntries = await Wishlist.find({ user_id: req.session.userId })
       .populate('product_id')
       .populate('variation_id');
 
-    // Fetch user name
+    
     const user = await User.findById(req.session.userId);
     const displayName = user ? (user.firstName + ' ' + user.lastName) : '';
 
-    // Process each wishlist item with its specific variation
+    
     const items = wishlistEntries.map(entry => ({
       name: entry.product_id.name,
       category: entry.product_id.product_category,
@@ -89,7 +89,7 @@ exports.getWishlist = async (req, res) => {
   }
 };
 
-// POST /wishlist/remove
+
 exports.removeFromWishlist = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
@@ -107,7 +107,7 @@ exports.removeFromWishlist = async (req, res) => {
   }
 };
 
-// POST /wishlist/add
+
 exports.addToWishlist = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
@@ -115,7 +115,7 @@ exports.addToWishlist = async (req, res) => {
     }
     const { productId, variationId, size, color } = req.body;
     
-    // Validate required fields
+    
     if (!productId || !variationId || !size || !color) {
       return res.status(400).json({ 
         success: false, 
@@ -123,7 +123,7 @@ exports.addToWishlist = async (req, res) => {
       });
     }
 
-    // Check if already in wishlist (checking both product and variation)
+  
     const exists = await Wishlist.findOne({ 
       user_id: req.session.userId, 
       product_id: productId,
@@ -134,7 +134,7 @@ exports.addToWishlist = async (req, res) => {
       return res.status(200).json({ success: true, message: 'Already in wishlist' });
     }
 
-    // Verify that the variation exists and matches the size and color
+    
     const variation = await ProductVariation.findById(variationId);
     if (!variation || variation.product_size !== size || variation.product_color !== color) {
       return res.status(400).json({ 
@@ -143,7 +143,7 @@ exports.addToWishlist = async (req, res) => {
       });
     }
 
-    // Add to wishlist with all details
+    
     await Wishlist.create({ 
       user_id: req.session.userId, 
       product_id: productId,

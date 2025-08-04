@@ -1,8 +1,6 @@
-// User profile controller
 const userModel = require('../../models/userModel');
 const Address = require('../../models/addressModel');
 
-// GET /profile
 exports.getProfile = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
@@ -11,7 +9,6 @@ exports.getProfile = async (req, res) => {
     const user = await userModel.findById(req.session.userId).lean();
     if (!user) return res.redirect('/login');
     
-    // Get default address
     const defaultAddress = await Address.findOne({ 
       user_id: req.session.userId,
       isDefault: true 
@@ -27,7 +24,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// POST /profile (for saving changes)
+
 exports.updateProfile = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
@@ -45,7 +42,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// Handle profile image upload
+
 exports.updateProfileImage = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
@@ -56,10 +53,10 @@ exports.updateProfileImage = async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    // The file path where the image was saved
+  
     const imageUrl = `/uploads/${req.file.filename}`;
 
-    // Update user's profile image in database
+  
     await userModel.findByIdAndUpdate(req.session.userId, {
       profileImage: imageUrl
     });

@@ -1,6 +1,5 @@
 const userModel = require('../../models/userModel');
 
-// GET /profile/edit
 exports.getEditProfile = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {
@@ -14,7 +13,6 @@ exports.getEditProfile = async (req, res) => {
   }
 };
 
-// POST /profile/edit
 exports.postEditProfile = async (req, res) => {
   try {
     if (!req.session || !req.session.userId) {

@@ -5,7 +5,6 @@ const path = require('path');
 const profileController = require('../../controllers/customer/profile.controller');
 const editProfileController = require('../../controllers/customer/editProfile.controller');
 
-// Configure multer for image upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, '../../../frontend/public/uploads/'));
@@ -19,7 +18,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 5 * 1024 * 1024 
   },
   fileFilter: function (req, file, cb) {
     const filetypes = /jpeg|jpg|png/;
@@ -29,17 +28,10 @@ const upload = multer({
     cb(new Error('Only image files are allowed!'));
   }
 });
-// Edit profile page
 router.get('/edit', editProfileController.getEditProfile);
 router.post('/edit', editProfileController.postEditProfile);
-
-// GET profile page
 router.get('/', profileController.getProfile);
-
-// POST profile update
 router.post('/', profileController.updateProfile);
-
-// POST profile image update
 router.post('/update-image', upload.single('profileImage'), profileController.updateProfileImage);
 
 module.exports = router;

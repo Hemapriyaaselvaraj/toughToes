@@ -10,37 +10,30 @@ exports.downloadInvoice = async (req, res) => {
             return res.status(404).send('Order not found');
         }
 
-        // Check if order belongs to the logged-in user
         if (order.user_id._id.toString() !== req.session.userId) {
             return res.status(403).send('Unauthorized');
         }
 
-        // Create PDF document
         const doc = new PDFDocument();
         
-        // Set response headers
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.orderNumber}.pdf`);
         
         doc.pipe(res);
 
-        // Add company logo/header
         doc.fontSize(20).text('ToughToes', { align: 'center' });
         doc.fontSize(12).text('Premium shoes for every step of your journey', { align: 'center' });
         doc.moveDown();
 
-        // Invoice details
         doc.fontSize(16).text('Tax Invoice', { align: 'center' });
         doc.moveDown();
 
-        // Order information
         doc.fontSize(10)
            .text(`Invoice No: ${order.orderNumber}`)
            .text(`Order Date: ${new Date(order.createdAt).toLocaleDateString()}`)
            .text(`Payment Method: ${order.paymentMethod}`)
            .moveDown();
 
-        // Customer details
         doc.fontSize(12).text('Bill To:');
         doc.fontSize(10)
            .text(order.user_id.firstName + ' ' + order.user_id.lastName)
@@ -51,7 +44,6 @@ exports.downloadInvoice = async (req, res) => {
            .text('Phone: ' + order.shipping_address.phone_number)
            .moveDown();
 
-        // Items table
         const tableTop = doc.y;
         const itemCodeX = 50;
         const descriptionX = 100;
@@ -59,7 +51,6 @@ exports.downloadInvoice = async (req, res) => {
         const priceX = 400;
         const amountX = 500;
 
-        // Table headers
         doc.fontSize(10)
            .text('No.', itemCodeX, tableTop)
            .text('Description', descriptionX, tableTop)
@@ -80,7 +71,6 @@ exports.downloadInvoice = async (req, res) => {
         doc.moveDown();
         position = position + 40;
 
-        // Summary
         doc.text('Subtotal:', 400, position);
         doc.text(order.subtotal.toString(), amountX, position);
         
@@ -97,7 +87,6 @@ exports.downloadInvoice = async (req, res) => {
            .text('Total:', 400, position)
            .text(order.total.toString(), amountX, position);
 
-        // Footer
         doc.fontSize(10)
            .moveDown()
            .moveDown()

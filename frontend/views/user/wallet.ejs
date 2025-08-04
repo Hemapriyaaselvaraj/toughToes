@@ -12,9 +12,9 @@
 <body>
   <%- include('../partials/user-navbar', { name: name }) %>
 
-  <!-- Main Content -->
+
   <div class="container my-5 d-flex">
-    <!-- Sidebar -->
+    
     <div class="sidebar p-3 me-4 border rounded">
       <ul class="list-unstyled">
         <li><a href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
@@ -31,17 +31,15 @@
         </li>
       </ul>
     </div>
-
-    <!-- Wallet Content -->
     <div class="flex-grow-1">
-      <!-- Wallet Section -->
+      
       <div class="mb-4">
         <h5 class="mb-3">Wallet Balance</h5>
         <h3 class="mb-2">₹ <%= user.wallet ? user.wallet.toFixed(2) : '0.00' %></h3>
         <p class="text-muted small">Available funds in your wallet</p>
       </div>
 
-      <!-- Recent Transactions -->
+    
       <div class="mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">Recent Transactions</h5>

@@ -2,26 +2,26 @@ const express = require('express')
 const router = express.Router();
 const userController = require('../controllers/user/user.controller');
 const editProfileController = require('../controllers/customer/editProfile.controller');
+const passport = require('../config/passport');
+const { isNotLogin, isCustomerAccessible } = require('../middlewares/auth');
 
 
-// GET verifyotp page for email change
+
 router.get('/verifyotp', (req, res) => {
   const email = req.query.email || '';
   res.render('user/verifyOtp', { error: null, email });
 });
 
-// Profile edit routes
+
 router.get('/profile/edit', editProfileController.getEditProfile);
 router.post('/profile/edit', editProfileController.postEditProfile);
-const passport = require('../config/passport');
-const { isNotLogin, isCustomerAccessible } = require('../middlewares/auth');
+
 
 router.get('/login', isNotLogin,userController.viewLogin);
 router.post('/login',userController.login);
 router.get('/login/forgotPassword', isNotLogin ,userController.forgotPassword)
 router.post('/login/sendOtp', userController.sendOtp)
 
-// Email change OTP
 router.post('/request-email-otp', userController.requestEmailOtp)
 router.post('/verify-email-otp', userController.verifyEmailOtp)
 router.post('/verifyOtp', userController.verifyOtp)

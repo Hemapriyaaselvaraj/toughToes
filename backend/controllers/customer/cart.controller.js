@@ -2,13 +2,10 @@ const Cart = require('../../models/cartModel');
 const ProductVariation = require('../../models/productVariationModel');
 const User = require('../../models/userModel');
 
-const MAX_QUANTITY_PER_PRODUCT = 5; // Maximum quantity allowed per product
 
-
-// Update cart item quantity
 exports.updateCartQuantity = async (req, res) => {
   try {
-    const { cartItemId, action } = req.body; // action: 'increment' or 'decrement'
+    const { cartItemId, action } = req.body;
     const userId = req.session.userId;
     if (!userId) return res.status(401).json({ success: false, message: 'Not logged in' });
     const cartItem = await Cart.findOne({ _id: cartItemId, user_id: userId });
@@ -42,7 +39,7 @@ exports.updateCartQuantity = async (req, res) => {
   }
 };
 
-// Remove item from cart
+
 exports.removeFromCart = async (req, res) => {
   try {
     const { cartItemId } = req.body;
@@ -50,7 +47,7 @@ exports.removeFromCart = async (req, res) => {
     if (!userId) return res.status(401).json({ success: false, message: 'Not logged in' });
     const cartItem = await Cart.findOne({ _id: cartItemId, user_id: userId });
     if (!cartItem) return res.status(404).json({ success: false, message: 'Cart item not found' });
-    // No stock update here
+    
     await Cart.deleteOne({ _id: cartItemId, user_id: userId });
     res.json({ success: true });
   } catch (err) {
@@ -59,7 +56,7 @@ exports.removeFromCart = async (req, res) => {
   }
 };
 
-// Get cart items
+
 exports.getCartPage = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -73,8 +70,8 @@ exports.getCartPage = async (req, res) => {
         path: 'product_variation_id',
         populate: { path: 'product_id', model: 'product' }
       });
-    // Prepare items for view
-    const items = cartItems.map(item => {
+      
+      const items = cartItems.map(item => {
       const v = item.product_variation_id;
       const p = v.product_id;
       let priceBefore = p && p.price ? p.price : 0;
@@ -98,7 +95,7 @@ exports.getCartPage = async (req, res) => {
         stock: v.stock_quantity,
       };
     });
-    // Calculate summary
+    
     
     const filteredItems = items.filter(item => item.isActive && item.stock > 0);
 
@@ -121,8 +118,6 @@ exports.getCartPage = async (req, res) => {
     res.status(500).send('Error loading cart');
   }
 };
-// const Cart = require('../../models/cartModel');
-// const ProductVariation = require('../../models/productVariationModel');
 
 exports.addToCart = async (req, res) => {
   try {
@@ -132,7 +127,7 @@ exports.addToCart = async (req, res) => {
     if (!product_variation_id || !quantity || quantity < 1) {
       return res.status(400).json({ success: false, message: 'Invalid request' });
     }
-    // Fetch variation and product
+    
     const variation = await ProductVariation.findById(product_variation_id).populate('product_id');
     if (!variation) return res.status(404).json({ success: false, message: 'Variation not found' });
     const product = variation.product_id;
@@ -143,7 +138,7 @@ exports.addToCart = async (req, res) => {
     if (quantity > variation.stock_quantity) {
       return res.status(400).json({ success: false, message: 'Quantity exceeds available stock' });
     }
-    // Check if cart item exists for this user and variation
+
     let cartItem = await Cart.findOne({ user_id: userId, product_variation_id });
     const MAX_QTY = 5;
     let newQty = quantity;

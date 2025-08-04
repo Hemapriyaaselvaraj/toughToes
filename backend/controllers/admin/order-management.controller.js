@@ -1,4 +1,4 @@
-const User = require('../../models/userModel'); // if needed
+const User = require('../../models/userModel'); 
 const Order = require('../../models/orderModel');
 const PDFDocument = require('pdfkit');
 const ProductVariation = require('../../models/productVariationModel');
@@ -53,8 +53,6 @@ exports.getOrderList = async (req, res) => {
   }
 };
 
-
-// GET order detail page
 exports.getOrderDetail = async (req, res) => {
   const user = await User.findById(req.session.userId);
   const displayName = user ? user.firstName + " " + user.lastName : "";
@@ -67,7 +65,6 @@ exports.getOrderDetail = async (req, res) => {
   res.render('admin/order-details', { order, name: displayName });
 };
 
-// POST cancel full order or specific product
 exports.cancelOrder = async (req, res) => {
   const { productId, reason } = req.body;
   const order = await Order.findById(req.params.id).populate('products.variation');
@@ -95,7 +92,6 @@ exports.cancelOrder = async (req, res) => {
   res.redirect('/admin/orders/' + req.params.id);
 };
 
-// POST return a product
 exports.returnProduct = async (req, res) => {
   const { productId, reason } = req.body;
   if (!reason) return res.redirect('/admin/orders/' + req.params.id);
@@ -116,7 +112,7 @@ exports.returnProduct = async (req, res) => {
   res.redirect('/admin/orders/' + req.params.id);
 };
 
-// GET download invoice as PDF
+
 exports.downloadInvoice = async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate('products.variation')
@@ -141,22 +137,22 @@ exports.downloadInvoice = async (req, res) => {
   doc.end();
 };
 
-// POST update order status
+
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const orderId = req.params.id;
 
-    // Update both order status and all products status
+    
     await Order.findByIdAndUpdate(
       orderId,
       {
         $set: {
           status: status,
-          'products.$[].status': status // This updates status for all products in the array
+          'products.$[].status': status 
         }
       },
-      { new: true } // Return the updated document
+      { new: true } 
     );
 
     res.redirect('/admin/orders/' + orderId);
@@ -166,7 +162,7 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-// POST verify return request
+
 exports.verifyReturn = async (req, res) => {
   try {
     const { productId, action } = req.body;
@@ -180,34 +176,34 @@ exports.verifyReturn = async (req, res) => {
       throw new Error('Order not found');
     }
 
-    // Find the specific product in order
+    
     const product = order.products.id(productId);
     if (!product) {
       throw new Error('Product not found in order');
     }
 
     if (action === 'approve') {
-      // Update product status
+      
       product.status = 'RETURNED';
       product.return_details.status = 'APPROVED';
 
-      // Add refund amount to user wallet
+      
       order.user_id.wallet = (order.user_id.wallet || 0) + product.return_details.refundAmount;
       await order.user_id.save();
 
-      // Increase product stock
+    
       await ProductVariation.findByIdAndUpdate(
         product.variation._id,
         { $inc: { stock_quantity: product.quantity } }
       );
 
-      // Check if all products are returned
+      
       const allProductsReturned = order.products.every(p => p.status === 'RETURNED');
       if (allProductsReturned) {
         order.status = 'RETURNED';
       }
     } else if (action === 'reject') {
-      // If rejected, reset the product status and clear return details
+      
       product.status = 'DELIVERED';
       product.return_details.status = 'REJECTED';
     }

@@ -7,14 +7,14 @@ const Order = require("../../models/orderModel");
 const mongoose = require('mongoose');
 const { generateOrderNumber } = require('../../utils/orderNumberGenerator');
 
-// Get all orders for a user
+
 const getUserOrders = async (req, res) => {
     try {
         const userId = req.session.userId;
         const user = await userModel.findById(userId);
         
         const orders = await Order.find({ user_id: userId })
-            .sort({ createdAt: -1 }) // Sort by newest first
+            .sort({ createdAt: -1 })
             .populate({
                 path: 'products.variation',
                 populate: {
@@ -56,7 +56,6 @@ const placeOrder = async (req, res) => {
     const { addressId, paymentMethod = 'COD' } = req.body;
     const userId = req.session.userId;
 
-    // Get cart items with all necessary product information
     const cartItems = await Cart.find({ user_id: userId })
       .populate({
         path: 'product_variation_id',
@@ -70,13 +69,12 @@ const placeOrder = async (req, res) => {
       throw new Error('Cart is empty');
     }
 
-    // Get shipping address
     const address = await Address.findById(addressId);
     if (!address) {
       throw new Error('Shipping address not found');
     }
 
-    // Validate products and calculate totals
+  
     let subtotal = 0;
     const orderProducts = [];
     const stockUpdates = [];
@@ -86,7 +84,7 @@ const placeOrder = async (req, res) => {
       const variation = item.product_variation_id;
       const product = variation.product_id;
 
-      // Skip inactive products or out of stock items
+      
       if (!product.is_active) {
         unavailableItems.push({
           name: product.name,
@@ -95,7 +93,7 @@ const placeOrder = async (req, res) => {
         continue;
       }
 
-      // Skip if insufficient stock
+      
       if (variation.stock_quantity < item.quantity) {
         unavailableItems.push({
           name: product.name,
@@ -104,14 +102,14 @@ const placeOrder = async (req, res) => {
         continue;
       }
 
-      // Calculate prices
+      
       const original_price = product.price;
       const discount_percentage = product.discount_percentage || 0;
       const price = original_price * (1 - discount_percentage / 100);
       
       subtotal += price * item.quantity;
 
-      // Prepare order product
+      
       orderProducts.push({
         variation: variation._id,
         name: product.name,
@@ -125,7 +123,7 @@ const placeOrder = async (req, res) => {
         status: 'ORDERED'
       });
 
-      // Prepare stock update
+      
       stockUpdates.push({
         updateOne: {
           filter: { _id: variation._id },
@@ -135,17 +133,17 @@ const placeOrder = async (req, res) => {
     }
 
     const shipping_charge = subtotal > 1000 ? 0 : 50;
-    const tax = Math.round(subtotal * 0.08); // 8% tax
+    const tax = Math.round(subtotal * 0.08);
     const total = subtotal + shipping_charge + tax;
 
-    // Create order
+  
     const estimatedDelivery = new Date();
-    estimatedDelivery.setDate(estimatedDelivery.getDate() + 3); // 3 days delivery estimate
+    estimatedDelivery.setDate(estimatedDelivery.getDate() + 3); 
 
-    // Generate unique order number
+    
     const orderNumber = await generateOrderNumber();
 
-    // Convert pincode to string if it's a number
+  
     const shippingAddress = {
       name: address.name,
       label: address.label,
@@ -174,28 +172,26 @@ const placeOrder = async (req, res) => {
       estimated_delivery_date: estimatedDelivery
     });
 
-    // Check if there are any products to order
+    
     if (orderProducts.length === 0) {
       throw new Error('No available products to order. ' + 
         unavailableItems.map(item => `${item.name}: ${item.reason}`).join(', '));
     }
 
-    // Save the order first
+    
     const savedOrder = await order.save();
     
-    // Update product variations stock
+    
     try {
       await ProductVariation.bulkWrite(stockUpdates);
     } catch (error) {
-      // If stock update fails, delete the order and throw error
+      
       await Order.findByIdAndDelete(savedOrder._id);
       throw new Error('Failed to update product stock. Please try again.');
     }
     
-    // Clear the cart after successful order
     await Cart.deleteMany({ user_id: userId });
 
-    // Return success response with order details
     res.status(200).json({
       success: true,
       orderId: savedOrder._id,
@@ -216,7 +212,6 @@ const getOrderSuccess = async (req, res) => {
     const orderId = req.params.orderId;
     const userId = req.session.userId;
 
-    // Find order and ensure it belongs to the current user
     const order = await Order.findOne({
       _id: orderId,
       user_id: userId
@@ -235,7 +230,6 @@ const getOrderSuccess = async (req, res) => {
     const user = await userModel.findById(userId);
     const displayName = user ? user.firstName + " " + user.lastName : "";
 
-    // Format the data for the template
     const orderData = {
       _id: order._id,
       orderNumber: order.order_number,
@@ -257,7 +251,6 @@ const getOrderSuccess = async (req, res) => {
       paymentDetails: {
         method: order.payment_method,
         status: order.payment_status,
-        last4: '1234' // You would get this from your payment processor
       },
       estimatedDelivery: order.estimated_delivery_date.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -294,7 +287,6 @@ const getOrderDetails = async (req, res) => {
 
     const user = await userModel.findById(userId);
 
-    // Format the order data for the template
     const formattedOrder = {
       _id: order._id,
       orderNumber: order.order_number,
@@ -312,7 +304,7 @@ const getOrderDetails = async (req, res) => {
         quantity: item.quantity,
         size: item.size,
         color: item.color,
-        status: item.status || order.status, // Use order status if item status is not set
+        status: item.status || order.status, 
         return_details: item.return_details
       })),
       subtotal: Math.round(order.subtotal),
@@ -353,15 +345,12 @@ const cancelOrder = async (req, res) => {
       });
     }
 
-    // Update order status and all products status
     order.status = 'CANCELLED';
     
-    // Update status for all products in the order
     order.products.forEach(item => {
       item.status = 'CANCELLED';
     });
 
-    // Return items to inventory
     const stockUpdates = order.products.map(item => ({
       updateOne: {
         filter: { _id: item.variation },
@@ -400,7 +389,6 @@ const requestReturn = async (req, res) => {
       });
     }
 
-    // Find the specific item in the order
     const item = order.products.id(itemId);
     if (!item) {
       return res.status(404).json({ success: false, message: 'Item not found in order' });
@@ -413,7 +401,6 @@ const requestReturn = async (req, res) => {
       });
     }
 
-    // Update item status and add return details
     item.status = 'RETURN_REQUESTED';
     item.return_details = {
       reason: reason,

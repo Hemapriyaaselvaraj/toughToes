@@ -51,7 +51,6 @@ const addressSchema = new Schema({
   }
 });
 
-// Pre-save middleware to handle single address case
 addressSchema.pre('save', async function(next) {
   if (this.isNew) {
     const Address = this.constructor;
