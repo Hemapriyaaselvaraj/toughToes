@@ -12,7 +12,7 @@
   <%- include('../partials/user-navbar', { name: user ? user.firstName + ' ' + user.lastName : '' }) %>
 
   <div class="container my-5 d-flex">
-    <!-- Sidebar -->
+    
     <div class="sidebar p-3 me-4 border rounded">
       <ul class="list-unstyled">
         <li><a href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
@@ -30,7 +30,7 @@
       </ul>
     </div>
 
-    <!-- Orders Content -->
+    
     <div class="flex-grow-1">
       <div class="profile-box border rounded p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -133,7 +133,7 @@
           }
         });
 
-        // Show/hide "No orders found" message
+        
         const visibleOrders = Array.from(orderItems).some(order => order.style.display !== 'none');
         const noOrdersMessage = document.querySelector('.text-center.py-5');
         if (noOrdersMessage) {
@@ -141,19 +141,19 @@
         }
       }
 
-      // Add event listeners
+      
       searchInput.addEventListener('input', filterOrders);
       statusFilter.addEventListener('change', filterOrders);
       dateFilter.addEventListener('change', filterOrders);
 
-      // Save filter preferences
+      
       ['searchOrder', 'statusFilter', 'dateFilter'].forEach(id => {
         const element = document.getElementById(id);
-        // Load saved value
+        
         const savedValue = localStorage.getItem(id);
         if (savedValue) element.value = savedValue;
         
-        // Save on change
+    
         element.addEventListener('change', () => {
           localStorage.setItem(id, element.value);
         });

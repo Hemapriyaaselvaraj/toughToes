@@ -9,7 +9,6 @@ exports.getAddresses = async (req, res) => {
   res.render('user/addresses', { addresses, user });
 };
 
-
 exports.postAddAddress = async (req, res) => {
   if (!req.session || !req.session.userId) return res.redirect('/login');
   await Address.create({ ...req.body, user_id: req.session.userId });

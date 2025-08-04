@@ -24,16 +24,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout - ToughToes</title>
 
-  <!-- Bootstrap CSS -->
+  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
-  <!-- FontAwesome for icons (same as home.ejs) -->
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Your global styles -->
+  
   <link rel="stylesheet" href="/css/style.css">
 
-  <!-- Your page-specific styles -->
+  
   <link rel="stylesheet" href="/css/checkout.css">
   <link rel="stylesheet" href="/css/home.css">
 
@@ -45,9 +45,9 @@
 
 
   <main class="checkout-page" style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start;">
-    <!-- Left: Address + Payment -->
+    
     <div style="flex: 1 1 48%; min-width: 320px; max-width: 600px; display: flex; flex-direction: column; gap: 24px;">
-      <!-- Address Section -->
+      
       <section class="address-section" style="margin-bottom:0;">
         <h2>Select Delivery Address</h2>
         <div class="address-list">
@@ -89,7 +89,7 @@
           <button class="add-address" id="openAddAddressModal">+ Add New Address</button>
         </div>
       </section>
-      <!-- Payment Method Section (full width, below address) -->
+      
       <section class="payment-method-section" style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:24px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
         <h2 style="font-size:1.4em; margin-bottom:18px;">Payment Method</h2>
         <div class="form-check" style="margin-bottom: 12px;">
@@ -100,7 +100,7 @@
         </div>
       </section>
     </div>
-    <!-- Right: Order Summary -->
+    
     <section class="product-summary" style="flex: 1 1 48%; min-width: 320px; max-width: 600px;">
       <h2>Order Summary</h2>
       <% if (products.length === 0) { %>
@@ -139,7 +139,7 @@
       </div>
       <button id="placeOrder">Place Order</button>
     </section>
-  <!-- Address Modal (shared for add/edit) -->
+  
   <div id="addressModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); align-items:center; justify-content:center;">
     <div class="modal-dialog" style="background:#fff; border-radius:10px; max-width:420px; width:95vw; margin:auto; padding:32px 28px 24px 28px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
       <button type="button" id="closeAddressModal" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5em; color:#888; cursor:pointer;">&times;</button>
@@ -193,7 +193,7 @@
 
   </main>
 
-  <!-- Footer -->
+  
   <footer class="bg-dark text-white py-4 mt-5">
     <div class="container d-flex justify-content-between flex-wrap">
       <div>
@@ -230,21 +230,21 @@
     </div>
   </footer>
   <script>
-    // Modal open/close logic
+    
     const addressModal = document.getElementById('addressModal');
     const closeAddressModal = document.getElementById('closeAddressModal');
     const addressForm = document.getElementById('addressForm');
     const addressModalTitle = document.getElementById('addressModalTitle');
     const saveAddressBtn = document.getElementById('saveAddressBtn');
-    // Open Add Address
+    
     document.getElementById('openAddAddressModal').onclick = function() {
       addressModalTitle.textContent = 'Add Address';
       addressForm.reset();
       document.getElementById('addressId').value = '';
       addressModal.style.display = 'flex';
-      // Set default type to Home
+      
       document.getElementById('addressType').value = 'Home';
-      // Ensure all fields are editable
+      
       [
         'addressName', 'addressLabel', 'addressType', 'addressHouseNumber',
         'addressLocality', 'addressCity', 'addressState',
@@ -259,14 +259,14 @@
         }
       });
     };
-    // Open Edit Address
+    
     document.querySelectorAll('.edit-address').forEach(btn => {
       btn.onclick = function() {
         addressModalTitle.textContent = 'Edit Address';
         document.getElementById('addressId').value = btn.getAttribute('data-address-id');
         document.getElementById('addressName').value = btn.getAttribute('data-address-name') || '';
         document.getElementById('addressLabel').value = btn.getAttribute('data-address-label') || '';
-        // Set addressType robustly and always to a valid value
+        
         const typeVal = btn.getAttribute('data-address-type');
         const allowedTypes = ['Home', 'Work', 'Other'];
         let typeToSet = allowedTypes.includes(typeVal) ? typeVal : 'Home';
@@ -277,7 +277,7 @@
         document.getElementById('addressState').value = btn.getAttribute('data-address-state') || '';
         document.getElementById('addressPincode').value = btn.getAttribute('data-address-pincode') || '';
         document.getElementById('addressPhone').value = btn.getAttribute('data-address-phone') || '';
-        // Ensure all fields are editable
+        
         [
           'addressName', 'addressLabel', 'addressType', 'addressHouseNumber',
           'addressLocality', 'addressCity', 'addressState',
@@ -291,18 +291,18 @@
             el.removeAttribute('disabled');
           }
         });
-        // Only show modal after all fields are set
+        
         addressModal.style.display = 'flex';
       };
     });
-    // Close modal
+    
     closeAddressModal.onclick = function() {
       addressModal.style.display = 'none';
     };
     window.onclick = function(e) {
       if (e.target === addressModal) addressModal.style.display = 'none';
     };
-    // Handle address save
+    
     document.querySelector('#saveAddressBtn').onclick = function(e) {
         e.preventDefault();
         alert('Save button clicked - if you see this, click handler is working');
@@ -343,13 +343,13 @@
         .catch(err => alert('Error: ' + err.message));
     };
     
-    // Prevent form from submitting normally
+    
     addressForm.onsubmit = function(e) {
         e.preventDefault();
         return false;
     };
 
-    // Place order logic
+  
     document.getElementById('placeOrder').addEventListener('click', () => {
       const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
       if (!selectedAddress) return alert('Please select a delivery address.');
@@ -369,7 +369,7 @@
     });
   </script>
 
-  <!-- Bootstrap JS -->
+  
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

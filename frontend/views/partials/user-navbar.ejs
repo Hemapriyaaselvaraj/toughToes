@@ -68,18 +68,15 @@
     });
   }
 
-  // Profile icon click handler
+  
   const profileIcon = document.getElementById("profileIcon");
-  // Get login status from the presence of logout button
   const isLoggedIn = document.getElementById("logoutBtn") !== null;
   
   if (profileIcon) {
     profileIcon.addEventListener("click", function() {
       if (isLoggedIn) {
-        // If user is logged in, go to profile page
         window.location.href = "/profile";
       } else {
-        // If user is not logged in, redirect to login page
         window.location.href = "/user/login";
       }
     });

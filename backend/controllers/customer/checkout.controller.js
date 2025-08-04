@@ -43,7 +43,7 @@ const checkout = async (req, res) => {
     (sum, p) => sum + p.priceAfter * p.quantity,
     0
   );
-  const tax = Math.round((subtotal * 8) / 100); // 8% tax
+  const tax = Math.round((subtotal * 8) / 100); 
   const shipping = subtotal > 1000 ? 0 : 50;
   const total = subtotal + tax + shipping;
 

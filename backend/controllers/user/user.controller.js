@@ -19,15 +19,15 @@ const requestEmailOtp = async (req, res) => {
   if (!req.session || !req.session.userId) {
     return res.status(401).json({ success: false, message: 'Not logged in' });
   }
-  // Check if email already exists
+  
   const existingUser = await userModel.findOne({ email: newEmail });
   if (existingUser) {
     return res.json({ success: false, message: 'Email already registered.' });
   }
-  // Generate OTP
+  
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expiry = new Date(Date.now() + 10 * 60 * 1000);
-  // Save OTP for this user and new email
+  
   let otpVerification = await otpVerificationModel.findOne({ email: newEmail });
   if (otpVerification) {
     otpVerification.otp = otp;
@@ -37,14 +37,14 @@ const requestEmailOtp = async (req, res) => {
     otpVerification = new otpVerificationModel({ email: newEmail, otp, expiry });
     await otpVerification.save();
   }
-  // Send OTP to new email
+  
   await transporter.sendMail({
     from: `Tough Toes <${process.env.EMAIL_USER}>`,
     to: newEmail,
     subject: 'Email Change OTP',
     html: `<h3>Your OTP for email change is: <b>${otp}</b></h3>`
   });
-  // Store newEmail in session for verification
+  
   req.session.pendingEmail = newEmail;
   res.json({ success: true });
 };
@@ -208,7 +208,7 @@ const changePassword = async(req, res) => {
   const { email, password, confirmPassword, otp } = req.body;
   const isAjax = req.xhr || req.headers['content-type'] === 'application/json';
 
-  // If OTP is required, check OTP validity
+  
   if (otp !== undefined) {
     const otpVerification = await otpVerificationModel.findOne({ email });
     if (!otpVerification || otpVerification.otp !== otp || otpVerification.expiry < new Date()) {

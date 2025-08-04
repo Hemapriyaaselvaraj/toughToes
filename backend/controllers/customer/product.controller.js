@@ -18,7 +18,7 @@ const showProducts = async (req, res) => {
   const filter = { is_active: true };
   let productVariations;
 
-  // fetch product variations first if the size or color filter is present
+  
   if (selectedColor.length || selectedSize.length) {
     const variationFilter = {};
 
@@ -75,13 +75,13 @@ const showProducts = async (req, res) => {
 
   let products = await Product.find(filter).lean();
 
-  // calculate the discounted price of the products
+  
   products.forEach((product) => {
     product.afterDiscountPrice =
       product.price * (1 - (product.discount_percentage || 0) / 100);
   });
 
-  // sort the products after calculating the discounted price
+  
   if (sort === "asc") {
     products.sort((a, b) => a.afterDiscountPrice - b.afterDiscountPrice);
   } else if (sort === "desc") {
@@ -98,7 +98,7 @@ const showProducts = async (req, res) => {
   const totalPages = Math.ceil(totalResults / pageSize);
   products = products.slice(skip, pageSize * currentPage);
 
-  // take the first image from the variations for the given product id
+
   const displayedProductIds = products.map((product) => product._id);
   const images = await ProductVariation.aggregate([
     { $match: { product_id: { $in: displayedProductIds } } },
@@ -110,7 +110,7 @@ const showProducts = async (req, res) => {
     },
   ]);
 
-  // add the fetched image to the products
+  
   products.forEach((product) => {
     const productImage = images.find((image) => image._id.equals(product._id));
     if (productImage) {
@@ -118,7 +118,7 @@ const showProducts = async (req, res) => {
     }
   });
 
-  // all the below code is added only to give supporting data to the ejs
+  
   const [categories, types, sizes, colors] = await Promise.all([
     productCategoryModel.find({}).lean(),
     productTypeModel.find({}).lean(),

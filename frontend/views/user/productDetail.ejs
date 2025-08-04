@@ -135,7 +135,7 @@
   color: #333;
 }
 main.product-page {
-  padding-top: 0px; /* adjust this value depending on navbar height */
+  padding-top: 0px; 
 }
 
 
@@ -340,9 +340,9 @@ main.product-page {
     const sizeColorMap = JSON.parse('<%- JSON.stringify(sizeColorMap || {}) %>');
     const variations = JSON.parse('<%- JSON.stringify(variations || []) %>');
 
-    // Initialize variables after DOM is ready
+    
     document.addEventListener('DOMContentLoaded', function() {
-      // Fullscreen viewer functionality
+    
       const fullscreenViewer = document.querySelector('.fullscreen-viewer');
       const fullscreenImage = fullscreenViewer.querySelector('.fullscreen-main img');
       const fullscreenThumbnails = fullscreenViewer.querySelector('.fullscreen-thumbnails');
@@ -378,7 +378,7 @@ main.product-page {
       document.body.style.overflow = '';
     }
 
-    // Add click event listener for expand button
+    
     expandBtn.addEventListener('click', () => {
       const mainImageSrc = mainImg.src;
       const thumbnailSrcs = Array.from(document.querySelectorAll('.thumbnails img')).map(img => img.src);
@@ -400,11 +400,11 @@ main.product-page {
       }
     });
 
-    // Initialize size and color selection
+    
     const sizeBtns = document.querySelectorAll('.size-btn');
     const colorBtns = document.querySelectorAll('.color-btn');
 
-    // Function to find first available variation with stock
+    
     function findFirstAvailableVariation() {
       for (const size of Object.keys(sizeColorMap)) {
         const colorList = sizeColorMap[size] || [];
@@ -422,7 +422,7 @@ main.product-page {
       return null;
     }
 
-    // Select first available size and color
+    
     const firstAvailable = findFirstAvailableVariation();
     if (firstAvailable) {
       const sizeBtn = [...sizeBtns].find(btn => btn.dataset.size === firstAvailable.size);
@@ -436,9 +436,9 @@ main.product-page {
         }, 0);
       }
     }
-    }); // Close DOMContentLoaded
+    }); 
 
-    // Move these outside DOMContentLoaded since they're used by other functions
+    
     const sizeBtns = document.querySelectorAll('.size-btn');
     const colorBtns = document.querySelectorAll('.color-btn');
     const stockMessage = document.getElementById('stock-message');
@@ -585,7 +585,7 @@ main.product-page {
     }
 
     function getCurrentCartQuantity() {
-      // Read from hidden input to avoid EJS/JSX parsing issues
+      
       return Number(document.getElementById('currentCartQuantity').value) || 0;
     }
 
@@ -619,11 +619,11 @@ main.product-page {
       updateQtyButtons();
     };
 
-    // Update buttons on size/color change
+    
     sizeBtns.forEach(btn => btn.addEventListener('click', updateQtyButtons));
     colorBtns.forEach(btn => btn.addEventListener('click', updateQtyButtons));
 
-    // Also update on page load
+    
     updateQtyButtons();
 
     document.getElementById('addToCartBtn').onclick = function () {

@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-  <!-- Navbar -->
+  
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4">
     <a class="navbar-brand fw-bold" href="/">ToughToes</a>
     <div class="collapse navbar-collapse">
@@ -67,7 +67,7 @@
     </div>
   </div>
 
-  <!-- Email OTP Modal -->
+  
   <div class="modal fade" id="emailOtpModal" tabindex="-1" aria-labelledby="emailOtpModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -231,13 +231,13 @@
       });
     };
 
-    // Clear OTP and error when modal is closed
+    
     document.getElementById('emailOtpModal').addEventListener('hidden.bs.modal', function () {
       otpInput.value = '';
       emailOtpError.textContent = '';
     });
 
-    // On form submit, always use the current emailInput value
+    
     document.querySelector('form[method="POST"]').addEventListener('submit', function() {
       emailInput.setAttribute('name', 'email');
       if (newEmailInput) newEmailInput.removeAttribute('name');
