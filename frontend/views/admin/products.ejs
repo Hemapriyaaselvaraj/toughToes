@@ -75,7 +75,7 @@
                   <div class="text-muted"><%= product.brand %></div>
                 </td>
                 <td>#<%= product.product_sku %></td>
-                <td>$<%= product.price.toFixed(2) %></td>
+                <td>₹ <%= product.price.toFixed(2) %></td>
                 <td><span class="badge bg-secondary"><%= product.product_category %></span></td>
                 <td><span class="badge bg-info"><%= product.product_type %></span></td>
                 <td><%= product.created_at.toDateString() %></td>
