@@ -13,10 +13,58 @@
       position: relative;
       width: 100%;
       max-width: 500px;
+      overflow: hidden;
     }
 
     .main-img {
       width: 100%;
+      cursor: crosshair;
+    }
+
+    .zoom-lens {
+      position: absolute;
+      border: 1px solid #d4d4d4;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.2);
+      display: none;
+      cursor: crosshair;
+      pointer-events: none;
+    }
+
+    .zoom-result {
+      position: absolute;
+      right: -520px;
+      top: 0;
+      width: 500px;
+      height: 500px;
+      border: 1px solid #d4d4d4;
+      background-repeat: no-repeat;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 999;
+      overflow: hidden;
+    }
+
+    .main-img-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      overflow: visible !important;
+    }
+
+    .main-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: crosshair;
+    }
+
+    @media (max-width: 1200px) {
+      .zoom-result {
+        display: none !important;
+      }
     }
 
     .expand-btn {
@@ -177,6 +225,8 @@ main.product-page {
       <div class="product-images">
         <div class="main-img-container">
           <img src="<%= images && images.length ? images[0] : '/images/shoe_main.png' %>" alt="<%= product.name %>" class="main-img" />
+          <div class="zoom-lens"></div>
+          <div class="zoom-result"></div>
           <button type="button" class="expand-btn" aria-label="View full screen">
             <i class="fas fa-expand"></i>
           </button>
@@ -808,6 +858,112 @@ main.product-page {
     }
 
     // (currentCartQuantity is now set via hidden input)
+
+    // Image Zoom Functionality
+    function initZoom() {
+      const mainImgContainer = document.querySelector('.main-img-container');
+      const mainImg = mainImgContainer.querySelector('.main-img');
+      const zoomLens = mainImgContainer.querySelector('.zoom-lens');
+      const zoomResult = mainImgContainer.querySelector('.zoom-result');
+      let isZoomActive = false;
+
+      // Set zoom level (increase this value for higher zoom)
+      const ZOOM_LEVEL = 2.5;
+
+      function getRelativeMousePosition(e) {
+        const rect = mainImgContainer.getBoundingClientRect();
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        return {
+          x: e.pageX - (rect.left + scrollLeft),
+          y: e.pageY - (rect.top + scrollTop)
+        };
+      }
+
+      function moveZoomArea(e) {
+        if (!isZoomActive) return;
+
+        const pos = getRelativeMousePosition(e);
+        const containerWidth = mainImgContainer.offsetWidth;
+        const containerHeight = mainImgContainer.offsetHeight;
+        const lensWidth = zoomLens.offsetWidth;
+        const lensHeight = zoomLens.offsetHeight;
+
+        let x = pos.x - lensWidth / 2;
+        let y = pos.y - lensHeight / 2;
+
+        // Constrain lens position
+        x = Math.max(0, Math.min(x, containerWidth - lensWidth));
+        y = Math.max(0, Math.min(y, containerHeight - lensHeight));
+
+        // Move lens
+        zoomLens.style.left = x + 'px';
+        zoomLens.style.top = y + 'px';
+
+        // Calculate the natural dimensions of the image
+        const naturalWidth = mainImg.naturalWidth;
+        const naturalHeight = mainImg.naturalHeight;
+
+        // Calculate ratios
+        const scaleX = naturalWidth / containerWidth;
+        const scaleY = naturalHeight / containerHeight;
+
+        // Calculate background size
+        const bgWidth = zoomResult.offsetWidth * ZOOM_LEVEL;
+        const bgHeight = zoomResult.offsetHeight * ZOOM_LEVEL;
+
+        // Update result background
+        zoomResult.style.backgroundImage = `url(${mainImg.src})`;
+        zoomResult.style.backgroundSize = `${containerWidth * ZOOM_LEVEL}px ${containerHeight * ZOOM_LEVEL}px`;
+
+        // Calculate and set background position
+        const bgX = (x / containerWidth) * (containerWidth * ZOOM_LEVEL - zoomResult.offsetWidth);
+        const bgY = (y / containerHeight) * (containerHeight * ZOOM_LEVEL - zoomResult.offsetHeight);
+        zoomResult.style.backgroundPosition = `-${bgX}px -${bgY}px`;
+      }
+
+      // Initialize zoom when image is loaded
+      mainImg.addEventListener('load', function() {
+        // Pre-load the image for zoom
+        const preloadImg = new Image();
+        preloadImg.src = mainImg.src;
+        preloadImg.onload = function() {
+          mainImgContainer.style.height = mainImg.offsetHeight + 'px';
+        };
+      });
+
+      mainImgContainer.addEventListener('mouseenter', function(e) {
+        if (window.innerWidth <= 1200) return; // Don't show zoom on smaller screens
+        isZoomActive = true;
+        zoomLens.style.display = 'block';
+        zoomResult.style.display = 'block';
+        moveZoomArea(e);
+      });
+
+      mainImgContainer.addEventListener('mouseleave', function() {
+        isZoomActive = false;
+        zoomLens.style.display = 'none';
+        zoomResult.style.display = 'none';
+      });
+
+      mainImgContainer.addEventListener('mousemove', moveZoomArea);
+
+      // Update zoom when main image changes
+      const updateZoomImage = () => {
+        zoomResult.style.backgroundImage = `url(${mainImg.src})`;
+      };
+
+      // Call updateZoomImage when thumbnails are clicked
+      document.querySelectorAll('.thumbnails img').forEach(thumb => {
+        thumb.addEventListener('click', updateZoomImage);
+      });
+
+      // Initial setup
+      updateZoomImage();
+    }
+
+    // Initialize zoom functionality
+    initZoom();
   </script>
 
 </body>
