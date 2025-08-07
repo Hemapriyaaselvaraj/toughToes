@@ -165,8 +165,7 @@ body {
   margin: 15px 0;
 }
 
-.size .sizes button,
-.quantity button {
+.size .sizes button {
   padding: 8px 15px;
   margin: 5px;
   border: 1px solid #ccc;
@@ -179,26 +178,76 @@ body {
   color: white;
 }
 
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.quantity button {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
 .quantity input {
   width: 40px;
   text-align: center;
   margin: 0 5px;
 }
 
-.add-to-cart, .add-to-wishlist {
-  display: block;
+.add-to-cart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   margin-top: 15px;
-  padding: 10px 20px;
-  background: black;
+  padding: 12px 0;
+  background: #000;
   color: white;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  gap: 8px;
+}
+
+.add-to-cart i {
+  font-size: 20px;
+}
+
+.add-to-cart:hover {
+  background: #333;
 }
 
 .add-to-wishlist {
-  background: #eee;
-  color: black;
-  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 0;
+  background: transparent;
+  color: #000;
+  border: 1px solid #000;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s;
+  gap: 8px;
+}
+
+.add-to-wishlist i {
+  font-size: 20px;
+}
+
+.add-to-wishlist:hover {
+  background: #f5f5f5;
 }
 
 .features p {
