@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= product.name %> | ToughToes</title>
-    <link rel="stylesheet" href="/css/home.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="/css/productDetail.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/css/common.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .main-img-container {
@@ -356,35 +358,7 @@ main.product-page {
     </div>
   </main>
 
-  <footer>
-    <div class="footer-columns">
-      <div>
-        <h4>ToughToes</h4>
-        <p>Premium shoes for every step of your journey.</p>
-      </div>
-      <div>
-        <h5>Quick Links</h5>
-        <p>About Us</p>
-        <p>Contact</p>
-        <p>Size Guide</p>
-        <p>Returns</p>
-      </div>
-      <div>
-        <h5>Categories</h5>
-        <p>Men's Shoes</p>
-        <p>Women's Shoes</p>
-        <p>Kids' Shoes</p>
-        <p>Sale</p>
-      </div>
-      <div>
-        <h5>Follow Us</h5>
-        <i class="fab fa-facebook"></i>
-        <i class="fab fa-instagram"></i>
-        <i class="fab fa-twitter"></i>
-      </div>
-    </div>
-    <p class="copyright">© 2025 ToughToes. All rights reserved.</p>
-  </footer>
+  <%- include('../partials/footer') %>
 
   <script>
     const sizeColorMap = JSON.parse('<%- JSON.stringify(sizeColorMap || {}) %>');
@@ -966,5 +940,8 @@ main.product-page {
     initZoom();
   </script>
 
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
