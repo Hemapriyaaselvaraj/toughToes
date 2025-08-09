@@ -73,7 +73,7 @@ exports.getCartPage = async (req, res) => {
       
       const items = cartItems.map(item => {
       const v = item.product_variation_id;
-      const p = v.product_id;
+      const p = v?.product_id;
       let priceBefore = p && p.price ? p.price : 0;
       let priceAfter = priceBefore;
       let discount = p && p.discount_percentage ? p.discount_percentage : 0;
