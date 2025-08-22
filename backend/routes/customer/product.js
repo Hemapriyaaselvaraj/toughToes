@@ -6,7 +6,5 @@ const { isCustomerAccessible } = require('../../middlewares/auth');
 
 router.get('/', isCustomerAccessible, productController.productList);
 router.get('/:id', isCustomerAccessible, productController.productDetail);
-// router.get('/showproducts', productController.showProducts);
-
 
 module.exports = router;

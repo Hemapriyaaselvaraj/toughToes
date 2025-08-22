@@ -28,6 +28,42 @@
       
       <aside class="filters">
         <form id="filterForm" method="get" action="" autocomplete="off">
+          <div class="search-bar" style="margin: 0 0 20px 0; position: relative;">
+            <div style="display: flex; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <input 
+                type="text" 
+                name="search" 
+                id="searchInput"
+                placeholder="Search products..." 
+                value="<%= query.search || '' %>"
+                style="flex-grow: 1; padding: 12px 30px 12px 15px; border: 1px solid #e0e0e0; 
+                       border-right: none; border-radius: 4px 0 0 4px; font-size: 14px; 
+                       outline: none; transition: all 0.3s;"
+              >
+              <button 
+                type="submit" 
+                style="padding: 0 10px; background: #2d7cf7; color: white; border: none; 
+                       border-radius: 0 4px 4px 0; cursor: pointer; font-size: 14px;
+                       transition: background-color 0.3s;"
+                onmouseover="this.style.backgroundColor='#1b6fe6'"
+                onmouseout="this.style.backgroundColor='#2d7cf7'"
+              >
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+            <% if (query.search) { %>
+              <button 
+                type="button" 
+                class="clear-search" 
+                onclick="clearSearch()"
+                style="position: absolute; right: 60px; top: 50%; transform: translateY(-50%); 
+                       border: none; background: none; cursor: pointer; padding: 0; 
+                       color: #999; font-size: 16px; width: 20px; height: 20px;
+                       display: flex; align-items: center; justify-content: center;"
+                aria-label="Clear search"
+              >×</button>
+            <% } %>
+          </div>
           <div class="filter-header">
             <h3>Filters</h3>
             <button type="button" class="clear-btn" onclick="clearAllFilters()">Clear All</button>
@@ -80,15 +116,33 @@
           <button type="submit" class="apply-btn" style="margin-top: 16px; width: 100%; background: #2d7cf7; color: #fff; border: none; padding: 10px 0; border-radius: 6px; font-weight: 600; cursor: pointer;">Apply</button>
         </form>
         <script>
+          function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterForm').submit();
+          }
+
           function clearAllFilters() {
             window.location = window.location.pathname;
           }
+
           function selectCategory(category) {
             const params = new URLSearchParams(window.location.search);
             params.set('category', category);
             params.delete('page'); 
             window.location.search = params.toString();
           }
+
+          // Add event listener to prevent empty form submission
+          document.getElementById('filterForm').addEventListener('submit', function(e) {
+            const searchInput = document.getElementById('searchInput');
+            // Remove search parameter if it's empty
+            if (searchInput && !searchInput.value.trim()) {
+              searchInput.disabled = true;
+              setTimeout(() => {
+                searchInput.disabled = false;
+              }, 100);
+            }
+          });
         </script>
       </aside>
       

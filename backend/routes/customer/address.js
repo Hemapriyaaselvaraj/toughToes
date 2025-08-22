@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const addressController = require('../../controllers/customer/address.controller');
+const { isCustomerAccessible } = require('../../middlewares/auth');
 
-router.get('/', addressController.getAddresses);
+router.get('/', isCustomerAccessible, addressController.getAddresses);
 router.post('/add', addressController.postAddAddress);
 router.get('/edit/:id', addressController.getEditAddress);
 router.post('/edit/:id', addressController.postEditAddress);
