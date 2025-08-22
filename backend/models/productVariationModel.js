@@ -6,7 +6,7 @@ const productVariationSchema = new mongoose.Schema({
   product_size: { type: String, required: true },
   product_color: { type: String, required: true },
   stock_quantity: { type: Number, required: true },
-  images: [{ type: String }], // URLs from Cloudinary
+  images: [{ type: String }], 
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 });

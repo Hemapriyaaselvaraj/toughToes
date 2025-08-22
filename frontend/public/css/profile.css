@@ -47,22 +47,59 @@
   background: #0056b3;
 }
 
-.btn-logout {
-  background: #fff;
-  color: #dc3545;
-  border: 1px solid #dc3545;
-  border-radius: 4px;
-  padding: 0.4rem 1.1rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  margin-left: 0.5rem;
+/* Sidebar styles */
+.sidebar ul li {
+  margin-bottom: 10px;
 }
 
-.btn-logout:hover {
-  background: #dc3545;
-  color: #fff;
+.sidebar ul li a,
+.sidebar ul li form button {
+  display: block;
+  padding: 8px 15px;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li form button:hover {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.sidebar ul li a.active {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  font-weight: 500;
+}
+
+.sidebar ul li form {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+#logoutForm button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 8px 15px;
+  cursor: pointer;
+  color: #333;
+  background: none;
+  border: none;
+  text-align: left;
+}
+
+#logoutForm button:hover {
+  background-color: #f8f9fa;
+  border-radius: 5px;
 }
 
 .navbar {
