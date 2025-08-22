@@ -39,13 +39,12 @@ router.post('/products/color', productController.createColor);
 router.put('/products/color/:id', productController.updateColor);
 router.delete('/products/color/:id', productController.deleteColor);
 
-router.get('/orders', adminOrderController.getOrderList);
-router.get('/orders/:id', adminOrderController.getOrderDetail);
-router.post('/orders/:id/cancel', adminOrderController.cancelOrder);
-router.post('/orders/:id/return', adminOrderController.returnProduct);
-router.get('/orders/:id/invoice', adminOrderController.downloadInvoice);
-router.post('/orders/:id/status', adminOrderController.updateOrderStatus);
-router.post('/orders/:id/return/verify', adminOrderController.verifyReturn);
+router.get('/orders', isAdminAccessible, adminOrderController.getOrderList);
+router.get('/orders/:id', isAdminAccessible, adminOrderController.getOrderDetail);
+router.post('/orders/:id/cancel', isAdminAccessible, adminOrderController.cancelOrder);
+router.post('/orders/:id/return', isAdminAccessible, adminOrderController.returnProduct);
+router.post('/orders/:id/status', isAdminAccessible, adminOrderController.updateOrderStatus);
+router.post('/orders/:id/return/verify', isAdminAccessible, adminOrderController.verifyReturn);
 
 
 

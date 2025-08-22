@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const profileController = require('../../controllers/customer/profile.controller');
 const editProfileController = require('../../controllers/customer/editProfile.controller');
+const { isCustomerAccessible } = require('../../middlewares/auth');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -28,10 +29,10 @@ const upload = multer({
     cb(new Error('Only image files are allowed!'));
   }
 });
-router.get('/edit', editProfileController.getEditProfile);
-router.post('/edit', editProfileController.postEditProfile);
-router.get('/', profileController.getProfile);
-router.post('/', profileController.updateProfile);
-router.post('/update-image', upload.single('profileImage'), profileController.updateProfileImage);
+router.get('/edit', isCustomerAccessible, editProfileController.getEditProfile);
+router.post('/edit', isCustomerAccessible, editProfileController.postEditProfile);
+router.get('/', isCustomerAccessible, profileController.getProfile);
+router.post('/', isCustomerAccessible, profileController.updateProfile);
+router.post('/update-image', isCustomerAccessible, upload.single('profileImage'), profileController.updateProfileImage);
 
 module.exports = router;

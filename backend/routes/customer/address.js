@@ -4,10 +4,10 @@ const addressController = require('../../controllers/customer/address.controller
 const { isCustomerAccessible } = require('../../middlewares/auth');
 
 router.get('/', isCustomerAccessible, addressController.getAddresses);
-router.post('/add', addressController.postAddAddress);
-router.get('/edit/:id', addressController.getEditAddress);
-router.post('/edit/:id', addressController.postEditAddress);
-router.post('/delete/:id', addressController.deleteAddress);
-router.post('/set-default/:id', addressController.setDefaultAddress);
+router.post('/add', isCustomerAccessible, addressController.postAddAddress);
+router.get('/edit/:id', isCustomerAccessible, addressController.getEditAddress);
+router.post('/edit/:id', isCustomerAccessible, addressController.postEditAddress);
+router.post('/delete/:id', isCustomerAccessible, addressController.deleteAddress);
+router.post('/set-default/:id', isCustomerAccessible, addressController.setDefaultAddress);
 
 module.exports = router;

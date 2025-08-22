@@ -113,31 +113,6 @@ exports.returnProduct = async (req, res) => {
 };
 
 
-exports.downloadInvoice = async (req, res) => {
-  const order = await Order.findById(req.params.id)
-    .populate('products.variation')
-    .populate('user_id');
-
-  const doc = new PDFDocument();
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'attachment; filename="invoice.pdf"');
-  doc.pipe(res);
-
-  doc.fontSize(20).text('Invoice', { align: 'center' });
-  doc.text(`\nOrder ID: ${order._id}`);
-  doc.text(`Date: ${order.ordered_at.toDateString()}`);
-  doc.text(`Customer: ${order.user_id.firstName} ${order.user_id.lastName}`);
-
-  doc.moveDown();
-  order.products.forEach(p => {
-    doc.text(`${p.name} x ${p.quantity} - ₹ ${p.price}`);
-  });
-
-  doc.text(`\nTotal: ₹ ${order.total}`);
-  doc.end();
-};
-
-
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
