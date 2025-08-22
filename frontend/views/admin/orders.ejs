@@ -33,8 +33,13 @@
       
       <div class="col-md-10 p-0">
         
-        <%- include('../partials/navbar', { pageTitle: 'Order Management', name: name }) %>
-
+<div class="bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
+          <h5 class="mb-0">Order Management</h5>
+          <div class="d-flex align-items-center gap-2">
+            <span><%= name %></span>
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </div>
         <div class="p-4">
           <section class="main-content">
             
