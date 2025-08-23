@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema(
     },
     profileImage: {
       type: String,
-      default: "/images/default-profile.png", // Default profile image path
+      default: "/images/default-profile.png", 
     },
     signupMethod: {
       type: String,

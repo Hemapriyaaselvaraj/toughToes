@@ -6,14 +6,12 @@
     <a href="#" onclick="selectCategory('KIDS'); return false;">Kids</a>
   </nav>
   <div class="nav-right">
-    <!-- <input type="text" placeholder="Search shoes..." class="search-input" id="navbarSearchInput" /> -->
     <i class="fas fa-search" id="navbarSearchIcon" style="cursor:pointer;"></i>
     <i class="fas fa-shopping-cart" onclick="window.location.href='/cart'" style="cursor:pointer;"></i>
     <i class="fas fa-heart" onclick="window.location.href='/wishlist'" style="cursor:pointer;"></i>
     <i class="fas fa-user" id="profileIcon" style="cursor:pointer;"></i>
     <% if (typeof name === 'string' && name.trim().length > 0) { %>
       <span><%= name %></span>
-      <!-- <button id="logoutBtn" class="btn btn-logout">Logout</button> -->
     <% } else { %>
       <button id="loginBtn" class="btn btn-login">Login</button>
     <% } %>
@@ -43,24 +41,7 @@
   if(searchIcon) {
     searchIcon.addEventListener('click', submitSearch);
   }
-  // const logoutBtn = document.getElementById("logoutBtn");
-  // if (logoutBtn) {
-  //   logoutBtn.addEventListener("click", async function () {
-  //     try {
-  //       const response = await fetch("/user/logout", {
-  //         method: "POST",
-  //         credentials: "include",
-  //       });
-  //       if (response.ok) {
-  //         window.location.href = "/user/login";
-  //       } else {
-  //         alert("Logout failed");
-  //       }
-  //     } catch (err) {
-  //       alert("Logout error");
-  //     }
-  //   });
-  // }
+  
   const loginBtn = document.getElementById("loginBtn");
   if (loginBtn) {
     loginBtn.addEventListener("click", function () {

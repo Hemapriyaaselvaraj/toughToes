@@ -32,15 +32,15 @@ const getCustomers = async (req, res) => {
     .skip((currentPage - 1) * pageSize)
     .limit(pageSize);
 
-  const customers = users.map((u, idx) => ({
-    name: u.firstName + ' ' + u.lastName,
-    email: u.email,
-    id: u._id.toString().slice(-6).toUpperCase(),
-    totalOrders: u.totalOrders || 0,
-    walletBalance: u.walletBalance || 0,
-    status: u.isBlocked ? 'blocked' : 'active',
-    isBlocked: u.isBlocked,
-    _id: u._id
+  const customers = users.map((user) => ({
+    name: user.firstName + ' ' + user.lastName,
+    email: user.email,
+    id: user._id.toString().slice(-6).toUpperCase(),
+    totalOrders: user.totalOrders || 0,
+    walletBalance: user.walletBalance || 0,
+    status: user.isBlocked ? 'blocked' : 'active',
+    isBlocked: user.isBlocked,
+    _id: user._id
   }));
   const user = await userModel.findOne({ _id: req.session.userId });
   res.render("admin/customers", {

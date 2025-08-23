@@ -3,7 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/user/user.controller');
 const editProfileController = require('../controllers/customer/editProfile.controller');
 const passport = require('../config/passport');
-const { isNotLogin, isCustomerAccessible } = require('../middlewares/auth');
+const { isNotLogin } = require('../middlewares/auth');
 
 
 

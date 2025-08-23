@@ -132,10 +132,8 @@
             window.location.search = params.toString();
           }
 
-          // Add event listener to prevent empty form submission
           document.getElementById('filterForm').addEventListener('submit', function(e) {
             const searchInput = document.getElementById('searchInput');
-            // Remove search parameter if it's empty
             if (searchInput && !searchInput.value.trim()) {
               searchInput.disabled = true;
               setTimeout(() => {
